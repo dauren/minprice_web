@@ -166,6 +166,7 @@ const Footer = () => (
           <Link to="/discounts" className="hover:text-foreground transition-colors">Скидки</Link>
           <Link to="/cart" className="hover:text-foreground transition-colors">Корзина</Link>
           <Link to="/public-offer" className="hover:text-foreground transition-colors">Оферта</Link>
+          <a href="mailto:support@minprice.kz" className="hover:text-foreground transition-colors">Поддержка</a>
         </div>
       </div>
       <div className="mt-6 pt-4 border-t border-border text-center text-xs text-muted-foreground">

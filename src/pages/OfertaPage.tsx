@@ -135,16 +135,29 @@ const OfertaPage = () => {
 
                 <Section title="10. Контакты">
                     <p>
-                        По вопросам, связанным с условиями оферты или работой Сервиса, обращайтесь:{" "}
-                        <a
-                            href="https://t.me/minpricekz_feedback"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity"
-                        >
-                            Telegram-чат поддержки
-                        </a>
+                        По вопросам, связанным с условиями оферты или работой Сервиса, обращайтесь:
                     </p>
+                    <ul className="list-disc list-inside space-y-1 pl-2">
+                        <li>
+                            Email:{" "}
+                            <a
+                                href="mailto:support@minprice.kz"
+                                className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity"
+                            >
+                                support@minprice.kz
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                href="https://t.me/minpricekz_feedback"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity"
+                            >
+                                Telegram-чат поддержки
+                            </a>
+                        </li>
+                    </ul>
                 </Section>
             </main>
         </div>
