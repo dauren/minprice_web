@@ -453,6 +453,7 @@ const CartPage = () => {
                             {item.product.measure_unit_qty && item.product.measure_unit_kind && (
                               <p className="text-[11px] text-muted-foreground mt-0.5">{parseFloat(item.product.measure_unit_qty)} {toRuUnit(item.product.measure_unit_kind)}</p>
                             )}
+
                           </div>
 
                           {isOwner && (
@@ -489,9 +490,37 @@ const CartPage = () => {
                             <span className="text-[11px] text-muted-foreground">{item.price.toLocaleString()} ₸ / шт</span>
                           </div>
 
-                          <span className="text-sm font-semibold text-foreground">
-                            {item.item_total.toLocaleString()} ₸
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                            {item.product.stores && item.product.stores.filter(p => isChainSelected([p.store_id])).length > 1 ? (() => {
+                              const allStores = item.product.stores.filter(p => isChainSelected([p.store_id]));
+                              const optimalStore = allStores.find(p => p.store_id === item.store_id);
+                              const otherStores = allStores.filter(p => p.store_id !== item.store_id).sort((a, b) => b.price - a.price);
+                              const displayStores = optimalStore ? [...otherStores, optimalStore] : allStores;
+
+                              return displayStores.map(op => {
+                                const isOptimal = op.store_id === item.store_id;
+                                return (
+                                  <div 
+                                    key={op.store_id} 
+                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-colors ${
+                                      isOptimal 
+                                        ? "bg-green-100 border-green-300 text-green-900 dark:bg-green-900/40 dark:border-green-700 dark:text-green-300 shadow-sm" 
+                                        : "bg-secondary/50 border-border/50 text-muted-foreground"
+                                    }`}
+                                  >
+                                    <StoreLogo store={op.chain_name} logoUrl={op.chain_logo || undefined} size="sm" className={`shrink-0 ${isOptimal ? "w-4 h-4" : "w-[14px] h-[14px]"}`} />
+                                    <span className={`leading-none ${isOptimal ? "text-sm font-bold" : "text-[11px] font-medium"}`} title={`${op.price.toLocaleString()} ₸/шт`}>
+                                      {(op.price * item.quantity).toLocaleString()} ₸
+                                    </span>
+                                  </div>
+                                );
+                              });
+                            })() : (
+                              <span className="text-sm font-bold text-foreground">
+                                {item.item_total.toLocaleString()} ₸
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );

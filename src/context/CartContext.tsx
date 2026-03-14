@@ -10,6 +10,13 @@ export interface CartItemProduct {
   image_url: string | null;
   measure_unit_kind?: string;
   measure_unit_qty?: string;
+  stores?: {
+    store_id: number;
+    store_name: string;
+    chain_name: string;
+    chain_logo: string | null;
+    price: number;
+  }[];
 }
 
 export interface CartItem {
