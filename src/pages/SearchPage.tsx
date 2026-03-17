@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { Search, X, ArrowUpDown } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import Header from "@/components/Header";
@@ -13,6 +14,9 @@ const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const sortParam = searchParams.get("sort");
+  const location = useLocation();
+
+  useScrollRestoration(`search:${location.search}`);
 
   const [inputValue, setInputValue] = useState(query);
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);

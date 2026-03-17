@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect } from "react";
 import { ArrowUpDown, Tag } from "lucide-react";
+import { useNavigationType } from "react-router-dom";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
@@ -9,10 +11,27 @@ import { useDiscounts, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 
 const DiscountsPage = () => {
+    const navigationType = useNavigationType();
     const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
     const [sortBy, setSortBy] = useState<"discount" | "price">("discount");
     const [showSortMenu, setShowSortMenu] = useState(false);
     const [page, setPage] = useState(1);
+
+    useScrollRestoration("discounts");
+
+    // Restore pagination page when navigating back
+    useLayoutEffect(() => {
+        if (navigationType === "POP") {
+            const saved = sessionStorage.getItem("discounts:page");
+            if (saved) setPage(parseInt(saved, 10));
+        } else {
+            sessionStorage.removeItem("discounts:page");
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        sessionStorage.setItem("discounts:page", String(page));
+    }, [page]);
 
     // API hooks — pass chainIds to backend for server-side filtering
     const { data: discountsData, isLoading } = useDiscounts(
