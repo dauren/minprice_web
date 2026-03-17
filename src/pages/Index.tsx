@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect, useLayoutEffect } from "react";
+import { Link, useNavigate, useNavigationType } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 import { Search, ArrowUp } from "lucide-react";
 import Header from "@/components/Header";
@@ -8,6 +8,7 @@ import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
 import { useBestDeals, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 
 const DEALS_PER_PAGE = 24;
 
@@ -15,11 +16,29 @@ const Index = () => {
   const { data: bestDealsData, isLoading: isLoadingDeals } = useBestDeals();
   const { data: chainsData } = useChains();
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
 
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const { ref, inView } = useInView();
+
+  useScrollRestoration("index");
+
+  // Restore page count when navigating back so the list is long enough to scroll
+  useLayoutEffect(() => {
+    if (navigationType === "POP") {
+      const saved = sessionStorage.getItem("index:page");
+      if (saved) setPage(parseInt(saved, 10));
+    } else {
+      sessionStorage.removeItem("index:page");
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist page count so it survives back navigation
+  useEffect(() => {
+    sessionStorage.setItem("index:page", String(page));
+  }, [page]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -2,10 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/context/CartContext";
 import { CityProvider } from "@/context/CityContext";
+import { useLayoutEffect } from "react";
 import Index from "./pages/Index";
 import ProductPage from "./pages/ProductPage";
 import SearchPage from "./pages/SearchPage";
@@ -19,6 +20,21 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Scrolls to top on every new navigation (PUSH/REPLACE).
+// POP (back/forward) is handled by useScrollRestoration in each list page.
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
+
+  useLayoutEffect(() => {
+    if (navigationType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, navigationType]);
+
+  return null;
+}
+
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -28,6 +44,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/product/:id" element={<ProductPage />} />

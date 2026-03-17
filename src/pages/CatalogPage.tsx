@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { ArrowLeft, Search, ChevronDown, ChevronRight } from "lucide-react";
 import Header from "@/components/Header";
 import CategorySidebar from "@/components/CategorySidebar";
@@ -12,6 +13,10 @@ import { transformProducts } from "@/lib/transformers";
 const CatalogPage = () => {
   const { categoryId } = useParams<{ categoryId?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useScrollRestoration(`catalog:${location.pathname}`);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
 

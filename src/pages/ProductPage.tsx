@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download } from "lucide-react";
 import html2canvas from "html2canvas";
 import StoreLogo from "@/components/StoreLogo";
@@ -26,6 +26,7 @@ const useCopy = () => {
 
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { addItem, updateQuantity, removeItem, items } = useCart();
   const [expandedStore, setExpandedStore] = useState<string | null>(null);
   const { copiedKey, copy } = useCopy();
@@ -172,10 +173,13 @@ const ProductPage = () => {
       <main className="max-w-2xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
         {/* Back + Share */}
         <div className="flex items-center justify-between mb-4">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ArrowLeft className="w-3.5 h-3.5" />
             Назад
-          </Link>
+          </button>
           <button onClick={handleShare} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
             <Share2 className="w-3.5 h-3.5" />
             Поделиться
