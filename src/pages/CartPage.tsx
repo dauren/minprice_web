@@ -196,7 +196,7 @@ const CartPage = () => {
   const hasItems = items.length > 0 || unavailableProducts.length > 0;
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-screen bg-background pb-28 sm:pb-8">
       <Header />
 
       <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-8">

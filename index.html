@@ -27,7 +27,15 @@
     <meta name="twitter:title" content="minprice.kz — сравнение цен на продукты" />
     <meta name="twitter:description" content="Находим минимальную цену на продукты питания среди магазинов Казахстана." />
     <meta name="twitter:image" content="https://minprice.kz/og-image.png" />
-    
+
+    <script>
+      try {
+        if (localStorage.getItem("theme") === "dark") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    </script>
+
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript">
         (function(m,e,t,r,i,k,a){
