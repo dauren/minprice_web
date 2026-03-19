@@ -22,8 +22,10 @@ const Header = () => {
   const navigate = useNavigate();
 
   const toggleTheme = () => {
-    document.documentElement.classList.toggle("dark");
-    setIsDark(!isDark);
+    const next = !isDark;
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    setIsDark(next);
   };
 
   const handleSearch = (e: React.FormEvent) => {
