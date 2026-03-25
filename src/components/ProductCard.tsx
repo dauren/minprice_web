@@ -3,10 +3,73 @@ import { Plus, Minus } from "lucide-react";
 import { Product } from "@/data/mockProducts";
 import { useCart } from "@/context/CartContext";
 import StoreLogo from "@/components/StoreLogo";
-import { useState } from "react";
+import { useState, useLayoutEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const MAX_STORES_DISPLAY = 3; // ensure consistent height
+
+const SmartTitle = ({ title }: { title: string }) => {
+  const containerRef = useRef<HTMLHeadingElement>(null);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Reset purely to measure the full original text
+    container.textContent = title;
+
+    if (container.scrollHeight <= container.clientHeight) {
+      return; 
+    }
+
+    const words = title.trim().split(/\s+/);
+    if (words.length <= 2) {
+       container.textContent = title;
+       return;
+    }
+    
+    const lastWord = words[words.length - 1];
+    const secondLast = words[words.length - 2];
+    let tailCount = 1;
+    if (/^[\d.,]+$/.test(secondLast) || (lastWord.length <= 5 && secondLast.length <= 8)) {
+      tailCount = 2;
+    }
+    const tailStr = words.slice(-tailCount).join(' ');
+    const headWords = words.slice(0, -tailCount);
+
+    let low = 1;
+    let high = headWords.length;
+    let bestFitText = `${headWords[0]}... ${tailStr}`;
+
+    // Binary search over words to find the max amount that fits the exact CSS layout
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const testText = `${headWords.slice(0, mid).join(' ')}... ${tailStr}`;
+      
+      container.textContent = testText;
+      
+      // Allow minor sub-pixel rendering leeway if needed, but strict <= works mostly
+      if (container.scrollHeight <= container.clientHeight) {
+        bestFitText = testText;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    
+    container.textContent = bestFitText;
+  }, [title]);
+
+  return (
+    <h3 
+      ref={containerRef} 
+      className="text-[13px] text-foreground leading-snug max-h-[2.25rem] min-h-[2.25rem] overflow-hidden break-words" 
+      title={title}
+    >
+      {title}
+    </h3>
+  );
+};
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { items, addItem, updateQuantity, removeItem } = useCart();
@@ -93,9 +156,7 @@ const ProductCard = ({ product }: { product: Product }) => {
             <span className="price-old">{worstPrice} ₸</span>
           )}
         </div>
-        <h3 className="text-[13px] text-foreground leading-snug line-clamp-2 min-h-[2.25rem]">
-          {product.name}
-        </h3>
+        <SmartTitle title={product.name} />
 
       </div>
 
