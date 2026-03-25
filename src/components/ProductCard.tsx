@@ -14,7 +14,9 @@ const ProductCard = ({ product }: { product: Product }) => {
 
   if (!product.stores || product.stores.length === 0) return null;
 
-  const bestStore = product.stores.reduce((a, b) => (a.price < b.price ? a : b));
+  const inStockStores = product.stores.filter(s => s.inStock !== false);
+  const candidateStores = inStockStores.length > 0 ? inStockStores : product.stores;
+  const bestStore = candidateStores.reduce((a, b) => (a.price < b.price ? a : b));
   // The 'worstPrice' (reference price) aligns with the robust robust calculation done in transformers.
   const worstPrice = bestStore.price + (product.savingsAmount || 0);
   const [justAdded, setJustAdded] = useState(false);
@@ -101,9 +103,9 @@ const ProductCard = ({ product }: { product: Product }) => {
       <div className="px-3 py-1.5 border-t border-border flex-1">
         <div className="space-y-1">
           {displayStores.map((store, i) => {
-            const isBest = store.price === bestStore.price;
+            const isBest = store.price === bestStore.price && store.inStock !== false;
             return (
-              <div key={`${store.store}-${i}`} className="flex items-center justify-between text-[11px] h-[18px]">
+              <div key={`${store.store}-${i}`} className={`flex items-center justify-between text-[11px] h-[18px] ${store.inStock === false ? "opacity-60 grayscale" : ""}`}>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <StoreLogo store={store.store} size="sm" logoUrl={store.storeImage} />
                   <span className="text-muted-foreground truncate">{store.store}</span>
@@ -117,7 +119,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                       {store.oldPrice}
                     </span>
                   )}
-                  <span className={`font-medium ${isBest ? "text-foreground" : "text-muted-foreground"}`}>
+                  <span className={`font-medium ${isBest ? "text-foreground" : "text-muted-foreground"} ${store.inStock === false ? "line-through" : ""}`}>
                     {store.price} ₸
                   </span>
                 </div>

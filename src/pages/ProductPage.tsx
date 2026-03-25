@@ -40,7 +40,9 @@ const ProductPage = () => {
     return transformProduct(productData);
   }, [productData]);
 
-  const bestStore = product?.stores.reduce((a, b) => (a.price < b.price ? a : b)) ?? null;
+  const inStockStores = product?.stores.filter(s => s.inStock !== false) || [];
+  const candidateStores = inStockStores.length > 0 ? inStockStores : (product?.stores || []);
+  const bestStore = candidateStores.length > 0 ? candidateStores.reduce((a, b) => (a.price < b.price ? a : b)) : null;
   const bestPrice = bestStore?.price ?? 0;
   const worstPrice = product ? Math.max(...product.stores.map((s) => s.oldPrice || s.price)) : 0;
 
@@ -241,12 +243,12 @@ const ProductPage = () => {
           </div>
 
           {product.stores.map((store, i) => {
-            const isBest = store.price === bestPrice;
+            const isBest = store.price === bestPrice && store.inStock !== false;
             const isExpanded = expandedStore === `${store.store}-${i}`;
             const key = `${store.store}-${i}`;
 
             return (
-              <div key={key} className={`border-b border-border last:border-0 transition-colors ${isExpanded ? "bg-secondary/30" : ""}`}>
+              <div key={key} className={`border-b border-border last:border-0 transition-colors ${isExpanded ? "bg-secondary/30" : ""} ${store.inStock === false ? "opacity-60 grayscale" : ""}`}>
                 {/* Main row */}
                 <div
                   className="flex items-center gap-3 px-4 py-3 cursor-pointer"
@@ -259,10 +261,13 @@ const ProductPage = () => {
 
                   {/* Chain name only */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-sm font-medium text-foreground truncate">{store.store}</span>
                       {isBest && product.stores.length > 1 && (
                         <span className="best-price-label text-[10px]">min</span>
+                      )}
+                      {store.inStock === false && (
+                        <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded uppercase font-medium">Нет в наличии</span>
                       )}
                     </div>
                   </div>

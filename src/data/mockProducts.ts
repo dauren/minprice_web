@@ -8,6 +8,7 @@ export interface StorePrice {
   storeUrl?: string;
   extProductTitle?: string;
   extProductImage?: string;
+  inStock?: boolean;
 }
 
 export interface PriceHistoryPoint {

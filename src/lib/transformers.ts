@@ -40,6 +40,7 @@ export const transformStorePrice = (apiStore: ApiStorePrice): MockStorePrice => 
     storeUrl: apiStore.url,
     extProductTitle: apiStore.ext_product_title,
     extProductImage: extProductImageUrl,
+    inStock: apiStore.in_stock !== undefined ? apiStore.in_stock : true,
   };
 };
 
@@ -57,7 +58,12 @@ export const transformProduct = (apiProduct: ApiProduct | Deal): MockProduct => 
     ? apiProduct.price_range.stores
     : apiProduct.stores || [];
 
-  const stores = apiStores.map(transformStorePrice);
+  const stores = apiStores.map(transformStorePrice).sort((a, b) => {
+    if (a.inStock === b.inStock) {
+      return a.price - b.price;
+    }
+    return a.inStock ? -1 : 1;
+  });
 
   // Calculate minimum price
   const minPrice = ('price_range' in apiProduct && apiProduct.price_range?.min)
