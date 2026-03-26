@@ -80,14 +80,8 @@ export const transformProduct = (apiProduct: ApiProduct | Deal): MockProduct => 
     // If 2 stores, simply compare max to min
     maxPrice = Math.max(...stores.map(s => s.oldPrice || s.price));
   } else if (stores.length > 2) {
-    // If multiple stores, calculate the median price. 
-    // This avoids extremely expensive outliers skewing the "savings" range significantly.
-    const allPrices = stores.map(s => s.oldPrice || s.price).sort((a, b) => a - b);
-    const mid = Math.floor(allPrices.length / 2);
-    const medianPrice = allPrices.length % 2 !== 0
-      ? allPrices[mid]
-      : (allPrices[mid - 1] + allPrices[mid]) / 2;
-    maxPrice = medianPrice;
+    // Use max price across all stores to show full savings range
+    maxPrice = Math.max(...stores.map(s => s.oldPrice || s.price));
   } else {
     // Fallback if no stores array is available
     maxPrice = ('price_range' in apiProduct && apiProduct.price_range?.max)
