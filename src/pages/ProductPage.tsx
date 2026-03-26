@@ -1,12 +1,13 @@
 import { useState, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download } from "lucide-react";
+import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, Bell } from "lucide-react";
 import html2canvas from "html2canvas";
 import StoreLogo from "@/components/StoreLogo";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import { useCart } from "@/context/CartContext";
+import { useCity } from "@/context/CityContext";
 import { useProduct, usePriceHistory } from "@/hooks/useApi";
 import { transformProduct } from "@/lib/transformers";
 
@@ -28,6 +29,7 @@ const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addItem, updateQuantity, removeItem, items } = useCart();
+  const { selectedCityId } = useCity();
   const [expandedStore, setExpandedStore] = useState<string | null>(null);
   const { copiedKey, copy } = useCopy();
   const chartRef = useRef<HTMLDivElement>(null);
@@ -369,6 +371,17 @@ const ProductPage = () => {
               </button>
             </div>
           )}
+        </div>
+
+        {/* Watch price alert */}
+        <div className="mb-3">
+          <button
+            onClick={() => window.open(`https://t.me/minimalprice_bot?start=watch_${id}_${selectedCityId}`, '_blank')}
+            className="w-full h-10 rounded-xl border border-border text-muted-foreground text-sm flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
+          >
+            <Bell size={15} />
+            <span>Следить за ценой</span>
+          </button>
         </div>
 
         {/* Price History Chart */}
