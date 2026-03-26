@@ -226,6 +226,7 @@ const ProductPage = () => {
                 )}
               </div>
 
+
               <div className="mt-auto flex items-baseline gap-2">
                 <span className="price-new text-lg">{bestPrice} ₸</span>
                 {worstPrice > bestPrice && (
