@@ -90,29 +90,27 @@ const SearchPage = () => {
     );
   };
 
-  const allProducts = useMemo(() => {
-    if (query && searchData?.pages) {
-      // Flatten all hits from all fetched pages
-      const allHits = searchData.pages.flatMap(page => page.hits || []);
-      return transformProducts(allHits);
-    }
-    return [];
-  }, [query, searchData]);
-
-  // Sort on frontend (filtering is done on the backend via chain_ids)
+  // Sort on frontend PER PAGE to preserve Meilisearch relevance tiers
+  // (otherwise less relevant items from page 2 would bubble up if they are cheaper).
   const sortedProducts = useMemo(() => {
-    const products = [...allProducts];
-    if (sortBy === "price") {
-      products.sort(
-        (a, b) =>
-          Math.min(...a.stores.map((s) => s.price)) -
-          Math.min(...b.stores.map((s) => s.price))
-      );
-    } else {
-      products.sort((a, b) => b.discountPercent - a.discountPercent);
-    }
-    return products;
-  }, [allProducts, sortBy]);
+    if (!query || !searchData?.pages) return [];
+
+    return searchData.pages.flatMap((page) => {
+      const pageHits = transformProducts(page.hits || []);
+      
+      if (sortBy === "price") {
+        pageHits.sort((a, b) => {
+          const aPrice = a.stores.length > 0 ? Math.min(...a.stores.map(s => s.price)) : Infinity;
+          const bPrice = b.stores.length > 0 ? Math.min(...b.stores.map(s => s.price)) : Infinity;
+          return aPrice - bPrice;
+        });
+      } else {
+        pageHits.sort((a, b) => b.discountPercent - a.discountPercent);
+      }
+      
+      return pageHits;
+    });
+  }, [query, searchData, sortBy]);
 
   // Since backend gives us chunks of products, we don't need client-side slicing anymore.
   // We just render all sortedProducts, which grows as we fetchNextPage.
