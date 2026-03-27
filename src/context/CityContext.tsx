@@ -6,6 +6,8 @@ interface CityContextType {
   setSelectedCityId: (cityId: number) => void;
   cityData: City | null;
   setCityData: (city: City | null) => void;
+  cityDetected: boolean;
+  setCityDetected: (detected: boolean) => void;
 }
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -19,9 +21,18 @@ export function CityProvider({ children }: { children: ReactNode }) {
 
   const [cityData, setCityData] = useState<City | null>(null);
 
+  const [cityDetected, setCityDetectedState] = useState<boolean>(() => {
+    return localStorage.getItem('minprice_city_detected') === 'true';
+  });
+
   const setSelectedCityId = (cityId: number) => {
     setSelectedCityIdState(cityId);
     localStorage.setItem('minprice_city_id', cityId.toString());
+  };
+
+  const setCityDetected = (detected: boolean) => {
+    setCityDetectedState(detected);
+    localStorage.setItem('minprice_city_detected', detected.toString());
   };
 
   useEffect(() => {
@@ -32,7 +43,7 @@ export function CityProvider({ children }: { children: ReactNode }) {
   }, [selectedCityId, cityData]);
 
   return (
-    <CityContext.Provider value={{ selectedCityId, setSelectedCityId, cityData, setCityData }}>
+    <CityContext.Provider value={{ selectedCityId, setSelectedCityId, cityData, setCityData, cityDetected, setCityDetected }}>
       {children}
     </CityContext.Provider>
   );

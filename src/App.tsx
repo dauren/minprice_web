@@ -17,6 +17,7 @@ import OfertaPage from "./pages/OfertaPage";
 import CartHistoryPage from "./pages/CartHistoryPage";
 import SharedCartPage from "./pages/SharedCartPage";
 import NotFound from "./pages/NotFound";
+import CityDetectionDialog from "./components/CityDetectionDialog";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
       <TooltipProvider>
         <CityProvider>
           <CartProvider>
+            <CityDetectionDialog />
             <Toaster />
             <Sonner />
             <BrowserRouter>
