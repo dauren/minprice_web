@@ -25,6 +25,7 @@ export interface CartItem {
   store_name: string;
   chain_name?: string;
   chain_logo?: string | null;
+  chain_source?: string;
   price: number;
   item_total: number;
   quantity: number;

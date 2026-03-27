@@ -182,5 +182,6 @@ export const API_ENDPOINTS = {
   cartSetActive: (uuid: string) => `/carts/${uuid}/set_active/`,
   quickAdd: () => '/cart/add/',
   storePreferences: () => '/store-preferences/',
+  cartTransfer: () => '/cart/transfer/',
   sessionInit: () => '/session/init/'
 } as const;

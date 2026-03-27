@@ -1,8 +1,9 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Minus, Plus, Trash2, ArrowLeft, Zap, ChevronDown, ChevronUp, Check, Settings, Share, History, Edit2, AlertTriangle, Store, TrendingDown, Loader2 } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowLeft, Zap, ChevronDown, ChevronUp, Check, Settings, Share, History, Edit2, AlertTriangle, Store, TrendingDown, Loader2, ExternalLink, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
 import { useCart, CartItem } from "@/context/CartContext";
+import { useCity } from "@/context/CityContext";
 import StoreLogo from "@/components/StoreLogo";
 import mascot from "@/assets/logo.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -15,6 +16,22 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { toRuUnit } from "@/lib/utils";
+import { apiClient, API_ENDPOINTS } from "@/lib/api";
+
+const TRANSFERABLE_CHAINS: Record<string, { name: string; emoji: string }> = {
+  arbuz: { name: "Arbuz", emoji: "🍉" },
+  airbafresh: { name: "AirbaFresh", emoji: "✈️" },
+  mgo: { name: "MagnumGO", emoji: "🛍️" },
+};
+
+interface TransferResult {
+  chain_source: string;
+  success: boolean;
+  cart_url: string | null;
+  fallback_urls: { title: string; url: string }[];
+  items_count: number;
+  error: string | null;
+}
 
 const CartPage = () => {
   const {
@@ -34,8 +51,17 @@ const CartPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const { selectedCityId } = useCity();
+
   // Track items being removed (for slide-out animation)
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set());
+
+  // Transfer to store state
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [transferResult, setTransferResult] = useState<TransferResult | null>(null);
+  const [transferStoreName, setTransferStoreName] = useState("");
+  const [transferringChain, setTransferringChain] = useState<string | null>(null);
 
   // Sync local selection with context
   useEffect(() => {
@@ -155,6 +181,35 @@ const CartPage = () => {
       handleRemoveItem(item);
     } else {
       updateQuantity(item.product.uuid, newQuantity);
+    }
+  };
+
+  const handleTransfer = async (chainSource: string, storeName: string) => {
+    if (!cartUuid || transferringChain) return;
+    setTransferStoreName(storeName);
+    setTransferResult(null);
+    setTransferLoading(true);
+    setTransferringChain(chainSource);
+    setTransferModalOpen(true);
+    try {
+      const result = await apiClient.post<TransferResult>(API_ENDPOINTS.cartTransfer(), {
+        cart_uuid: cartUuid,
+        chain_source: chainSource,
+        city_id: selectedCityId,
+      });
+      setTransferResult(result);
+    } catch (error) {
+      setTransferResult({
+        chain_source: chainSource,
+        success: false,
+        cart_url: null,
+        fallback_urls: [],
+        items_count: 0,
+        error: "Не удалось перенести товары. Попробуйте позже.",
+      });
+    } finally {
+      setTransferLoading(false);
+      setTransferringChain(null);
     }
   };
 
@@ -400,6 +455,8 @@ const CartPage = () => {
               // Get chain logo from first item in group
               const chainLogo = storeItems[0]?.chain_logo;
               const chainName = storeItems[0]?.chain_name || store;
+              const chainSource = storeItems[0]?.chain_source;
+              const transferInfo = chainSource ? TRANSFERABLE_CHAINS[chainSource] : null;
 
               return (
                 <div key={store} className="border border-border rounded-xl overflow-hidden">
@@ -428,6 +485,22 @@ const CartPage = () => {
                       </span>
                     </div>
                   </div>
+                  {transferInfo && (
+                    <div className="px-3 sm:px-4 py-2 bg-secondary/30 border-t border-border">
+                      <button
+                        onClick={() => handleTransfer(chainSource!, store)}
+                        disabled={transferringChain === chainSource}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      >
+                        {transferringChain === chainSource ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                        )}
+                        {transferInfo.emoji} Перенести в {transferInfo.name}
+                      </button>
+                    </div>
+                  )}
 
                   {storeItems.map((item, idx) => {
                     const isRemoving = removingItems.has(item.product.uuid);
@@ -583,6 +656,85 @@ const CartPage = () => {
             </div>
           </div>
         )}
+        {/* Transfer Modal */}
+        <Dialog open={transferModalOpen} onOpenChange={(open) => {
+          if (!transferLoading) setTransferModalOpen(open);
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {transferLoading
+                  ? `Переносим товары в ${transferStoreName}...`
+                  : transferResult?.success
+                    ? "Товары перенесены!"
+                    : "Не удалось перенести"}
+              </DialogTitle>
+            </DialogHeader>
+
+            {transferLoading && (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Добавляем товары в корзину {transferStoreName}...
+                </p>
+              </div>
+            )}
+
+            {!transferLoading && transferResult?.success && (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  {transferResult.items_count} {transferResult.items_count === 1 ? "товар добавлен" : "товаров добавлено"} в корзину {transferStoreName}.
+                </p>
+                {transferResult.cart_url && (
+                  <a
+                    href={transferResult.cart_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Открыть корзину {transferStoreName}
+                  </a>
+                )}
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setTransferModalOpen(false)}>Закрыть</Button>
+                </DialogFooter>
+              </div>
+            )}
+
+            {!transferLoading && transferResult && !transferResult.success && (
+              <div className="space-y-4">
+                {transferResult.error && (
+                  <p className="text-sm text-destructive">{transferResult.error}</p>
+                )}
+                {transferResult.fallback_urls.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Добавьте товары вручную по ссылкам:
+                    </p>
+                    <div className="max-h-60 overflow-y-auto space-y-1.5">
+                      {transferResult.fallback_urls.map((item, idx) => (
+                        <a
+                          key={idx}
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary text-sm text-foreground transition-colors"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          <span className="line-clamp-1">{item.title}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setTransferModalOpen(false)}>Закрыть</Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
