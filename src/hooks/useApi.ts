@@ -95,6 +95,7 @@ export const useProduct = (uuid: string) => {
     queryKey: ['product', uuid, selectedCityId],
     queryFn: () => apiClient.get<Product>(API_ENDPOINTS.product(uuid, selectedCityId)),
     enabled: !!uuid,
+    retry: false,
   });
 };
 

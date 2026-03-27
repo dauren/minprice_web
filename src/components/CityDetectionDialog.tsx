@@ -39,7 +39,7 @@ const CityDetectionDialog = () => {
 
     async function detectCity() {
       try {
-        const res = await fetch("https://ip-api.com/json/?fields=city", {
+        const res = await fetch("https://ipwho.is/?fields=city", {
           signal: AbortSignal.timeout(5000),
         });
         const data = await res.json();

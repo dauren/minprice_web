@@ -34,7 +34,7 @@ const ProductPage = () => {
   const { copiedKey, copy } = useCopy();
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const { data: productData, isLoading } = useProduct(id || "");
+  const { data: productData, isLoading, isError } = useProduct(id || "");
   const { data: priceHistoryData } = usePriceHistory(id || "");
 
   const product = useMemo(() => {
@@ -124,7 +124,7 @@ const ProductPage = () => {
     );
   }
 
-  if (!product || !bestStore) {
+  if (isError || (!isLoading && !product)) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -135,6 +135,10 @@ const ProductPage = () => {
       </div>
     );
   }
+
+  if (!product) return null;
+
+  const hasStores = product.stores.length > 0;
 
   const handleExportChart = async () => {
     if (!chartRef.current) return;
@@ -167,7 +171,7 @@ const ProductPage = () => {
     <div className="min-h-screen bg-background pb-40 sm:pb-16">
       <PageMeta
         title={product.name}
-        description={`${product.name}${product.weight ? ` ${product.weight}` : ''} — от ${bestPrice} ₸. Сравните цены в магазинах Казахстана на minprice.kz`}
+        description={`${product.name}${product.weight ? ` ${product.weight}` : ''}${hasStores ? ` — от ${bestPrice} ₸. Сравните цены в магазинах Казахстана` : ' — нет в наличии'} на minprice.kz`}
         image={product.image}
         url={`/product/${product.id}`}
         type="product"
@@ -230,9 +234,15 @@ const ProductPage = () => {
 
 
               <div className="mt-auto flex items-baseline gap-2">
-                <span className="price-new text-lg">{bestPrice} ₸</span>
-                {worstPrice > bestPrice && (
-                  <span className="price-old text-sm">{worstPrice} ₸</span>
+                {hasStores ? (
+                  <>
+                    <span className="price-new text-lg">{bestPrice} ₸</span>
+                    {worstPrice > bestPrice && (
+                      <span className="price-old text-sm">{worstPrice} ₸</span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Нет в наличии</span>
                 )}
               </div>
             </div>
@@ -240,7 +250,13 @@ const ProductPage = () => {
         </div>
 
         {/* Store prices – expandable with ext_product title */}
-        <div className="bg-card rounded-2xl border border-border overflow-hidden mb-3">
+        {!hasStores && (
+          <div className="bg-card rounded-2xl border border-border overflow-hidden mb-3 p-4 text-center">
+            <p className="text-sm text-muted-foreground">Этот товар сейчас недоступен ни в одном магазине</p>
+          </div>
+        )}
+
+        {hasStores && <div className="bg-card rounded-2xl border border-border overflow-hidden mb-3">
           <div className="px-4 py-2.5 border-b border-border">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Цены по магазинам</p>
           </div>
@@ -343,10 +359,10 @@ const ProductPage = () => {
               </div>
             );
           })}
-        </div>
+        </div>}
 
         {/* Add to cart */}
-        <div className="mb-3">
+        {hasStores && <div className="mb-3">
           {quantity === 0 ? (
             <button
               onClick={() => addItem(product.id, 1)}
@@ -371,7 +387,7 @@ const ProductPage = () => {
               </button>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* Watch price alert */}
         <div className="mb-3">

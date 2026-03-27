@@ -1,118 +1,647 @@
-# API Reference
+# Pricer API Reference (Frontend Integration)
 
-Base URL: `https://backend.minprice.kz/api`
+Base URL: `/api/`
 
-Authentication: Most endpoints are public. Admin endpoints require `IsAdminUser`. Guest identity tracked via `guest_uuid` cookie (initialized by `GET /api/session/init/`).
+Authentication: Most endpoints are public (no auth required). Admin endpoints require `IsAdminUser`. Anomaly endpoints require `TokenAuthentication` or `SessionAuthentication`.
+
+Guest identity is tracked via a `guest_uuid` cookie, initialized by `/api/session/init/`.
 
 ---
 
 ## Session & Preferences
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/session/init/` | Returns `{ guest_uuid }`, sets cookie |
-| GET | `/store-preferences/` | Get preferred store IDs |
-| PATCH | `/store-preferences/` | Update preferred store IDs. Body: `{ store_ids: [1,2,3] }` |
+### Initialize Session
+`GET /api/session/init/`
+
+Returns (and sets cookie for) a guest UUID.
+
+```json
+{ "guest_uuid": "uuid-string" }
+```
+
+### Store Preferences
+`GET /api/store-preferences/`
+`PATCH /api/store-preferences/`
+
+Get or update preferred store IDs for the current guest.
+
+**PATCH body:**
+```json
+{ "store_ids": [1, 2, 3] }
+```
+
+**Response:**
+```json
+{ "store_ids": [1, 2, 3] }
+```
+
+---
 
 ## Reference Data
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/cities/` | Returns `{ cities: [{ id, name, slug }] }` |
-| GET | `/chains/` | Returns `{ chains: [{ id, name, slug, source, logo }] }` |
-| GET | `/categories/` | Returns `{ categories: [{ id, name, emoji, level, priority, children }] }` |
+### List Cities
+`GET /api/cities/`
+
+```json
+{
+  "cities": [
+    { "id": 1, "name": "Almaty", "slug": "almaty" }
+  ]
+}
+```
+
+### List Chains
+`GET /api/chains/`
+
+```json
+{
+  "chains": [
+    { "id": 1, "name": "Magnum", "slug": "magnum", "source": "mgo", "logo": "https://..." }
+  ]
+}
+```
+
+### Category Tree
+`GET /api/categories/`
+
+```json
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "Молочные",
+      "emoji": "🥛",
+      "level": 1,
+      "priority": 0,
+      "children": [
+        { "id": 2, "name": "Молоко", "emoji": null, "level": 2, "priority": 0 }
+      ]
+    }
+  ]
+}
+```
+
+---
 
 ## Products
 
-### List: `GET /products/`
+### List Products
+`GET /api/products/`
+
+**Query params:**
 
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
 | `city_id` | int | 1 | Filter by city |
-| `page` | int | 1 | Pagination (1-indexed) |
-| `search` | string | — | Full-text search |
+| `page` | int | 1 | Pagination page |
+| `search` | string | — | Full-text search on title, description, brand |
 | `brand` | string | — | Exact brand match |
-| `canonical_category_id` | int | — | Filter by category |
+| `brand__icontains` | string | — | Partial brand match |
+| `measure_unit` | string | — | Exact measure unit |
+| `canonical_category_id` | int | — | Filter by canonical category |
+| `categories__contains` | string | — | Filter by category array |
 | `ordering` | string | — | `created_at`, `updated_at`, `title`, `min_price`, `max_price` |
 
-Response: `{ count, next, previous, results: [Product] }`
+**Response:**
+```json
+{
+  "count": 100,
+  "next": "https://.../api/products/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "uuid": "uuid-string",
+      "title": "Молоко Lactel 3.2% 1л",
+      "brand": "Lactel",
+      "brand_canonical": "Lactel",
+      "producing_country": "Kazakhstan",
+      "image_url": "https://...",
+      "measure_unit": "l",
+      "measure_unit_kind": "volume",
+      "measure_unit_qty": 1.0,
+      "pack_count": 1,
+      "categories": ["dairy", "milk"],
+      "canonical_categories": ["Молочные", "Молоко"],
+      "is_active": true,
+      "linked_stores_count": 3,
+      "min_price": 690.0,
+      "max_price": 890.0,
+      "anomalies": [],
+      "title_manually_edited_at": null,
+      "title_unified_at": "2024-06-01T10:00:00Z",
+      "created_at": "2024-01-01T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "stores": [
+        {
+          "store_id": 1,
+          "store_name": "Magnum Almaty",
+          "store_source": "mgo",
+          "chain_id": 1,
+          "chain_name": "Magnum",
+          "chain_logo": "https://...",
+          "price": 690.0,
+          "previous_price": 720.0,
+          "currency": "KZT",
+          "in_stock": true,
+          "url": "https://...",
+          "ext_product_id": 123,
+          "ext_product_title": "Молоко Лактель 3,2% 1л",
+          "ext_product_brand_canonical": "Lactel",
+          "ext_product_image": "https://...",
+          "ext_product_measure_unit": "l",
+          "ext_product_measure_unit_kind": "volume",
+          "ext_product_measure_unit_qty": 1.0,
+          "ext_product_pack_count": 1,
+          "similarity_coef": 0.95,
+          "ai_coef": 0.92,
+          "duplicate_of_id": null
+        }
+      ]
+    }
+  ]
+}
+```
 
-### Detail: `GET /products/{uuid}/`
+### Get Product Detail
+`GET /api/products/{uuid}/`
 
-Query: `city_id` (default 1). Returns Product + `description`, `barcodes`, `additional_images`, `product_links`, `price_range`.
+**Query params:** `city_id` (int, default 1)
 
-**`price_range`**: `{ min, max, avg, savings, savings_percent, stores: [{ store_name, chain_name, chain_logo, price, previous_price, discount_amount, in_stock, url, ... }] }`
+Returns the same fields as list plus:
+- `description` — full product description
+- `barcodes` — array of barcode strings
+- `additional_images` — array of image URLs
+- `product_links` — detailed link data with ext_product info
+- `price_range` — aggregated price comparison
 
-### Price History: `GET /products/{uuid}/price-history/`
+**`price_range` shape:**
+```json
+{
+  "min": 690.0,
+  "max": 890.0,
+  "avg": 760.0,
+  "savings": 200.0,
+  "savings_percent": 22.47,
+  "stores": [
+    {
+      "store_name": "Magnum Almaty",
+      "store_source": "mgo",
+      "chain_id": 1,
+      "chain_name": "Magnum",
+      "chain_logo": "https://...",
+      "price": 690.0,
+      "previous_price": 720.0,
+      "discount_amount": 30.0,
+      "currency": "KZT",
+      "price_per_unit": 690.0,
+      "in_stock": true,
+      "url": "https://...",
+      "ext_product_id": 123,
+      "ext_product_title": "Молоко Лактель 3,2% 1л",
+      "ext_product_brand_canonical": "Lactel",
+      "ext_product_image": "https://...",
+      "ext_product_url": "https://...",
+      "ext_product_measure_unit": "l",
+      "ext_product_measure_unit_kind": "volume",
+      "ext_product_measure_unit_qty": 1.0,
+      "ext_product_pack_count": 1,
+      "similarity_coef": 0.95,
+      "ai_coef": 0.92
+    }
+  ]
+}
+```
+
+### Price History
+`GET /api/products/{uuid}/price-history/`
 
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
-| `days` | int | 30 | Lookback (max 365) |
+| `days` | int | 30 | Days to look back (max 365) |
 | `city_id` | int | — | Filter by city |
 
-Response: `{ product_uuid, product_title, days, stores: [{ store_id, store_name, chain_source, prices: [{ date, price, in_stock }] }] }`
+```json
+{
+  "product_uuid": "uuid-string",
+  "product_title": "Молоко Lactel 3.2% 1л",
+  "days": 30,
+  "stores": [
+    {
+      "store_id": 1,
+      "store_name": "Magnum Almaty",
+      "chain_source": "mgo",
+      "ext_product_id": 123,
+      "ext_product_title": "Молоко Лактель 3,2% 1л",
+      "prices": [
+        { "date": "2024-06-01", "datetime": "2024-06-01T10:00:00Z", "price": 720.0, "in_stock": true },
+        { "date": "2024-06-10", "datetime": "2024-06-10T08:00:00Z", "price": 690.0, "in_stock": true }
+      ]
+    }
+  ]
+}
+```
 
-## Search (Algolia)
+---
 
-### `GET /search/`
+## Search
+
+### Algolia Search
+`GET /api/search/`
 
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
 | `q` | string | **required** | Search query |
-| `hitsPerPage` | int | 20 | Max 100 |
-| `page` | int | 0 | **0-indexed** |
-| `city_id` | int | 1 | City filter |
-| `chain_ids` | string | — | Comma-separated IDs |
+| `hitsPerPage` | int | 20 | Results per page (max 100) |
+| `page` | int | 0 | Page number (0-indexed) |
+| `city_id` | int | 1 | Filter by city |
+| `chain_ids` | string | — | Comma-separated chain IDs, e.g. `"1,2,3"` |
+| `index` | string | `prod_canonical_products` | Algolia index |
+| `disable_filter` | string | `"false"` | `"true"` to disable city filtering |
 
-Response: `{ hits: [Product], nbHits, page, nbPages, hitsPerPage, query }`
+```json
+{
+  "hits": [ /* ProductListSerializer objects */ ],
+  "nbHits": 100,
+  "page": 0,
+  "nbPages": 5,
+  "hitsPerPage": 20,
+  "query": "молоко",
+  "processingTimeMS": 42
+}
+```
 
-### `GET /algolia-config/` — Returns `{ app_id, search_api_key, index_name }`
+### Algolia Config
+`GET /api/algolia-config/`
+
+Returns public Algolia credentials for client-side search.
+
+```json
+{
+  "app_id": "ALGOLIA_APP_ID",
+  "search_api_key": "public_search_key",
+  "index_name": "prod_canonical_products"
+}
+```
+
+---
 
 ## Deals & Discounts
 
-| Method | Endpoint | Key Params | Response |
-|--------|----------|------------|----------|
-| GET | `/best-deals/` | `city_id`, `limit` (max 50), `min_score` | `{ deals: [Product] }` |
-| GET | `/price-drops/` | `city_id`, `page`, `page_size` | `{ results, total, page, total_pages }` |
-| GET | `/price-increases/` | same as price-drops | same shape |
-| GET | `/discounts/` | `city_id`, `page`, `page_size`, `min_discount`, `canonical_category`, `chain_ids`, `sort_by` | `{ results, total, page, total_pages }` |
+### Best Deals
+`GET /api/best-deals/`
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `city_id` | int | 1 | Filter by city |
+| `limit` | int | 20 | Max results (max 50) |
+| `min_score` | float | 0.05 | Minimum deal score (5% = 0.05) |
+
+```json
+{
+  "deals": [ /* ProductListSerializer objects */ ]
+}
+```
+
+### Price Drops
+`GET /api/price-drops/`
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `city_id` | int | 1 | Filter by city |
+| `page` | int | 1 | Page number |
+| `page_size` | int | 20 | Results per page (max 50) |
+
+```json
+{
+  "results": [ /* ProductListSerializer objects */ ],
+  "total": 100,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 5
+}
+```
+
+### Price Increases
+`GET /api/price-increases/`
+
+Same params and response shape as price-drops.
+
+### Discounts
+`GET /api/discounts/`
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `city_id` | int | 1 | Filter by city |
+| `page` | int | 1 | Page number |
+| `page_size` | int | 20 | Results per page (max 50) |
+| `min_discount` | float | 5 | Minimum discount percent |
+| `canonical_category` | int | — | Filter by category ID |
+| `chain_ids` | string | — | Comma-separated chain IDs |
+| `sort_by` | string | `discount_percent` | `discount_percent` or `discount_amount` |
+
+```json
+{
+  "results": [ /* ProductListSerializer objects with discount info */ ],
+  "total": 100,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 5
+}
+```
+
+---
+
+## Investor Analytics
+
+These endpoints require authenticated users that belong to the `investor` group.
+
+### Investor Stats
+`GET /api/investor-stats/`
+
+Returns dashboard payload for the investor admin page.
+
+**Query params:**
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `no_cache` | bool string | `"false"` | `"true"` to bypass cache and recalculate stats |
+
+**Response:** aggregated analytics object with sections:
+- `generated_at`
+- `overview`
+- `chains`
+- `ai_quality`
+- `price_intelligence`
+- `freshness`
+- `price_trends`
+- `basket_comparison`
+- `social_goods`
+- `chain_comparison`
+
+---
 
 ## Cart
 
-Guest carts use `guest_uuid` cookie.
+Guest carts are identified by the `guest_uuid` cookie (set via `/api/session/init/`).
 
-| Method | Endpoint | Body | Response |
-|--------|----------|------|----------|
-| GET | `/carts/` | — | `{ count, results: [Cart] }` |
-| GET | `/carts/{uuid}/` | — | Cart + `is_owner` |
-| POST | `/carts/` | `{ name }` | Cart |
-| DELETE | `/carts/{uuid}/` | — | 204 |
-| PATCH | `/carts/{uuid}/update_name/` | `{ name }` | `{ cart_uuid, name }` |
-| POST | `/carts/{uuid}/add_item/` | `{ product_uuid, quantity }` | CartItem (201 new / 200 updated) |
-| POST | `/carts/{uuid}/remove_item/` | `{ product_uuid }` | 204 |
-| PATCH | `/carts/{uuid}/update_quantity/` | `{ product_uuid, quantity }` | CartItem |
-| POST | `/cart/add/` | `{ product_uuid, quantity }` | `{ cart_uuid, item, items_count }` (auto-creates cart) |
-| POST | `/carts/{uuid}/archive/` | — | `{ archived_cart_uuid, new_cart_uuid }` |
-| POST | `/carts/{uuid}/set_active/` | — | `{ cart_uuid, message }` |
-| GET | `/carts/{uuid}/summary/` | `city_id` | Full breakdown: `cheapest_per_product`, `grouped_by_store`, `unavailable_products` |
+### List Carts
+`GET /api/carts/`
 
-## Admin Endpoints (require IsAdminUser)
+```json
+{
+  "count": 2,
+  "results": [
+    {
+      "uuid": "cart-uuid",
+      "name": "My Cart",
+      "is_active": true,
+      "items": [
+        {
+          "id": 1,
+          "product": { /* ProductListSerializer */ },
+          "quantity": 2,
+          "added_at": "2024-06-01T10:00:00Z",
+          "updated_at": "2024-06-01T10:00:00Z"
+        }
+      ],
+      "items_count": 5,
+      "created_at": "2024-06-01T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    }
+  ]
+}
+```
 
-| Method | Endpoint | Body |
-|--------|----------|------|
-| POST | `/merge-products/` | `{ product_ids: [uuid...] }` |
-| POST | `/unlink-product/` | `{ product_uuid, ext_product_id }` |
-| POST | `/unlink-and-create-product/` | same |
-| POST | `/relink-ext-product/` | `{ ext_product_id, source_product_uuid, target_product_uuid }` |
-| POST | `/mark-duplicate-ext-products/` | `{ primary_ext_product_id, duplicate_ext_product_ids }` |
-| PATCH | `/update-product-title/` | `{ product_uuid, new_title }` |
-| POST | `/products/{uuid}/approve-all-links/` | — |
-| POST | `/products/{uuid}/sync-measure/` | — |
+### Get Cart
+`GET /api/carts/{uuid}/`
 
-## Important Notes
+Same as cart object in list, plus `is_owner` boolean.
 
-- **Pagination**: Product list is 1-indexed, Algolia search is 0-indexed
-- **Currency**: All prices in KZT
-- **Chain sources**: `mgo`, `arbuz`, `instashop`, `wolt`, `airbafresh`
-- **Server caching**: Cities/chains/categories cached 24h; deals cached 6h
-- **Stock**: Products not crawled for 1+ day auto-marked out of stock
+### Create Cart
+`POST /api/carts/`
+
+**Body:** `{ "name": "New Cart" }`
+
+### Delete Cart
+`DELETE /api/carts/{uuid}/` → 204 No Content
+
+### Update Cart Name
+`PATCH /api/carts/{uuid}/update_name/`
+
+**Body:** `{ "name": "Updated Name" }`
+
+```json
+{ "cart_uuid": "uuid", "name": "Updated Name" }
+```
+
+### Add Item
+`POST /api/carts/{uuid}/add_item/`
+
+**Body:**
+```json
+{ "product_uuid": "product-uuid", "quantity": 2 }
+```
+
+Returns CartItem object (201 if new, 200 if quantity updated).
+
+### Remove Item
+`POST /api/carts/{uuid}/remove_item/`
+
+**Body:** `{ "product_uuid": "product-uuid" }` → 204 No Content
+
+### Update Item Quantity
+`PATCH /api/carts/{uuid}/update_quantity/`
+
+**Body:** `{ "product_uuid": "product-uuid", "quantity": 3 }`
+
+Returns updated CartItem object.
+
+### Quick Add (convenience)
+`POST /api/cart/add/`
+
+Auto-creates or uses the active cart.
+
+**Body:** `{ "product_uuid": "product-uuid", "quantity": 1 }`
+
+```json
+{ "cart_uuid": "uuid", "item": { /* CartItem */ }, "items_count": 5 }
+```
+
+### Archive Cart
+`POST /api/carts/{uuid}/archive/`
+
+Archives current cart and creates a new active one.
+
+```json
+{ "archived_cart_uuid": "old-uuid", "new_cart_uuid": "new-uuid" }
+```
+
+### Set Active Cart
+`POST /api/carts/{uuid}/set_active/`
+
+```json
+{ "cart_uuid": "uuid", "message": "Cart is now active" }
+```
+
+### Cart Summary (optimized)
+`GET /api/carts/{uuid}/summary/`
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `city_id` | int | 1 | Filter stores by city |
+
+Returns a full cart breakdown with cheapest-per-product, grouped-by-store totals, and unavailable products:
+
+```json
+{
+  "cart": { /* Cart object */ },
+  "total_items": 5,
+  "cheapest_per_product": [
+    {
+      "product": { /* ProductListSerializer */ },
+      "quantity": 2,
+      "store_id": 1,
+      "store_name": "Magnum Almaty",
+      "chain_name": "Magnum",
+      "chain_logo": "https://...",
+      "chain_source": "arbuz",
+      "price": 690.0,
+      "item_total": 1380.0,
+      "currency": "KZT",
+      "url": "https://...",
+      "ext_product_id": 12345,
+      "ext_product_ext_id": "abc-123",
+      "ext_product_title": "Молоко Лактель 3,2% 1л",
+      "ext_product_image": "https://..."
+    }
+  ],
+  "cheapest_total_price": 4500.0,
+  "grouped_by_store": [
+    {
+      "store_id": 1,
+      "store_name": "Magnum Almaty",
+      "chain_name": "Magnum",
+      "chain_source": "mgo",
+      "chain_logo": "https://...",
+      "products": [ /* per-store product list, same shape as cheapest_per_product items */ ],
+      "store_total": 2500.0
+    }
+  ],
+  "unavailable_products": [
+    {
+      "product": { /* ProductListSerializer */ },
+      "quantity": 1,
+      "reason": "Not available in selected stores"
+    }
+  ],
+  "selected_stores": [ /* store objects */ ],
+  "all_stores": [ /* all stores in city */ ]
+}
+```
+
+### Transfer Cart to Store
+`POST /api/cart/transfer/`
+
+Transfers optimized cart items to an external store's cart via their API. Supported chains: `arbuz`, `airbafresh`, `mgo`.
+
+**Body:**
+```json
+{
+  "cart_uuid": "cart-uuid",
+  "chain_source": "arbuz",
+  "city_id": 1
+}
+```
+
+**Response:**
+```json
+{
+  "chain_source": "arbuz",
+  "success": true,
+  "cart_url": "https://arbuz.kz/ru/almaty/cart/items",
+  "fallback_urls": [
+    { "title": "Молоко 3,2% 1л", "url": "https://..." }
+  ],
+  "items_count": 3,
+  "error": null
+}
+```
+
+When `success` is `false`, `fallback_urls` contains per-product deep links for manual adding. `error` describes the failure reason.
+
+---
+
+## Admin Endpoints
+
+These require `IsAdminUser` permission.
+
+### Merge Products
+`POST /api/merge-products/`
+
+**Body:** `{ "product_ids": ["uuid1", "uuid2", "uuid3"] }`
+
+Merges multiple canonical products into one. First UUID becomes the target.
+
+### Unlink Product
+`POST /api/unlink-product/`
+
+**Body:** `{ "product_uuid": "uuid", "ext_product_id": 123 }`
+
+Removes a link between an ExtProduct and a canonical Product.
+
+### Unlink and Create Product
+`POST /api/unlink-and-create-product/`
+
+Same body as unlink. Unlinks and triggers creation of a new canonical product.
+
+### Relink ExtProduct
+`POST /api/relink-ext-product/`
+
+**Body:**
+```json
+{
+  "ext_product_id": 123,
+  "source_product_uuid": "uuid1",
+  "target_product_uuid": "uuid2"
+}
+```
+
+Moves a link from one canonical product to another.
+
+### Mark Duplicate ExtProducts
+`POST /api/mark-duplicate-ext-products/`
+
+**Body:**
+```json
+{
+  "primary_ext_product_id": 123,
+  "duplicate_ext_product_ids": [124, 125]
+}
+```
+
+### Update Product Title
+`PATCH /api/update-product-title/`
+
+**Body:** `{ "product_uuid": "uuid", "new_title": "New Title" }`
+
+### Approve All Links
+`POST /api/products/{uuid}/approve-all-links/`
+
+Marks all ProductLinks for this product as manually approved.
+
+### Sync Measure from ExtProducts
+`POST /api/products/{uuid}/sync-measure/`
+
+Re-derives measure fields from linked ExtProducts.
+
+---
+
+## Notes for Frontend
+
+- **City filtering**: Most product endpoints accept `city_id` (default 1 = Almaty). Always pass the user's selected city.
+- **Pagination**: Product list uses DRF page-based pagination (`page` param, 1-indexed). Search uses Algolia pagination (`page` param, 0-indexed).
+- **Currency**: All prices are in KZT.
+- **Chain sources**: `mgo`, `arbuz`, `instashop`, `wolt`, `airbafresh` — use these for chain-specific icons/styling.
+- **Caching**: Cities, chains, categories are cached server-side (24h). Best deals and price changes are cached (6h).
+- **Stock status**: `in_stock` on store entries indicates real-time availability. Products not updated by crawlers for 1+ day are auto-marked out of stock.
