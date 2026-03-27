@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
-import { Search, X, ArrowUpDown } from "lucide-react";
+import { Search, X, ArrowUpDown, Clock } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
@@ -9,6 +9,7 @@ import StoreLogo from "@/components/StoreLogo";
 import mascot from "@/assets/logo.png";
 import { useInfiniteSearch, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
+import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,7 +26,10 @@ const SearchPage = () => {
   );
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [page, setPage] = useState(1);
+  const [showHistory, setShowHistory] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<string[]>(getSearchHistory);
   const inputRef = useRef<HTMLInputElement>(null);
+  const historyRef = useRef<HTMLDivElement>(null);
 
   const { ref: bottomRef, inView } = useInView({ threshold: 0 });
 
@@ -66,14 +70,42 @@ const SearchPage = () => {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
   const { data: chainsData } = useChains();
 
+  // Close history dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (historyRef.current && !historyRef.current.contains(e.target as Node)) {
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = inputValue.trim();
     if (trimmed) {
+      addSearchHistory(trimmed);
+      setSearchHistory(getSearchHistory());
       setSearchParams({ q: trimmed });
+      setShowHistory(false);
     } else {
       setSearchParams({});
     }
+  };
+
+  const handleHistoryClick = (term: string) => {
+    setInputValue(term);
+    addSearchHistory(term);
+    setSearchHistory(getSearchHistory());
+    setSearchParams({ q: term });
+    setShowHistory(false);
+  };
+
+  const handleRemoveHistory = (e: React.MouseEvent, term: string) => {
+    e.stopPropagation();
+    removeSearchHistoryItem(term);
+    setSearchHistory(getSearchHistory());
   };
 
   const clearSearch = () => {
@@ -124,13 +156,14 @@ const SearchPage = () => {
       <div className="max-w-5xl mx-auto px-3 sm:px-6 pt-5 sm:pt-8">
         {/* Search Input */}
         <form onSubmit={handleSearch} className="mb-5">
-          <div className="relative group">
+          <div className="relative group" ref={historyRef}>
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
               ref={inputRef}
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onFocus={() => setShowHistory(true)}
               placeholder="Поиск товаров..."
               className="w-full h-12 sm:h-14 pl-12 pr-12 rounded-2xl bg-secondary/60 border-2 border-transparent text-foreground text-base placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:bg-card focus:shadow-[0_0_20px_4px_hsl(var(--primary)/0.12)] transition-all"
             />
@@ -142,6 +175,28 @@ const SearchPage = () => {
               >
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
+            )}
+            {showHistory && !query && searchHistory.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                {searchHistory.map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => handleHistoryClick(term)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="flex-1 text-left truncate">{term}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveHistory(e, term)}
+                      className="shrink-0 text-muted-foreground hover:text-foreground p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         </form>

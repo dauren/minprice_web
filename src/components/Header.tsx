@@ -1,9 +1,10 @@
-import { Search, ShoppingCart, Home, Tag, Moon, Sun, LayoutGrid, ScanBarcode, ArrowUp } from "lucide-react";
-import { useState, useRef } from "react";
+import { Search, ShoppingCart, Home, Tag, Moon, Sun, LayoutGrid, ScanBarcode, ArrowUp, Clock, X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import CitySelector from "@/components/CitySelector";
 import logo from "@/assets/logo.png";
+import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 
 const navItems = [
   { to: "/", icon: Home, label: "Главная", matchExact: true },
@@ -17,9 +18,22 @@ const Header = () => {
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<string[]>(getSearchHistory);
   const { totalItems } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
+  const historyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (historyRef.current && !historyRef.current.contains(e.target as Node)) {
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const toggleTheme = () => {
     const next = !isDark;
@@ -31,11 +45,22 @@ const Header = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      addSearchHistory(searchQuery.trim());
+      setSearchHistory(getSearchHistory());
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
+      setShowHistory(false);
     } else {
       navigate("/search");
     }
+  };
+
+  const handleHeaderHistoryClick = (term: string) => {
+    addSearchHistory(term);
+    setSearchHistory(getSearchHistory());
+    navigate(`/search?q=${encodeURIComponent(term)}`);
+    setSearchQuery("");
+    setShowHistory(false);
   };
 
   const isSearchPage = location.pathname.startsWith("/search");
@@ -60,6 +85,7 @@ const Header = () => {
                 className="hidden sm:flex flex-1 max-w-md mx-4"
               >
                 <div
+                  ref={historyRef}
                   className={`relative flex items-center w-full rounded-xl transition-all duration-200 ${isFocused
                       ? "bg-card border-2 border-primary shadow-[0_0_16px_2px_hsl(var(--primary)/0.2)]"
                       : "bg-secondary/70 border-2 border-transparent hover:border-border"
@@ -74,7 +100,7 @@ const Header = () => {
                     placeholder="Поиск товаров..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsFocused(true)}
+                    onFocus={() => { setIsFocused(true); setShowHistory(true); }}
                     onBlur={() => setIsFocused(false)}
                     className="w-full pl-9 pr-10 h-9 bg-transparent text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none"
                   />
@@ -87,6 +113,31 @@ const Header = () => {
                   >
                     <ArrowUp className="w-3 h-3" />
                   </button>
+                  {showHistory && !searchQuery && searchHistory.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                      {searchHistory.map((term) => (
+                        <button
+                          key={term}
+                          type="button"
+                          onMouseDown={() => handleHeaderHistoryClick(term)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                        >
+                          <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
+                          <span className="flex-1 text-left truncate">{term}</span>
+                          <span
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              removeSearchHistoryItem(term);
+                              setSearchHistory(getSearchHistory());
+                            }}
+                            className="shrink-0 text-muted-foreground hover:text-foreground p-0.5"
+                          >
+                            <X className="w-3 h-3" />
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </form>
             )}

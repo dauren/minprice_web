@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useCity } from "@/context/CityContext";
 import { useCities } from "@/hooks/useApi";
 import {
@@ -11,72 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const CITY_NAME_TO_ID: Record<string, number> = {
-  almaty: 1,
-  алматы: 1,
-  "алма-ата": 1,
-  astana: 2,
-  астана: 2,
-  nursultan: 2,
-  "нур-султан": 2,
-};
-
-function matchCity(name: string): number | null {
-  const normalized = name.toLowerCase().trim();
-  return CITY_NAME_TO_ID[normalized] ?? null;
-}
+// TODO: auto-detect city by IP (e.g. ipwho.is) and skip the picker if Almaty/Astana
 
 const CityDetectionDialog = () => {
   const { cityDetected, setCityDetected, setSelectedCityId, setCityData } = useCity();
   const { data: citiesData } = useCities();
-  const [detecting, setDetecting] = useState(true);
-  const [showPicker, setShowPicker] = useState(false);
-
-  useEffect(() => {
-    if (cityDetected) return;
-
-    let cancelled = false;
-
-    async function detectCity() {
-      try {
-        const res = await fetch("https://ipwho.is/?fields=city", {
-          signal: AbortSignal.timeout(5000),
-        });
-        const data = await res.json();
-
-        if (cancelled) return;
-
-        const detectedId = data.city ? matchCity(data.city) : null;
-
-        if (detectedId && citiesData) {
-          const city = citiesData.cities.find((c) => c.id === detectedId);
-          if (city) {
-            setSelectedCityId(city.id);
-            setCityData(city);
-            setCityDetected(true);
-            return;
-          }
-        }
-
-        // Unknown city or detection failed — ask the user
-        setDetecting(false);
-        setShowPicker(true);
-      } catch {
-        if (cancelled) return;
-        // On error, ask the user
-        setDetecting(false);
-        setShowPicker(true);
-      }
-    }
-
-    if (citiesData) {
-      detectCity();
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [cityDetected, citiesData]);
 
   if (cityDetected) return null;
 
@@ -99,17 +37,11 @@ const CityDetectionDialog = () => {
             Выберите город
           </DialogTitle>
           <DialogDescription>
-            {detecting
-              ? "Определяем ваш город..."
-              : "Не удалось определить город автоматически. Пожалуйста, выберите:"}
+            Пожалуйста, выберите ваш город:
           </DialogDescription>
         </DialogHeader>
 
-        {detecting ? (
-          <div className="flex justify-center py-4">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : showPicker && citiesData ? (
+        {citiesData && (
           <div className="flex flex-col gap-2">
             {citiesData.cities.map((city) => (
               <Button
@@ -123,7 +55,7 @@ const CityDetectionDialog = () => {
               </Button>
             ))}
           </div>
-        ) : null}
+        )}
       </DialogContent>
     </Dialog>
   );

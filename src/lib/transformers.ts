@@ -119,6 +119,7 @@ export const transformProduct = (apiProduct: ApiProduct | Deal): MockProduct => 
     brand: 'brand' in apiProduct ? apiProduct.brand || undefined : undefined,
     country: 'producing_country' in apiProduct ? apiProduct.producing_country : undefined,
     breadcrumbs: apiProduct.categories,
+    additionalImages: 'additional_images' in apiProduct ? apiProduct.additional_images : undefined,
   };
 };
 

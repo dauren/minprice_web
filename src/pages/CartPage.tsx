@@ -88,17 +88,45 @@ const CartPage = () => {
 
   const storeEntries = Object.entries(groupedByStore);
 
-  // Calculate max possible total (sum of all item totals at their current store prices — approximation)
-  // We'll use item prices * quantity as the "max" baseline since we don't have worst-store prices here
-  // The savings is totalPrice vs what user would pay at worst stores — for now show if there are multiple stores
-  const savingsAmount = useMemo(() => {
-    if (storeEntries.length <= 1 || items.length === 0) return 0;
-    // Approximate: savings is meaningful when items span multiple stores
-    // Since totalPrice is already the cheapest mix, and we don't have worst-case data,
-    // we can calculate a rough savings percentage based on the number of stores
-    const totalItemPrices = items.reduce((sum, i) => sum + i.item_total, 0);
-    return totalItemPrices - totalPrice;
-  }, [items, totalPrice, storeEntries.length]);
+  // Compare cheapest mix vs buying everything at the most expensive single store
+  const { savingsAmount, worstStoreName } = useMemo(() => {
+    if (items.length === 0) return { savingsAmount: 0, worstStoreName: "" };
+
+    // Collect all store IDs that appear across items
+    const storeIds = new Set<number>();
+    for (const item of items) {
+      if (item.product.stores) {
+        for (const s of item.product.stores) storeIds.add(s.store_id);
+      }
+    }
+
+    // For each store, calculate total if you bought everything there (skip items not available)
+    let worstTotal = 0;
+    let worstName = "";
+    for (const sid of storeIds) {
+      let storeTotal = 0;
+      let hasAll = true;
+      for (const item of items) {
+        const storeEntry = item.product.stores?.find(s => s.store_id === sid);
+        if (storeEntry) {
+          storeTotal += storeEntry.price * item.quantity;
+        } else {
+          hasAll = false;
+        }
+      }
+      // Only consider stores that have all items
+      if (hasAll && storeTotal > worstTotal) {
+        worstTotal = storeTotal;
+        const store = items.find(i => i.product.stores?.find(s => s.store_id === sid))?.product.stores?.find(s => s.store_id === sid);
+        worstName = store?.chain_name || "";
+      }
+    }
+
+    return {
+      savingsAmount: worstTotal > totalPrice ? Math.round(worstTotal - totalPrice) : 0,
+      worstStoreName: worstName,
+    };
+  }, [items, totalPrice]);
 
   const handleShare = async () => {
     if (cartUuid) {
@@ -442,7 +470,7 @@ const CartPage = () => {
                   <div className="relative flex items-center gap-1.5 mt-2 pt-2 border-t border-green-200/50 dark:border-green-800/30">
                     <TrendingDown className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
                     <span className="text-xs font-semibold text-green-700 dark:text-green-300">
-                      Вы экономите {savingsAmount.toLocaleString()} ₸ с оптимальным миксом
+                      Вы экономите {savingsAmount.toLocaleString()} ₸{worstStoreName ? ` по сравнению с ${worstStoreName}` : ""}
                     </span>
                   </div>
                 )}

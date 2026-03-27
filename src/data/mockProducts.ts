@@ -30,6 +30,7 @@ export interface Product {
   country?: string;
   breadcrumbs?: string[];
   priceHistory?: PriceHistoryPoint[];
+  additionalImages?: string[];
 }
 
 export const allProducts: Product[] = [

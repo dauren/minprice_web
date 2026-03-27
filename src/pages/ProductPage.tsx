@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, Bell } from "lucide-react";
+import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, Bell, ChevronLeft, ChevronRight } from "lucide-react";
 import html2canvas from "html2canvas";
 import StoreLogo from "@/components/StoreLogo";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
@@ -31,6 +31,7 @@ const ProductPage = () => {
   const { addItem, updateQuantity, removeItem, items } = useCart();
   const { selectedCityId } = useCity();
   const [expandedStore, setExpandedStore] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { copiedKey, copy } = useCopy();
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -198,17 +199,48 @@ const ProductPage = () => {
         <div className="bg-card rounded-2xl overflow-hidden mb-3 border border-border">
           <div className="flex gap-4 p-4">
             {/* Image */}
-            <div className="relative w-32 h-32 sm:w-44 sm:h-44 shrink-0 rounded-xl overflow-hidden bg-secondary/30">
-              <div className="absolute top-1.5 left-1.5 z-10 flex gap-1 flex-col items-start">
-                {product.discountPercent > 0 && (
-                  <span className="discount-badge text-[10px]">-{product.discountPercent}%</span>
-                )}
-                {product.savingsAmount > 0 && (
-                  <span className="savings-badge text-[10px]">-{product.savingsAmount} ₸</span>
-                )}
-              </div>
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-            </div>
+            {(() => {
+              const allImages = [product.image, ...(product.additionalImages || [])].filter(Boolean);
+              const currentImage = allImages[selectedImageIndex] || product.image;
+              return (
+                <div className="relative w-32 h-32 sm:w-44 sm:h-44 shrink-0 rounded-xl overflow-hidden bg-secondary/30">
+                  <div className="absolute top-1.5 left-1.5 z-10 flex gap-1 flex-col items-start">
+                    {product.discountPercent > 0 && (
+                      <span className="discount-badge text-[10px]">-{product.discountPercent}%</span>
+                    )}
+                    {product.savingsAmount > 0 && (
+                      <span className="savings-badge text-[10px]">-{product.savingsAmount} ₸</span>
+                    )}
+                  </div>
+                  <img src={currentImage} alt={product.name} className="w-full h-full object-cover" />
+                  {allImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setSelectedImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length)}
+                        className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedImageIndex((prev) => (prev + 1) % allImages.length)}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+                        {allImages.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setSelectedImageIndex(i)}
+                            className={`w-1.5 h-1.5 rounded-full transition-colors ${i === selectedImageIndex ? "bg-white" : "bg-white/40"}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Info */}
             <div className="flex-1 min-w-0 flex flex-col gap-1.5">
@@ -248,6 +280,14 @@ const ProductPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Product description */}
+        {product.description && (
+          <div className="bg-card rounded-2xl border border-border p-4 mb-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Описание</p>
+            <p className="text-sm text-foreground leading-relaxed">{product.description}</p>
+          </div>
+        )}
 
         {/* Store prices – expandable with ext_product title */}
         {!hasStores && (

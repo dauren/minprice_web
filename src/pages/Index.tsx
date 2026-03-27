@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect, useLayoutEffect } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import { Link, useNavigate, useNavigationType } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
-import { Search, ArrowUp } from "lucide-react";
+import { Search, ArrowUp, Clock, X } from "lucide-react";
 import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import ProductCard from "@/components/ProductCard";
@@ -9,6 +9,7 @@ import StoreLogo from "@/components/StoreLogo";
 import { useBestDeals, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
+import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 
 const DEALS_PER_PAGE = 24;
 
@@ -21,7 +22,20 @@ const Index = () => {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<string[]>(getSearchHistory);
+  const historyRef = useRef<HTMLDivElement>(null);
   const { ref, inView } = useInView();
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (historyRef.current && !historyRef.current.contains(e.target as Node)) {
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useScrollRestoration("index");
 
@@ -43,10 +57,20 @@ const Index = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      addSearchHistory(searchQuery.trim());
+      setSearchHistory(getSearchHistory());
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setShowHistory(false);
     } else {
       navigate("/search");
     }
+  };
+
+  const handleIndexHistoryClick = (term: string) => {
+    addSearchHistory(term);
+    setSearchHistory(getSearchHistory());
+    navigate(`/search?q=${encodeURIComponent(term)}`);
+    setShowHistory(false);
   };
 
   // Load more pages when scrolling to bottom
@@ -96,6 +120,7 @@ const Index = () => {
         {/* Search bar under hero */}
         <form onSubmit={handleSearch} className="mb-6">
           <div
+            ref={historyRef}
             className={`relative flex items-center rounded-2xl transition-all duration-200 ${searchFocused
               ? "bg-card border-2 border-primary shadow-[0_0_20px_4px_hsl(var(--primary)/0.18)]"
               : "bg-secondary/70 border-2 border-transparent hover:border-border"
@@ -110,7 +135,7 @@ const Index = () => {
               placeholder="Найти самые низкие цены..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
+              onFocus={() => { setSearchFocused(true); setShowHistory(true); }}
               onBlur={() => setSearchFocused(false)}
               className="w-full pl-12 pr-14 h-12 sm:h-14 bg-transparent text-foreground text-[15px] sm:text-base placeholder:text-muted-foreground/60 focus:outline-none"
             />
@@ -123,6 +148,31 @@ const Index = () => {
             >
               <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
+            {showHistory && !searchQuery && searchHistory.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                {searchHistory.map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onMouseDown={() => handleIndexHistoryClick(term)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="flex-1 text-left truncate">{term}</span>
+                    <span
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        removeSearchHistoryItem(term);
+                        setSearchHistory(getSearchHistory());
+                      }}
+                      className="shrink-0 text-muted-foreground hover:text-foreground p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </form>
 
