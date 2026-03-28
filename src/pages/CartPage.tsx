@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Minus, Plus, Trash2, ArrowLeft, Zap, ChevronDown, ChevronUp, Check, Settings, Share, History, Edit2, AlertTriangle, Store, TrendingDown, Loader2, ExternalLink, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
-import { useCart, CartItem } from "@/context/CartContext";
+import { useCart, CartItem, SingleStoreTotal } from "@/context/CartContext";
 import { useCity } from "@/context/CityContext";
 import StoreLogo from "@/components/StoreLogo";
 import mascot from "@/assets/logo.png";
@@ -20,8 +20,6 @@ import { apiClient, API_ENDPOINTS } from "@/lib/api";
 
 const TRANSFERABLE_CHAINS: Record<string, { name: string; emoji: string }> = {
   arbuz: { name: "Arbuz", emoji: "🍉" },
-  airbafresh: { name: "AirbaFresh", emoji: "✈️" },
-  mgo: { name: "MagnumGO", emoji: "🛍️" },
 };
 
 interface TransferResult {
@@ -35,10 +33,11 @@ interface TransferResult {
 
 const CartPage = () => {
   const {
-    cartUuid, cartName, items, unavailableProducts, removeItem, updateQuantity,
+    cartUuid, cartName, items, unavailableProducts, singleStoreTotals, removeItem, updateQuantity,
     clearCart, totalPrice, totalItems, isOwner, isLoading, renameCart, archiveCart, deleteCart,
     addItem, selectedStoreIds, updateStorePreferences, availableStores
   } = useCart();
+  const [viewMode, setViewMode] = useState<'mix' | 'single'>('mix');
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [newCartName, setNewCartName] = useState(cartName);
 
@@ -88,45 +87,43 @@ const CartPage = () => {
 
   const storeEntries = Object.entries(groupedByStore);
 
-  // Compare cheapest mix vs buying everything at the most expensive single store
-  const { savingsAmount, worstStoreName } = useMemo(() => {
-    if (items.length === 0) return { savingsAmount: 0, worstStoreName: "" };
+  // Use single_store_totals from the API to find the most expensive store as savings baseline
+  const { worstStoreTotal, worstStoreName } = useMemo(() => {
+    if (singleStoreTotals.length === 0) return { worstStoreTotal: 0, worstStoreName: "" };
 
-    // Collect all store IDs that appear across items
-    const storeIds = new Set<number>();
-    for (const item of items) {
-      if (item.product.stores) {
-        for (const s of item.product.stores) storeIds.add(s.store_id);
-      }
-    }
-
-    // For each store, calculate total if you bought everything there (skip items not available)
     let worstTotal = 0;
     let worstName = "";
-    for (const sid of storeIds) {
-      let storeTotal = 0;
-      let hasAll = true;
-      for (const item of items) {
-        const storeEntry = item.product.stores?.find(s => s.store_id === sid);
-        if (storeEntry) {
-          storeTotal += storeEntry.price * item.quantity;
-        } else {
-          hasAll = false;
-        }
-      }
-      // Only consider stores that have all items
-      if (hasAll && storeTotal > worstTotal) {
-        worstTotal = storeTotal;
-        const store = items.find(i => i.product.stores?.find(s => s.store_id === sid))?.product.stores?.find(s => s.store_id === sid);
-        worstName = store?.chain_name || "";
+    for (const store of singleStoreTotals) {
+      if (store.total_price > worstTotal) {
+        worstTotal = store.total_price;
+        worstName = store.chain_name;
       }
     }
+    return { worstStoreTotal: worstTotal, worstStoreName: worstName };
+  }, [singleStoreTotals]);
 
-    return {
-      savingsAmount: worstTotal > totalPrice ? Math.round(worstTotal - totalPrice) : 0,
-      worstStoreName: worstName,
-    };
-  }, [items, totalPrice]);
+  const savingsAmount = worstStoreTotal > totalPrice ? Math.round(worstStoreTotal - totalPrice) : 0;
+
+  // Sort single store totals: full-coverage first, then by price ascending
+  const sortedSingleStoreTotals = useMemo(() => {
+    return [...singleStoreTotals].sort((a, b) => {
+      const aFull = a.available_count === a.total_count ? 1 : 0;
+      const bFull = b.available_count === b.total_count ? 1 : 0;
+      if (aFull !== bFull) return bFull - aFull;
+      return a.total_price - b.total_price;
+    });
+  }, [singleStoreTotals]);
+
+  // Expanded single-store product lists
+  const [expandedStores, setExpandedStores] = useState<Set<number>>(new Set());
+  const toggleStoreExpand = (storeId: number) => {
+    setExpandedStores(prev => {
+      const next = new Set(prev);
+      if (next.has(storeId)) next.delete(storeId);
+      else next.add(storeId);
+      return next;
+    });
+  };
 
   const handleShare = async () => {
     if (cartUuid) {
@@ -212,8 +209,8 @@ const CartPage = () => {
     }
   };
 
-  const handleTransfer = async (chainSource: string, storeName: string) => {
-    if (!cartUuid || transferringChain) return;
+  const handleTransfer = async (chainSource: string, storeName: string, transferItems: { ext_id: string; quantity: number; title?: string; url?: string }[]) => {
+    if (transferringChain || transferItems.length === 0) return;
     setTransferStoreName(storeName);
     setTransferResult(null);
     setTransferLoading(true);
@@ -221,9 +218,9 @@ const CartPage = () => {
     setTransferModalOpen(true);
     try {
       const result = await apiClient.post<TransferResult>(API_ENDPOINTS.cartTransfer(), {
-        cart_uuid: cartUuid,
         chain_source: chainSource,
         city_id: selectedCityId,
+        items: transferItems,
       });
       setTransferResult(result);
     } catch (error) {
@@ -450,6 +447,37 @@ const CartPage = () => {
           </div>
         ) : (
           <div className="space-y-4">
+            {/* View mode tabs */}
+            {items.length > 0 && (
+              <div className="flex rounded-lg bg-secondary/50 p-0.5">
+                <button
+                  onClick={() => setViewMode('mix')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                    viewMode === 'mix'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  Оптимальный микс
+                </button>
+                <button
+                  onClick={() => setViewMode('single')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                    viewMode === 'single'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Store className="w-3.5 h-3.5" />
+                  Один магазин
+                </button>
+              </div>
+            )}
+
+            {/* === OPTIMAL MIX VIEW === */}
+            {viewMode === 'mix' && (
+              <>
             {/* Optimal mix banner with shimmer */}
             {items.length > 0 && (
               <div className="relative border border-border rounded-xl px-4 py-3 bg-green-50/50 dark:bg-green-950/20 overflow-hidden">
@@ -516,7 +544,12 @@ const CartPage = () => {
                   {transferInfo && (
                     <div className="px-3 sm:px-4 py-2 bg-secondary/30 border-t border-border">
                       <button
-                        onClick={() => handleTransfer(chainSource!, store)}
+                        onClick={() => handleTransfer(chainSource!, store, storeItems.filter(i => i.ext_product_ext_id).map(i => ({
+                          ext_id: i.ext_product_ext_id!,
+                          quantity: i.quantity,
+                          title: i.ext_product_title || i.product.title,
+                          url: i.url,
+                        })))}
                         disabled={transferringChain === chainSource}
                         className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                       >
@@ -525,7 +558,7 @@ const CartPage = () => {
                         ) : (
                           <ShoppingCart className="w-3.5 h-3.5" />
                         )}
-                        {transferInfo.emoji} Перенести в {transferInfo.name}
+                        {transferInfo.emoji} Скопировать в {transferInfo.name}
                       </button>
                     </div>
                   )}
@@ -669,6 +702,132 @@ const CartPage = () => {
                   </div>
                 ))}
               </div>
+            )}
+
+            </>
+            )}
+
+            {/* === SINGLE STORE VIEW === */}
+            {viewMode === 'single' && (
+              <>
+                {sortedSingleStoreTotals.length > 0 && worstStoreTotal > 0 && (
+                  <div className="relative border border-border rounded-xl px-4 py-3 bg-blue-50/50 dark:bg-blue-950/20 overflow-hidden">
+                    <div className="flex items-center gap-2">
+                      <Store className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-blue-900 dark:text-blue-300">Сравнение по магазинам</span>
+                    </div>
+                    <p className="text-xs text-blue-700/80 dark:text-blue-400/80 mt-1">
+                      Стоимость всей корзины, если купить все товары в одном магазине.
+                    </p>
+                  </div>
+                )}
+
+                {sortedSingleStoreTotals.map((store, idx) => {
+                  const hasAllItems = store.available_count === store.total_count;
+                  const storeSavings = worstStoreTotal > store.total_price ? Math.round(worstStoreTotal - store.total_price) : 0;
+                  const isExpanded = expandedStores.has(store.store_id);
+                  const transferInfo = store.chain_source ? TRANSFERABLE_CHAINS[store.chain_source] : null;
+                  const isCheapest = idx === 0;
+
+                  return (
+                    <div key={store.store_id} className={`border rounded-xl overflow-hidden ${isCheapest && hasAllItems ? 'border-green-300 dark:border-green-700' : 'border-border'}`}>
+                      <div className={`px-3 sm:px-4 py-3 ${isCheapest && hasAllItems ? 'bg-green-50/50 dark:bg-green-950/20' : 'bg-secondary/30'}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <StoreLogo store={store.chain_name} size="md" logoUrl={store.chain_logo || undefined} />
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-medium text-foreground">{store.store_name}</span>
+                                {isCheapest && hasAllItems && (
+                                  <span className="text-[10px] font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">
+                                    Лучшая цена
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[11px] text-muted-foreground">
+                                {store.available_count} из {store.total_count} {store.total_count === 1 ? 'товара' : store.total_count < 5 ? 'товаров' : 'товаров'}
+                                {!hasAllItems && (
+                                  <span className="text-orange-500 ml-1">
+                                    · {store.total_count - store.available_count} недоступно
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-base font-semibold ${isCheapest && hasAllItems ? 'text-green-700 dark:text-green-300' : 'text-foreground'}`}>
+                              {store.total_price.toLocaleString()} ₸
+                            </span>
+                            {storeSavings > 0 && (
+                              <div className="flex items-center gap-1 justify-end">
+                                <TrendingDown className="w-3 h-3 text-green-600 dark:text-green-400" />
+                                <span className="text-[11px] font-medium text-green-600 dark:text-green-400">
+                                  -{storeSavings.toLocaleString()} ₸
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 mt-2">
+                          {transferInfo && (
+                            <button
+                              onClick={() => handleTransfer(store.chain_source!, store.store_name, store.products.filter(p => p.ext_product_ext_id).map(p => ({
+                                ext_id: p.ext_product_ext_id!,
+                                quantity: p.quantity,
+                                title: p.ext_product_title || p.product.title,
+                                url: p.url,
+                              })))}
+                              disabled={transferringChain === store.chain_source}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                            >
+                              {transferringChain === store.chain_source ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <ShoppingCart className="w-3 h-3" />
+                              )}
+                              {transferInfo.emoji} Скопировать в {transferInfo.name}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => toggleStoreExpand(store.store_id)}
+                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                          >
+                            {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            {isExpanded ? 'Скрыть' : 'Товары'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {isExpanded && (
+                        <div>
+                          {store.products.map((sp, spIdx) => (
+                            <div
+                              key={sp.product.uuid}
+                              className={`px-3 sm:px-4 py-2.5 ${spIdx < store.products.length - 1 ? 'border-b border-border' : ''}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Link to={`/product/${sp.product.uuid}`} className="shrink-0">
+                                  <div className="w-9 h-9 rounded-lg bg-secondary/50 overflow-hidden">
+                                    <img src={sp.ext_product_image || sp.product.image_url || mascot} alt={sp.ext_product_title || sp.product.title} className="w-full h-full object-cover" />
+                                  </div>
+                                </Link>
+                                <div className="flex-1 min-w-0">
+                                  <Link to={`/product/${sp.product.uuid}`} className="text-[12px] sm:text-[13px] text-foreground line-clamp-1 hover:underline">
+                                    {sp.ext_product_title || sp.product.title}
+                                  </Link>
+                                  <span className="text-[11px] text-muted-foreground">{sp.quantity} x {sp.price.toLocaleString()} ₸</span>
+                                </div>
+                                <span className="text-xs font-medium text-foreground shrink-0">{sp.item_total.toLocaleString()} ₸</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
             )}
 
             {/* Total */}

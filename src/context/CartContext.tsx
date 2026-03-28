@@ -31,6 +31,8 @@ export interface CartItem {
   quantity: number;
   currency?: string;
   url?: string;
+  ext_product_id?: number;
+  ext_product_ext_id?: string;
   ext_product_title?: string;
   ext_product_image?: string | null;
 }
@@ -48,11 +50,37 @@ export interface AvailableStore {
   chain_logo: string | null;
 }
 
+export interface SingleStoreProduct {
+  product: CartItemProduct;
+  quantity: number;
+  price: number;
+  item_total: number;
+  currency?: string;
+  url?: string;
+  ext_product_id?: number;
+  ext_product_ext_id?: string;
+  ext_product_title?: string;
+  ext_product_image?: string | null;
+}
+
+export interface SingleStoreTotal {
+  store_id: number;
+  store_name: string;
+  chain_name: string;
+  chain_source?: string;
+  chain_logo: string | null;
+  total_price: number;
+  available_count: number;
+  total_count: number;
+  products: SingleStoreProduct[];
+}
+
 interface CartContextType {
   cartUuid: string | null;
   cartName: string;
   items: CartItem[];
   unavailableProducts: UnavailableProduct[];
+  singleStoreTotals: SingleStoreTotal[];
   totalItems: number;
   totalPrice: number;
   isOwner: boolean;
@@ -85,6 +113,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStoreIds, setSelectedStoreIds] = useState<number[]>([]);
   const [availableStores, setAvailableStores] = useState<AvailableStore[]>([]);
+  const [singleStoreTotals, setSingleStoreTotals] = useState<SingleStoreTotal[]>([]);
 
   const fetchCartSummary = async (uuid: string) => {
     try {
@@ -109,6 +138,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       if (data.all_stores && Array.isArray(data.all_stores)) {
         setAvailableStores(data.all_stores);
+      }
+
+      if (data.single_store_totals && Array.isArray(data.single_store_totals)) {
+        setSingleStoreTotals(data.single_store_totals);
+      } else {
+        setSingleStoreTotals([]);
       }
     } catch (error) {
       console.error("Failed to fetch cart summary:", error);
@@ -139,6 +174,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setCartUuid(null);
         setItems([]);
         setUnavailableProducts([]);
+        setSingleStoreTotals([]);
         setTotalItems(0);
         setTotalPrice(0);
       }
@@ -269,7 +305,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CartContext.Provider
       value={{
-        cartUuid, cartName, items, unavailableProducts, totalItems, totalPrice, isOwner, isLoading, selectedStoreIds, availableStores,
+        cartUuid, cartName, items, unavailableProducts, singleStoreTotals, totalItems, totalPrice, isOwner, isLoading, selectedStoreIds, availableStores,
         fetchCart, addItem, removeItem, updateQuantity, clearCart, renameCart, archiveCart, deleteCart, updateStorePreferences
       }}
     >

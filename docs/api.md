@@ -535,6 +535,32 @@ Returns a full cart breakdown with cheapest-per-product, grouped-by-store totals
       "reason": "Not available in selected stores"
     }
   ],
+  "single_store_totals": [
+    {
+      "store_id": 1,
+      "store_name": "Magnum Almaty",
+      "chain_name": "Magnum",
+      "chain_source": "mgo",
+      "chain_logo": "https://...",
+      "total_price": 5200.0,
+      "available_count": 5,
+      "total_count": 5,
+      "products": [
+        {
+          "product": { /* ProductListSerializer */ },
+          "quantity": 2,
+          "price": 690.0,
+          "item_total": 1380.0,
+          "currency": "KZT",
+          "url": "https://...",
+          "ext_product_id": 12345,
+          "ext_product_ext_id": "abc-123",
+          "ext_product_title": "Молоко Лактель 3,2% 1л",
+          "ext_product_image": "https://..."
+        }
+      ]
+    }
+  ],
   "selected_stores": [ /* store objects */ ],
   "all_stores": [ /* all stores in city */ ]
 }
@@ -543,23 +569,28 @@ Returns a full cart breakdown with cheapest-per-product, grouped-by-store totals
 ### Transfer Cart to Store
 `POST /api/cart/transfer/`
 
-Transfers optimized cart items to an external store's cart via their API. Supported chains: `arbuz`, `airbafresh`, `mgo`.
+Creates a shareable link for an external store's cart from a list of products. Supported chains: `arbuz`, `airbafresh`, `mgo`.
 
 **Body:**
 ```json
 {
-  "cart_uuid": "cart-uuid",
   "chain_source": "arbuz",
+  "items": [
+    { "ext_id": "12345", "quantity": 2, "title": "Молоко 3,2% 1л", "url": "https://..." },
+    { "ext_id": "67890", "quantity": 1 }
+  ],
   "city_id": 1
 }
 ```
+
+Each item requires `ext_id` (product ID in the external store). `quantity` defaults to 1. `title` and `url` are optional (used for fallback links).
 
 **Response:**
 ```json
 {
   "chain_source": "arbuz",
   "success": true,
-  "cart_url": "https://arbuz.kz/ru/almaty/cart/items",
+  "cart_url": "https://freedombank.onelink.me/WNLd/abc123",
   "fallback_urls": [
     { "title": "Молоко 3,2% 1л", "url": "https://..." }
   ],
@@ -568,7 +599,7 @@ Transfers optimized cart items to an external store's cart via their API. Suppor
 }
 ```
 
-When `success` is `false`, `fallback_urls` contains per-product deep links for manual adding. `error` describes the failure reason.
+For Arbuz, `cart_url` is a shareable onelink that opens a pre-populated cart. If sharing fails, it falls back to the generic cart page URL. When `success` is `false`, `fallback_urls` contains per-product deep links for manual adding. `error` describes the failure reason.
 
 ---
 
