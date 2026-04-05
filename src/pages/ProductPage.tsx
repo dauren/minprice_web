@@ -172,7 +172,6 @@ const ProductPage = () => {
     <div className="min-h-screen bg-background pb-40 sm:pb-16">
       <PageMeta
         title={product.name}
-        description={`${product.name}${product.weight ? ` ${product.weight}` : ''}${hasStores ? ` — от ${bestPrice} ₸. Сравните цены в магазинах Казахстана` : ' — нет в наличии'} на minprice.kz`}
         image={product.image}
         url={`/product/${product.id}`}
         type="product"
