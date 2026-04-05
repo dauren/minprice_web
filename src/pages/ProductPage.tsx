@@ -280,13 +280,6 @@ const ProductPage = () => {
           </div>
         </div>
 
-        {/* Product description */}
-        {product.description && (
-          <div className="bg-card rounded-2xl border border-border p-4 mb-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Описание</p>
-            <p className="text-sm text-foreground leading-relaxed">{product.description}</p>
-          </div>
-        )}
 
         {/* Store prices – expandable with ext_product title */}
         {!hasStores && (
