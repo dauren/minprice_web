@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 
 const SITE_NAME = "minprice.kz";
 const BASE_URL = "https://minprice.kz";
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
+const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const DEFAULT_DESCRIPTION =
     "Сравнивайте цены на продукты питания в супермаркетах Казахстана. Находим минимальную цену среди Magnum, Arbuz, Airba Fresh, A-Store и других.";
 
