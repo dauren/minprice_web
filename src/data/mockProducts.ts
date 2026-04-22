@@ -1,5 +1,7 @@
 export interface StorePrice {
   store: string;
+  storeSlug?: string;
+  storeSource?: string;
   price: number;
   oldPrice?: number;
   color: string;

@@ -39,16 +39,22 @@ export interface ExtProduct {
 export interface StorePrice {
   store_id?: number;
   store_name: string;
+  store_slug?: string;
   store_source: string;
   chain_id: number;
   chain_name: string;
+  chain_slug?: string;
   chain_logo: string;
+  city_id?: number;
+  city_name?: string;
+  city_slug?: string;
   price: number;
   previous_price: number | null;
   discount_amount?: number;
   currency: string;
   price_per_unit?: number;
   in_stock: boolean;
+  updated_at?: string | null;
   url: string;
   ext_product_id: number;
   ext_product_title: string;

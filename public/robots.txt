@@ -12,3 +12,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Disallow: /api/public/
+Disallow: /api/agent/
+
+Sitemap: https://minprice.kz/sitemap.xml

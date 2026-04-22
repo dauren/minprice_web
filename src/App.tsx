@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import ProductPage from "./pages/ProductPage";
 import SearchPage from "./pages/SearchPage";
 import CatalogPage from "./pages/CatalogPage";
+import StorePage from "./pages/StorePage";
 import CartPage from "./pages/CartPage";
 import DiscountsPage from "./pages/DiscountsPage";
 import OfertaPage from "./pages/OfertaPage";
@@ -50,8 +51,13 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/product/:id" element={<ProductPage />} />
+                <Route path="/product/:id/:slug" element={<ProductPage />} />
                 <Route path="/catalog" element={<CatalogPage />} />
                 <Route path="/catalog/:categoryId" element={<CatalogPage />} />
+                <Route path="/catalog/:categoryId/:slug" element={<CatalogPage />} />
+                <Route path="/city/:citySlug/catalog/:categoryId/:slug" element={<CatalogPage />} />
+                <Route path="/stores/:chainSlug" element={<StorePage />} />
+                <Route path="/city/:citySlug/stores/:chainSlug" element={<StorePage />} />
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/discounts" element={<DiscountsPage />} />
                 <Route path="/public-offer" element={<OfertaPage />} />
