@@ -421,16 +421,6 @@ const ProductPage = () => {
           )}
         </div>}
 
-        {/* Watch price alert */}
-        <div className="mb-3">
-          <button
-            onClick={() => window.open(`https://t.me/minimalprice_bot?start=watch_${id}_${selectedCityId}`, '_blank')}
-            className="w-full h-10 rounded-xl border border-border text-muted-foreground text-sm flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
-          >
-            <Bell size={15} />
-            <span>Следить за ценой</span>
-          </button>
-        </div>
 
         {/* Price History Chart */}
         {chartData.length > 0 && (
