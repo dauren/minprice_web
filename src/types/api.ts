@@ -141,6 +141,10 @@ export interface Deal {
 
 export interface BestDealsResponse {
   deals: Deal[];
+  total?: number;
+  page?: number;
+  page_size?: number;
+  total_pages?: number;
 }
 
 export interface DiscountsResponse {

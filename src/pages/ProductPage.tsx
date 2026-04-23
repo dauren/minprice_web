@@ -325,7 +325,7 @@ const ProductPage = () => {
 
                   {/* Price */}
                   <div className="text-right shrink-0">
-                    {store.oldPrice && (
+                    {store.oldPrice && store.inStock !== false && (
                       <p className="text-[11px] line-through text-muted-foreground/60">{store.oldPrice} ₸</p>
                     )}
                     <p className={`text-sm font-bold ${isBest ? "text-foreground" : "text-muted-foreground"}`}>

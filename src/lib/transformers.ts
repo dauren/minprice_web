@@ -67,23 +67,28 @@ export const transformProduct = (apiProduct: ApiProduct | Deal): MockProduct => 
     return a.inStock ? -1 : 1;
   });
 
-  // Calculate minimum price
-  const minPrice = ('price_range' in apiProduct && apiProduct.price_range?.min)
-    ? apiProduct.price_range.min
-    : apiProduct.min_price || (stores.length > 0 ? Math.min(...stores.map(s => s.price)) : 0);
+  // Only consider in-stock stores for price calculations
+  const inStockStores = stores.filter(s => s.inStock !== false);
+  const priceStores = inStockStores.length > 0 ? inStockStores : stores;
 
-  // Determine an intelligent reference (max) price to highlight savings
+  // Calculate minimum price (only in-stock)
+  const minPrice = priceStores.length > 0
+    ? Math.min(...priceStores.map(s => s.price))
+    : 0;
+
+  // Determine reference price using median of in-stock stores (more honest than max)
   let maxPrice = minPrice;
 
-  if (stores.length === 1) {
-    // If only 1 store, rely on its own discount
-    maxPrice = stores[0].oldPrice || stores[0].price;
-  } else if (stores.length === 2) {
-    // If 2 stores, simply compare max to min
-    maxPrice = Math.max(...stores.map(s => s.oldPrice || s.price));
-  } else if (stores.length > 2) {
-    // Use max price across all stores to show full savings range
-    maxPrice = Math.max(...stores.map(s => s.oldPrice || s.price));
+  if (priceStores.length === 1) {
+    // If only 1 in-stock store, rely on its own discount
+    maxPrice = priceStores[0].oldPrice || priceStores[0].price;
+  } else if (priceStores.length >= 2) {
+    // Use median price across in-stock stores for a fair reference
+    const refPrices = priceStores.map(s => s.oldPrice || s.price).sort((a, b) => a - b);
+    const mid = Math.floor(refPrices.length / 2);
+    maxPrice = refPrices.length % 2 === 0
+      ? Math.round((refPrices[mid - 1] + refPrices[mid]) / 2)
+      : refPrices[mid];
   } else {
     // Fallback if no stores array is available
     maxPrice = ('price_range' in apiProduct && apiProduct.price_range?.max)

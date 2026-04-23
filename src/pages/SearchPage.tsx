@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
-import { Search, X, ArrowUpDown, Clock } from "lucide-react";
+import { Search, X, ArrowUpDown, Clock, ScanBarcode } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
@@ -10,6 +10,7 @@ import mascot from "@/assets/logo.png";
 import { useInfiniteSearch, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
+import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,6 +28,7 @@ const SearchPage = () => {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [page, setPage] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>(getSearchHistory);
   const inputRef = useRef<HTMLInputElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
@@ -167,13 +169,21 @@ const SearchPage = () => {
               placeholder="Поиск товаров..."
               className="w-full h-12 sm:h-14 pl-12 pr-12 rounded-2xl bg-secondary/60 border-2 border-transparent text-foreground text-base placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:bg-card focus:shadow-[0_0_20px_4px_hsl(var(--primary)/0.12)] transition-all"
             />
-            {inputValue && (
+            {inputValue ? (
               <button
                 type="button"
                 onClick={clearSearch}
                 className="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-muted hover:bg-muted-foreground/20 flex items-center justify-center transition-colors"
               >
                 <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsScannerOpen(true)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <ScanBarcode className="w-4.5 h-4.5" />
               </button>
             )}
             {showHistory && !query && searchHistory.length > 0 && (
@@ -330,6 +340,15 @@ const SearchPage = () => {
           </div>
         )}
       </div>
+
+      <BarcodeScannerModal 
+        open={isScannerOpen} 
+        onOpenChange={setIsScannerOpen} 
+        onScan={(barcode) => {
+          setInputValue(barcode);
+          setSearchParams({ q: barcode });
+        }} 
+      />
     </div>
   );
 };

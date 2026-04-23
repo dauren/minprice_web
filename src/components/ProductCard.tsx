@@ -74,6 +74,7 @@ const SmartTitle = ({ title }: { title: string }) => {
 const ProductCard = ({ product }: { product: Product }) => {
   const { items, addItem, updateQuantity, removeItem } = useCart();
   const { toast } = useToast();
+  const [justAdded, setJustAdded] = useState(false);
 
   if (!product.stores || product.stores.length === 0) return null;
 
@@ -82,7 +83,6 @@ const ProductCard = ({ product }: { product: Product }) => {
   const bestStore = candidateStores.reduce((a, b) => (a.price < b.price ? a : b));
   // The 'worstPrice' (reference price) aligns with the robust robust calculation done in transformers.
   const worstPrice = bestStore.price + (product.savingsAmount || 0);
-  const [justAdded, setJustAdded] = useState(false);
 
   const cartItem = items.find((i) => i.product.uuid === product.id);
   const quantity = cartItem?.quantity || 0;
@@ -175,7 +175,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  {store.oldPrice && (
+                  {store.oldPrice && store.inStock !== false && (
                     <span className="line-through text-muted-foreground/60">
                       {store.oldPrice}
                     </span>

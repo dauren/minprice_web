@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://backend.minprice.kz/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.minprice.kz/api';
 const GUEST_UUID_KEY = 'minprice_guest_uuid';
 
 let sessionPromise: Promise<string> | null = null;
@@ -132,7 +132,13 @@ export const API_ENDPOINTS = {
     if (page !== undefined) url += `&page=${page}`;
     return url;
   },
-  bestDeals: (cityId?: number) => `/best-deals/${cityId ? `?city_id=${cityId}` : ''}`,
+  bestDeals: (cityId?: number, page?: number) => {
+    const params = new URLSearchParams();
+    if (cityId) params.append('city_id', cityId.toString());
+    if (page) params.append('page', page.toString());
+    const qs = params.toString();
+    return `/best-deals/${qs ? `?${qs}` : ''}`;
+  },
   discounts: (cityId?: number, chainIds?: number[], page?: number) => {
     const params = new URLSearchParams();
     if (cityId) params.append('city_id', cityId.toString());

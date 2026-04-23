@@ -15,7 +15,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_BASE = "https://backend.minprice.kz/api";
+const API_BASE = process.env.API_BASE_URL || "https://backend.minprice.kz/api";
+
 const SITE_URL = "https://minprice.kz";
 const DIST_DIR = path.join(__dirname, "dist");
 

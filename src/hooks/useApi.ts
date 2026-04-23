@@ -61,6 +61,26 @@ export const useBestDeals = () => {
   });
 };
 
+export const useInfiniteBestDeals = () => {
+  const { selectedCityId } = useCity();
+  return useInfiniteQuery({
+    queryKey: ['bestDeals-infinite', selectedCityId],
+    queryFn: async ({ pageParam = 1 }) => {
+      return apiClient.get<BestDealsResponse>(
+        API_ENDPOINTS.bestDeals(selectedCityId, pageParam)
+      );
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page && lastPage.total_pages && lastPage.page < lastPage.total_pages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!selectedCityId,
+  });
+};
+
 // Get discounts
 export const useDiscounts = (chainIds?: number[], page?: number) => {
   const { selectedCityId } = useCity();
