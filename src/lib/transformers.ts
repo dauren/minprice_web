@@ -113,6 +113,55 @@ export const transformProduct = (apiProduct: ApiProduct | Deal): MockProduct => 
   const measureKind = apiProduct.measure_unit_kind || apiProduct.measure_unit || '';
   const weight = measureQty ? `${measureQty}${measureKind}` : measureKind;
 
+  // Normalize raw unit strings to Russian labels
+  const normalizeUnit = (u: string): string => {
+    const map: Record<string, string> = {
+      piece: 'шт', pieces: 'шт', шт: 'шт',
+      g: 'г', г: 'г',
+      ml: 'мл', мл: 'мл',
+      kg: 'кг', кг: 'кг',
+      l: 'л', л: 'л',
+    };
+    return map[u.toLowerCase()] ?? u;
+  };
+
+  // Compute price-per-unit fields
+  const packCount = 'pack_count' in apiProduct ? (apiProduct.pack_count ?? 0) : 0;
+  const rawUnit = apiProduct.measure_unit || '';
+  const rawKind = apiProduct.measure_unit_kind || rawUnit;
+  const normUnit = normalizeUnit(rawUnit);
+  const normKind = normalizeUnit(rawKind);
+  let pricePerUnit: number | undefined;
+  let pricePerUnitLabel: string | undefined;
+
+  if (packCount > 1) {
+    // price per individual item in the pack — skip кг
+    if (normUnit !== 'кг') {
+      pricePerUnit = minPrice > 0 ? Math.round(minPrice / packCount) : undefined;
+      pricePerUnitLabel = 'шт';
+    }
+  } else {
+    const qty = apiProduct.measure_unit_qty
+      ? (typeof apiProduct.measure_unit_qty === 'string'
+          ? parseFloat(apiProduct.measure_unit_qty)
+          : apiProduct.measure_unit_qty)
+      : 0;
+
+    if ((normKind === 'г' || normKind === 'мл') && qty > 0) {
+      // per 100г / 100мл
+      pricePerUnit = minPrice > 0 ? Math.round((minPrice / qty) * 100) : undefined;
+      pricePerUnitLabel = `100${normKind}`;
+    } else if (normKind === 'шт' && qty > 0) {
+      // piece → show price per шт
+      pricePerUnit = minPrice > 0 ? Math.round(minPrice / qty) : undefined;
+      pricePerUnitLabel = 'шт';
+    } else if (qty > 0 && qty !== 1 && normKind && normUnit !== 'кг') {
+      // other units — price per 1 unit, skip кг
+      pricePerUnit = minPrice > 0 ? Math.round(minPrice / qty) : undefined;
+      pricePerUnitLabel = normKind;
+    }
+  }
+
   return {
     id: apiProduct.uuid,
     name: apiProduct.title,
@@ -127,6 +176,8 @@ export const transformProduct = (apiProduct: ApiProduct | Deal): MockProduct => 
     country: 'producing_country' in apiProduct ? apiProduct.producing_country : undefined,
     breadcrumbs: apiProduct.categories,
     additionalImages: 'additional_images' in apiProduct ? apiProduct.additional_images : undefined,
+    pricePerUnit,
+    pricePerUnitLabel,
   };
 };
 

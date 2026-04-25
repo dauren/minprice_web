@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Scale } from "lucide-react";
 import { Product } from "@/data/mockProducts";
 import { useCart } from "@/context/CartContext";
 import StoreLogo from "@/components/StoreLogo";
@@ -150,12 +150,17 @@ const ProductCard = ({ product }: { product: Product }) => {
 
       {/* Price + Name */}
       <div className="px-3 pt-2.5 pb-1.5">
-        <div className="flex items-baseline gap-1.5 mb-1">
+        <div className="flex items-baseline gap-1.5 mb-0.5">
           <span className="price-new">{bestStore.price} ₸</span>
-          {worstPrice > bestStore.price && (
-            <span className="price-old">{worstPrice} ₸</span>
-          )}
         </div>
+        {product.pricePerUnit != null && product.pricePerUnitLabel && (
+          <div className="inline-flex items-center gap-1 mb-1 px-1.5 py-0.5 rounded-md bg-muted/60 border border-border/50 w-fit">
+            <Scale className="w-3 h-3 text-muted-foreground/70 shrink-0" />
+            <span className="text-[12px] font-semibold text-muted-foreground leading-none">
+              {product.pricePerUnit} ₸/{product.pricePerUnitLabel}
+            </span>
+          </div>
+        )}
         <SmartTitle title={product.name} />
 
       </div>

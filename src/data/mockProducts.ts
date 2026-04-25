@@ -33,6 +33,8 @@ export interface Product {
   breadcrumbs?: string[];
   priceHistory?: PriceHistoryPoint[];
   additionalImages?: string[];
+  pricePerUnit?: number;       // calculated unit price
+  pricePerUnitLabel?: string;  // unit label, e.g. "г", "мл", "шт"
 }
 
 export const allProducts: Product[] = [
