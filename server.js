@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 const API_BASE = "https://backend.minprice.kz/api";
 const SITE_URL = "https://minprice.kz";
 const DIST_DIR = path.join(__dirname, "dist");
+const SEO_DISCOVERY_RE = /^\/(?:robots\.txt|sitemap(?:-products(?:-\d+)?)?\.xml|sitemap-(?:categories|stores|static)\.xml)$/;
 
 // Читаем index.html один раз при старте
 const indexHtml = readFileSync(path.join(DIST_DIR, "index.html"), "utf-8");
@@ -243,25 +244,33 @@ async function proxySeoDiscovery(req, res) {
             headers: { Accept: req.path.endsWith(".txt") ? "text/plain" : "application/xml" },
             signal: AbortSignal.timeout(5000),
         });
-        if (!response.ok) throw new Error(`backend ${response.status}`);
         const text = await response.text();
-        res.setHeader("Cache-Control", "public, max-age=300");
-        res.type(req.path.endsWith(".txt") ? "text/plain" : "application/xml");
-        res.send(text);
-    } catch (err) {
-        console.error("SEO discovery proxy error:", err.message);
-        if (req.path === "/robots.txt") {
-            res.type("text/plain").send(`User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
-        } else {
-            res.type("application/xml").send('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
+        const contentType = response.headers.get("content-type");
+        const cacheControl = response.headers.get("cache-control");
+
+        if (cacheControl) {
+            res.setHeader("Cache-Control", cacheControl);
+        } else if (response.ok) {
+            res.setHeader("Cache-Control", "public, max-age=300");
         }
+
+        if (contentType) {
+            res.setHeader("Content-Type", contentType);
+        } else {
+            res.type(req.path.endsWith(".txt") ? "text/plain" : "application/xml");
+        }
+
+        res.status(response.status).send(text);
+    } catch (err) {
+        console.error(`SEO discovery proxy error for ${req.path}:`, err.message);
+        res
+            .status(502)
+            .type(req.path.endsWith(".txt") ? "text/plain" : "text/plain")
+            .send("SEO discovery upstream unavailable");
     }
 }
 
-app.get(
-    ["/robots.txt", "/sitemap.xml", "/sitemap-products.xml", "/sitemap-categories.xml", "/sitemap-stores.xml", "/sitemap-static.xml"],
-    proxySeoDiscovery
-);
+app.get(SEO_DISCOVERY_RE, proxySeoDiscovery);
 
 // ─── Статика (JS, CSS, assets) ────────────────────────────────────────────
 app.use(
