@@ -5,6 +5,7 @@ import { useCart } from "@/context/CartContext";
 import CitySelector from "@/components/CitySelector";
 import logo from "@/assets/logo.png";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
+import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 
 const navItems = [
   { to: "/", icon: Home, label: "Главная", matchExact: true },
@@ -23,6 +24,7 @@ const Header = () => {
   const { totalItems } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const historyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -87,8 +89,8 @@ const Header = () => {
                 <div
                   ref={historyRef}
                   className={`relative flex items-center w-full rounded-xl transition-all duration-200 ${isFocused
-                      ? "bg-card border-2 border-primary shadow-[0_0_16px_2px_hsl(var(--primary)/0.2)]"
-                      : "bg-secondary/70 border-2 border-transparent hover:border-border"
+                    ? "bg-card border-2 border-primary shadow-[0_0_16px_2px_hsl(var(--primary)/0.2)]"
+                    : "bg-secondary/70 border-2 border-transparent hover:border-border"
                     }`}
                 >
                   <Search
@@ -107,8 +109,8 @@ const Header = () => {
                   <button
                     type="submit"
                     className={`absolute right-2 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${searchQuery.trim()
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                        : "bg-muted text-muted-foreground"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground"
                       }`}
                   >
                     <ArrowUp className="w-3 h-3" />
@@ -180,26 +182,22 @@ const Header = () => {
 
               <button
                 className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => {/* scan barcode */ }}
+                onClick={() => setIsScannerOpen(true)}
               >
                 <ScanBarcode className="w-4.5 h-4.5" />
               </button>
-
-              <a
-                href="https://t.me/minimalprice_bot"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Telegram бот"
-                className="flex items-center justify-center w-8 h-8 rounded-lg text-[#229ED9] hover:bg-[#229ED9]/10 transition-all"
-              >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.447l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.112z"/>
-                </svg>
-              </a>
             </div>
           </div>
         </div>
       </header>
+
+      <BarcodeScannerModal 
+        open={isScannerOpen} 
+        onOpenChange={setIsScannerOpen} 
+        onScan={(barcode) => {
+          navigate(`/search?q=${encodeURIComponent(barcode)}`);
+        }} 
+      />
 
       {/* Mobile bottom nav */}
       <MobileBottomNav />

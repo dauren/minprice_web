@@ -1,25 +1,27 @@
-import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
-import { Link, useNavigate, useNavigationType } from "react-router-dom";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 import { Search, ArrowUp, Clock, X } from "lucide-react";
 import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
-import { useBestDeals, useChains } from "@/hooks/useApi";
+import { useInfiniteBestDeals, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 
-const DEALS_PER_PAGE = 24;
-
 const Index = () => {
-  const { data: bestDealsData, isLoading: isLoadingDeals } = useBestDeals();
+  const { 
+    data: bestDealsData, 
+    isLoading: isLoadingDeals,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteBestDeals();
   const { data: chainsData } = useChains();
   const navigate = useNavigate();
-  const navigationType = useNavigationType();
 
-  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -39,20 +41,8 @@ const Index = () => {
 
   useScrollRestoration("index");
 
-  // Restore page count when navigating back so the list is long enough to scroll
-  useLayoutEffect(() => {
-    if (navigationType === "POP") {
-      const saved = sessionStorage.getItem("index:page");
-      if (saved) setPage(parseInt(saved, 10));
-    } else {
-      sessionStorage.removeItem("index:page");
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Persist page count so it survives back navigation
-  useEffect(() => {
-    sessionStorage.setItem("index:page", String(page));
-  }, [page]);
+  // TanStack Query handles caching of infinite pages automatically
+  // No need to manually restore page count unless cache expires
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,22 +65,18 @@ const Index = () => {
 
   // Load more pages when scrolling to bottom
   useEffect(() => {
-    if (inView) {
-      setPage((prev) => prev + 1);
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [inView]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const allDeals = useMemo(() => {
-    if (!bestDealsData?.deals) return [];
-    return transformProducts(bestDealsData.deals);
+    if (!bestDealsData?.pages) return [];
+    const deals = bestDealsData.pages.flatMap((p) => p.deals);
+    return transformProducts(deals);
   }, [bestDealsData]);
 
-  // Locally slice the deals to paginate
-  const displayedDeals = useMemo(() => {
-    return allDeals.slice(0, page * DEALS_PER_PAGE);
-  }, [allDeals, page]);
-
-  const hasMore = displayedDeals.length < allDeals.length;
+  const totalDealsCount = bestDealsData?.pages[0]?.total || allDeals.length;
 
   return (
     <div className="min-h-screen bg-background pb-40 sm:pb-24">
@@ -180,7 +166,7 @@ const Index = () => {
           <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
             🔥 Выгодные предложения
           </h2>
-          <span className="text-sm text-muted-foreground">{allDeals.length} товаров</span>
+          <span className="text-sm text-muted-foreground">{totalDealsCount} товаров</span>
         </div>
 
         {isLoadingDeals ? (
@@ -196,12 +182,12 @@ const Index = () => {
         ) : (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-              {displayedDeals.map((product) => (
+              {allDeals.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
-            {hasMore && (
+            {hasNextPage && (
               <div ref={ref} className="w-full flex justify-center mt-8 h-12">
                 <div className="flex gap-1.5 items-center justify-center">
                   <div className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.3s]" />

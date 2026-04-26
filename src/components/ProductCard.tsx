@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Scale } from "lucide-react";
 import { Product } from "@/data/mockProducts";
 import { useCart } from "@/context/CartContext";
 import StoreLogo from "@/components/StoreLogo";
@@ -74,6 +74,7 @@ const SmartTitle = ({ title }: { title: string }) => {
 const ProductCard = ({ product }: { product: Product }) => {
   const { items, addItem, updateQuantity, removeItem } = useCart();
   const { toast } = useToast();
+  const [justAdded, setJustAdded] = useState(false);
 
   if (!product.stores || product.stores.length === 0) return null;
 
@@ -82,7 +83,6 @@ const ProductCard = ({ product }: { product: Product }) => {
   const bestStore = candidateStores.reduce((a, b) => (a.price < b.price ? a : b));
   // The 'worstPrice' (reference price) aligns with the robust robust calculation done in transformers.
   const worstPrice = bestStore.price + (product.savingsAmount || 0);
-  const [justAdded, setJustAdded] = useState(false);
 
   const cartItem = items.find((i) => i.product.uuid === product.id);
   const quantity = cartItem?.quantity || 0;
@@ -150,12 +150,17 @@ const ProductCard = ({ product }: { product: Product }) => {
 
       {/* Price + Name */}
       <div className="px-3 pt-2.5 pb-1.5">
-        <div className="flex items-baseline gap-1.5 mb-1">
+        <div className="flex items-baseline gap-1.5 mb-0.5">
           <span className="price-new">{bestStore.price} ₸</span>
-          {worstPrice > bestStore.price && (
-            <span className="price-old">{worstPrice} ₸</span>
-          )}
         </div>
+        {product.pricePerUnit != null && product.pricePerUnitLabel && (
+          <div className="inline-flex items-center gap-1 mb-1 px-1.5 py-0.5 rounded-md bg-muted/60 border border-border/50 w-fit">
+            <Scale className="w-3 h-3 text-muted-foreground/70 shrink-0" />
+            <span className="text-[12px] font-semibold text-muted-foreground leading-none">
+              {product.pricePerUnit} ₸/{product.pricePerUnitLabel}
+            </span>
+          </div>
+        )}
         <SmartTitle title={product.name} />
 
       </div>
@@ -175,7 +180,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  {store.oldPrice && (
+                  {store.oldPrice && store.inStock !== false && (
                     <span className="line-through text-muted-foreground/60">
                       {store.oldPrice}
                     </span>

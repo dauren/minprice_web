@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, Bell, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import html2canvas from "html2canvas";
 import StoreLogo from "@/components/StoreLogo";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
@@ -325,7 +325,7 @@ const ProductPage = () => {
 
                   {/* Price */}
                   <div className="text-right shrink-0">
-                    {store.oldPrice && (
+                    {store.oldPrice && store.inStock !== false && (
                       <p className="text-[11px] line-through text-muted-foreground/60">{store.oldPrice} ₸</p>
                     )}
                     <p className={`text-sm font-bold ${isBest ? "text-foreground" : "text-muted-foreground"}`}>
@@ -421,16 +421,6 @@ const ProductPage = () => {
           )}
         </div>}
 
-        {/* Watch price alert */}
-        <div className="mb-3">
-          <button
-            onClick={() => window.open(`https://t.me/minimalprice_bot?start=watch_${id}_${selectedCityId}`, '_blank')}
-            className="w-full h-10 rounded-xl border border-border text-muted-foreground text-sm flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
-          >
-            <Bell size={15} />
-            <span>Следить за ценой</span>
-          </button>
-        </div>
 
         {/* Price History Chart */}
         {chartData.length > 0 && (
