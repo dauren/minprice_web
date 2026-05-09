@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import html2canvas from "html2canvas";
 import StoreLogo from "@/components/StoreLogo";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
@@ -32,6 +32,7 @@ const ProductPage = () => {
   const { selectedCityId } = useCity();
   const [expandedStore, setExpandedStore] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [imgError, setImgError] = useState(false);
   const { copiedKey, copy } = useCopy();
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -211,17 +212,27 @@ const ProductPage = () => {
                       <span className="savings-badge text-[10px]">-{product.savingsAmount} ₸</span>
                     )}
                   </div>
-                  <img src={currentImage} alt={product.name} className="w-full h-full object-cover" />
+                  <img 
+                    src={currentImage} 
+                    alt={product.name} 
+                    className={`w-full h-full object-cover ${imgError ? 'hidden' : ''}`}
+                    onError={() => setImgError(true)} 
+                  />
+                  {imgError && (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageOff className="w-10 h-10 text-muted-foreground/20" />
+                    </div>
+                  )}
                   {allImages.length > 1 && (
                     <>
                       <button
-                        onClick={() => setSelectedImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length)}
+                        onClick={() => { setSelectedImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length); setImgError(false); }}
                         className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
                       >
                         <ChevronLeft className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => setSelectedImageIndex((prev) => (prev + 1) % allImages.length)}
+                        onClick={() => { setSelectedImageIndex((prev) => (prev + 1) % allImages.length); setImgError(false); }}
                         className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
                       >
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -230,7 +241,7 @@ const ProductPage = () => {
                         {allImages.map((_, i) => (
                           <button
                             key={i}
-                            onClick={() => setSelectedImageIndex(i)}
+                            onClick={() => { setSelectedImageIndex(i); setImgError(false); }}
                             className={`w-1.5 h-1.5 rounded-full transition-colors ${i === selectedImageIndex ? "bg-white" : "bg-white/40"}`}
                           />
                         ))}
@@ -350,6 +361,7 @@ const ProductPage = () => {
                             src={store.extProductImage}
                             alt={store.extProductTitle || ""}
                             className="w-14 h-14 rounded-lg object-cover shrink-0 bg-secondary/30"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
                           />
                         )}
                         <div className="flex-1 min-w-0 flex items-start gap-2">

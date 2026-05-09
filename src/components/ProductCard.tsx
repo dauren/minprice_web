@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Plus, Minus, Scale } from "lucide-react";
+import { Plus, Minus, Scale, ImageOff } from "lucide-react";
 import { Product } from "@/data/mockProducts";
 import { useCart } from "@/context/CartContext";
 import StoreLogo from "@/components/StoreLogo";
@@ -75,6 +75,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   const { items, addItem, updateQuantity, removeItem } = useCart();
   const { toast } = useToast();
   const [justAdded, setJustAdded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   if (!product.stores || product.stores.length === 0) return null;
 
@@ -138,13 +139,15 @@ const ProductCard = ({ product }: { product: Product }) => {
             <span className="savings-badge">-{product.savingsAmount} ₸</span>
           )}
         </div>
-        <div className="aspect-square rounded-lg bg-secondary/50 overflow-hidden">
+        <div className="aspect-square rounded-lg bg-secondary/50 overflow-hidden flex items-center justify-center">
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${imgError ? 'hidden' : ''}`}
             loading="lazy"
+            onError={() => setImgError(true)}
           />
+          {imgError && <ImageOff className="w-10 h-10 text-muted-foreground/20" />}
         </div>
       </div>
 
