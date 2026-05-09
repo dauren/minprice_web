@@ -102,6 +102,12 @@ export default {
           "50%": { transform: "translateX(-100%)", opacity: "0", maxHeight: "200px" },
           "100%": { transform: "translateX(-100%)", opacity: "0", maxHeight: "0", padding: "0", margin: "0" },
         },
+        "dance": {
+          "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
+          "25%": { transform: "translateY(-5px) rotate(-10deg)" },
+          "50%": { transform: "translateY(0) rotate(0deg)" },
+          "75%": { transform: "translateY(-5px) rotate(10deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -110,6 +116,7 @@ export default {
         "scale-in": "scale-in 0.25s ease-out",
         "shimmer": "shimmer 3s ease-in-out infinite",
         "slide-out-left": "slide-out-left 0.4s ease-out forwards",
+        "dance": "dance 1s ease-in-out infinite",
       },
     },
   },

@@ -16,7 +16,7 @@ const navItems = [
   { to: "/cart", icon: ShoppingCart, label: "Корзина", hasBadge: true },
 ];
 
-const Header = () => {
+const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -67,6 +67,10 @@ const Header = () => {
   };
 
   const isSearchPage = location.pathname.startsWith("/search");
+  const qParams = new URLSearchParams(location.search);
+  const q = qParams.get("q") || "";
+  const isCucumberQuery = q.toLowerCase().includes("огурец") || q.toLowerCase().includes("огурцы");
+  const isDancing = forceDance || isCucumberQuery;
 
   return (
     <>
@@ -75,8 +79,8 @@ const Header = () => {
         <div className="max-w-6xl mx-auto px-3 sm:px-6">
           {/* Top row: logo + nav + actions */}
           <div className="flex items-center justify-between h-12 sm:h-14 gap-3">
-            <Link to="/" className="shrink-0 flex items-center gap-1.5">
-              <img src={logo} alt="minprice.kz" className="w-9 h-9 sm:w-11 sm:h-11 object-contain" />
+            <Link to="/" className="shrink-0 flex items-center gap-1.5 group">
+              <img src={logo} alt="minprice.kz" className={`w-9 h-9 sm:w-11 sm:h-11 object-contain origin-bottom ${isDancing ? "animate-dance" : "group-hover:animate-dance"}`} />
               <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground hidden sm:block">
                 minprice.kz
               </span>

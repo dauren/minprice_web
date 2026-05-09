@@ -140,6 +140,7 @@ const ProductPage = () => {
 
   if (!product) return null;
 
+  const hasCucumber = product.name.toLowerCase().includes("огурец") || product.name.toLowerCase().includes("огурцы");
   const hasStores = product.stores.length > 0;
 
   const handleExportChart = async () => {
@@ -177,7 +178,7 @@ const ProductPage = () => {
         url={`/product/${product.id}`}
         type="product"
       />
-      <Header />
+      <Header forceDance={hasCucumber} />
 
       <main className="max-w-2xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
         {/* Back + Share */}
