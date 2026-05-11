@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { X, Tag, ShoppingCart, ScanBarcode, Bell, ArrowUpRight } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
@@ -16,13 +16,13 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
   const { data: chainsData } = useChains();
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[95vw] rounded-[32px] p-0 bg-[#F4F6F9] dark:bg-zinc-950 border-none overflow-hidden max-h-[90vh] flex flex-col my-4">
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="max-w-md mx-auto w-full rounded-t-[32px] p-0 bg-[#F4F6F9] dark:bg-zinc-950 border-none overflow-hidden max-h-[80vh] flex flex-col">
         <VisuallyHidden>
-          <DialogTitle>О приложении minprice.kz</DialogTitle>
+          <DrawerTitle>О приложении minprice.kz</DrawerTitle>
         </VisuallyHidden>
         
-        <div className="overflow-y-auto px-4 py-5 sm:px-6 custom-scrollbar">
+        <div className="overflow-y-auto px-4 pb-5 pt-2 sm:px-6 custom-scrollbar">
           {/* Header Card */}
           <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 mb-6 shadow-sm border border-black/5 dark:border-white/5 relative">
             <button 
@@ -143,8 +143,8 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
             Цены отображаются по данным партнёрских магазинов и могут отличаться от итоговых на кассе.
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

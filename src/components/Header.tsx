@@ -178,7 +178,7 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
               })}
             </nav>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
               <button
                 onClick={toggleTheme}
                 className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
@@ -189,17 +189,17 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
               <CitySelector />
 
               <button
-                className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
                 onClick={() => setIsScannerOpen(true)}
               >
-                <ScanBarcode className="w-4.5 h-4.5" />
+                <ScanBarcode className="w-[18px] h-[18px]" />
               </button>
 
               <button
-                className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
                 onClick={() => setIsAboutOpen(true)}
               >
-                <Info className="w-4.5 h-4.5" />
+                <Info className="w-[18px] h-[18px]" />
               </button>
             </div>
           </div>
