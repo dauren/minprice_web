@@ -1,4 +1,4 @@
-import { Search, ShoppingCart, Home, Tag, Moon, Sun, LayoutGrid, ScanBarcode, ArrowUp, Clock, X } from "lucide-react";
+import { Search, ShoppingCart, Home, Tag, Moon, Sun, LayoutGrid, ScanBarcode, ArrowUp, Clock, X, Info } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
@@ -7,6 +7,7 @@ import IosAppBanner from "@/components/IosAppBanner";
 import logo from "@/assets/logo.png";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
+import { AboutModal } from "@/components/AboutModal";
 
 const navItems = [
   { to: "/", icon: Home, label: "Главная", matchExact: true },
@@ -26,6 +27,7 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const historyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -192,6 +194,13 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
               >
                 <ScanBarcode className="w-4.5 h-4.5" />
               </button>
+
+              <button
+                className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setIsAboutOpen(true)}
+              >
+                <Info className="w-4.5 h-4.5" />
+              </button>
             </div>
           </div>
         </div>
@@ -204,6 +213,8 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
           navigate(`/search?q=${encodeURIComponent(barcode)}`);
         }} 
       />
+
+      <AboutModal open={isAboutOpen} onOpenChange={setIsAboutOpen} />
 
       {/* Mobile bottom nav */}
       <MobileBottomNav />
