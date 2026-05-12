@@ -10,15 +10,19 @@ import { useInfiniteBestDeals, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
+import { getChainIdsFromCookie, setChainIdsToCookie } from "@/lib/chainCookies";
+
 
 const Index = () => {
+  const [selectedChainIds, setSelectedChainIds] = useState<number[]>(getChainIdsFromCookie);
+
   const { 
     data: bestDealsData, 
     isLoading: isLoadingDeals,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useInfiniteBestDeals();
+  } = useInfiniteBestDeals(selectedChainIds.length > 0 ? selectedChainIds : undefined);
   const { data: chainsData } = useChains();
   const navigate = useNavigate();
 
@@ -63,6 +67,16 @@ const Index = () => {
     setShowHistory(false);
   };
 
+  const toggleChain = (chainId: number) => {
+    setSelectedChainIds((prev) => {
+      const next = prev.includes(chainId)
+        ? prev.filter((id) => id !== chainId)
+        : [...prev, chainId];
+      setChainIdsToCookie(next);
+      return next;
+    });
+  };
+
   // Load more pages when scrolling to bottom
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -84,25 +98,6 @@ const Index = () => {
       <Header />
 
       <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 mb-8">
-        {/* Compact hero */}
-        <div className="mb-6 flex items-center gap-3 rounded-xl bg-secondary/50 border border-border px-4 py-3">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-base font-bold text-foreground">
-              Сравнение цен на продукты
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Находим минимальную цену в {chainsData?.chains.length || 5} магазинах
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {chainsData?.chains.map((chain) => (
-              <span key={chain.id} title={chain.name} className="w-7 h-7 rounded-full bg-background border border-border flex items-center justify-center overflow-hidden">
-                <StoreLogo store={chain.name} logoUrl={chain.logo} size="sm" />
-              </span>
-            ))}
-          </div>
-        </div>
-
         {/* Search bar under hero */}
         <form onSubmit={handleSearch} className="mb-6">
           <div
@@ -161,6 +156,42 @@ const Index = () => {
             )}
           </div>
         </form>
+
+        {/* Store Icon Filters */}
+        {chainsData && chainsData.chains.length > 0 && (
+          <div className="flex items-center gap-2 mb-6">
+            {chainsData.chains.map((chain) => {
+              const isActive = selectedChainIds.includes(chain.id);
+              return (
+                <button
+                  key={chain.id}
+                  onClick={() => toggleChain(chain.id)}
+                  title={chain.name}
+                  type="button"
+                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all border-2 ${isActive
+                    ? "border-primary bg-primary/10 shadow-[0_0_8px_hsl(var(--primary)/0.3)] scale-110"
+                    : "border-border bg-card hover:border-foreground/30 opacity-60 hover:opacity-100"
+                    }`}
+                >
+                  <StoreLogo store={chain.name} logoUrl={chain.logo} size="md" />
+                </button>
+              );
+            })}
+
+            {selectedChainIds.length > 0 && (
+              <button
+                onClick={() => {
+                  setSelectedChainIds([]);
+                  setChainIdsToCookie([]);
+                }}
+                type="button"
+                className="text-xs text-primary hover:text-primary/80 transition-colors ml-1 font-medium"
+              >
+                Сбросить
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">

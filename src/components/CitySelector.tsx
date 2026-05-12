@@ -23,7 +23,7 @@ const CitySelector = () => {
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-1.5 text-xs sm:text-sm text-foreground hover:text-foreground/80 transition-colors outline-none">
         <MapPin className="w-4 h-4" />
-        <span className="hidden sm:inline">{currentCity?.name || 'Алматы'}</span>
+        <span>{currentCity?.name || 'Алматы'}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         {citiesData?.cities.map((city) => (

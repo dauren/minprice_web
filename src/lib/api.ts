@@ -132,9 +132,10 @@ export const API_ENDPOINTS = {
     if (page !== undefined) url += `&page=${page}`;
     return url;
   },
-  bestDeals: (cityId?: number, page?: number) => {
+  bestDeals: (cityId?: number, chainIds?: number[], page?: number) => {
     const params = new URLSearchParams();
     if (cityId) params.append('city_id', cityId.toString());
+    if (chainIds && chainIds.length > 0) params.append('chain_ids', chainIds.join(','));
     if (page) params.append('page', page.toString());
     const qs = params.toString();
     return `/best-deals/${qs ? `?${qs}` : ''}`;

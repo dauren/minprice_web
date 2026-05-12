@@ -83,74 +83,12 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
           <div className="flex items-center justify-between h-12 sm:h-14 gap-3">
             <Link to="/" className="shrink-0 flex items-center gap-1.5 group">
               <img src={logo} alt="minprice.kz" className={`w-9 h-9 sm:w-11 sm:h-11 object-contain origin-bottom ${isDancing ? "animate-dance" : "group-hover:animate-dance"}`} />
-              <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground hidden sm:block">
+              <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
                 minprice.kz
               </span>
             </Link>
 
-            {/* Search bar — always visible in header, hidden on search page (it has its own) */}
-            {!isSearchPage && (
-              <form
-                onSubmit={handleSearch}
-                className="hidden sm:flex flex-1 max-w-md mx-4"
-              >
-                <div
-                  ref={historyRef}
-                  className={`relative flex items-center w-full rounded-xl transition-all duration-200 ${isFocused
-                    ? "bg-card border-2 border-primary shadow-[0_0_16px_2px_hsl(var(--primary)/0.2)]"
-                    : "bg-secondary/70 border-2 border-transparent hover:border-border"
-                    }`}
-                >
-                  <Search
-                    className={`absolute left-3 w-4 h-4 transition-colors ${isFocused ? "text-primary" : "text-muted-foreground"
-                      }`}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Поиск товаров..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => { setIsFocused(true); setShowHistory(true); }}
-                    onBlur={() => setIsFocused(false)}
-                    className="w-full pl-9 pr-10 h-9 bg-transparent text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className={`absolute right-2 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${searchQuery.trim()
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground"
-                      }`}
-                  >
-                    <ArrowUp className="w-3 h-3" />
-                  </button>
-                  {showHistory && !searchQuery && searchHistory.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
-                      {searchHistory.map((term) => (
-                        <button
-                          key={term}
-                          type="button"
-                          onMouseDown={() => handleHeaderHistoryClick(term)}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-secondary/50 transition-colors"
-                        >
-                          <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
-                          <span className="flex-1 text-left truncate">{term}</span>
-                          <span
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                              removeSearchHistoryItem(term);
-                              setSearchHistory(getSearchHistory());
-                            }}
-                            className="shrink-0 text-muted-foreground hover:text-foreground p-0.5"
-                          >
-                            <X className="w-3 h-3" />
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </form>
-            )}
+
 
             {/* Desktop Navigation */}
             <nav className="hidden sm:flex items-center gap-5 shrink-0">

@@ -9,10 +9,11 @@ import mascot from "@/assets/logo.png";
 import PageMeta from "@/components/PageMeta";
 import { useDiscounts, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
+import { getChainIdsFromCookie, setChainIdsToCookie } from "@/lib/chainCookies";
 
 const DiscountsPage = () => {
     const navigationType = useNavigationType();
-    const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
+    const [selectedChainIds, setSelectedChainIds] = useState<number[]>(getChainIdsFromCookie);
     const [sortBy, setSortBy] = useState<"discount" | "price">("discount");
     const [showSortMenu, setShowSortMenu] = useState(false);
     const [page, setPage] = useState(1);
@@ -41,11 +42,13 @@ const DiscountsPage = () => {
     const { data: chainsData } = useChains();
 
     const toggleChain = (chainId: number) => {
-        setSelectedChainIds((prev) =>
-            prev.includes(chainId)
+        setSelectedChainIds((prev) => {
+            const next = prev.includes(chainId)
                 ? prev.filter((id) => id !== chainId)
-                : [...prev, chainId]
-        );
+                : [...prev, chainId];
+            setChainIdsToCookie(next);
+            return next;
+        });
         setPage(1); // Reset page when filter changes
     };
 
@@ -115,7 +118,11 @@ const DiscountsPage = () => {
 
                         {selectedChainIds.length > 0 && (
                             <button
-                                onClick={() => { setSelectedChainIds([]); setPage(1); }}
+                                onClick={() => { 
+                                    setSelectedChainIds([]); 
+                                    setChainIdsToCookie([]); 
+                                    setPage(1); 
+                                }}
                                 className="text-xs text-primary hover:text-primary/80 transition-colors ml-1 font-medium"
                             >
                                 Сбросить

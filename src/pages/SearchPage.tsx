@@ -11,6 +11,8 @@ import { useInfiniteSearch, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
+import { getChainIdsFromCookie, setChainIdsToCookie } from "@/lib/chainCookies";
+
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,7 +23,7 @@ const SearchPage = () => {
   useScrollRestoration(`search:${location.search}`);
 
   const [inputValue, setInputValue] = useState(query);
-  const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
+  const [selectedChainIds, setSelectedChainIds] = useState<number[]>(getChainIdsFromCookie);
   const [sortBy, setSortBy] = useState<"discount" | "price">(
     sortParam === "price" ? "price" : "discount"
   );
@@ -117,11 +119,13 @@ const SearchPage = () => {
   };
 
   const toggleChain = (chainId: number) => {
-    setSelectedChainIds((prev) =>
-      prev.includes(chainId)
+    setSelectedChainIds((prev) => {
+      const next = prev.includes(chainId)
         ? prev.filter((id) => id !== chainId)
-        : [...prev, chainId]
-    );
+        : [...prev, chainId];
+      setChainIdsToCookie(next);
+      return next;
+    });
   };
 
   // Sort on frontend PER PAGE to preserve Meilisearch relevance tiers
@@ -233,7 +237,10 @@ const SearchPage = () => {
 
             {selectedChainIds.length > 0 && (
               <button
-                onClick={() => setSelectedChainIds([])}
+                onClick={() => {
+                  setSelectedChainIds([]);
+                  setChainIdsToCookie([]);
+                }}
                 className="text-xs text-primary hover:text-primary/80 transition-colors ml-1 font-medium"
               >
                 Сбросить

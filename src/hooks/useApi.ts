@@ -53,21 +53,21 @@ export const useInfiniteSearch = (query: string, chainIds?: number[]) => {
 };
 
 // Get best deals
-export const useBestDeals = () => {
+export const useBestDeals = (chainIds?: number[]) => {
   const { selectedCityId } = useCity();
   return useQuery({
-    queryKey: ['bestDeals', selectedCityId],
-    queryFn: () => apiClient.get<BestDealsResponse>(API_ENDPOINTS.bestDeals(selectedCityId)),
+    queryKey: ['bestDeals', selectedCityId, chainIds],
+    queryFn: () => apiClient.get<BestDealsResponse>(API_ENDPOINTS.bestDeals(selectedCityId, chainIds)),
   });
 };
 
-export const useInfiniteBestDeals = () => {
+export const useInfiniteBestDeals = (chainIds?: number[]) => {
   const { selectedCityId } = useCity();
   return useInfiniteQuery({
-    queryKey: ['bestDeals-infinite', selectedCityId],
+    queryKey: ['bestDeals-infinite', selectedCityId, chainIds],
     queryFn: async ({ pageParam = 1 }) => {
       return apiClient.get<BestDealsResponse>(
-        API_ENDPOINTS.bestDeals(selectedCityId, pageParam)
+        API_ENDPOINTS.bestDeals(selectedCityId, chainIds, pageParam)
       );
     },
     getNextPageParam: (lastPage) => {
