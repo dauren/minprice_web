@@ -35,7 +35,7 @@ const CartPage = () => {
   const {
     cartUuid, cartName, items, unavailableProducts, singleStoreTotals, removeItem, updateQuantity,
     clearCart, totalPrice, totalItems, isOwner, isLoading, renameCart, archiveCart, deleteCart,
-    addItem, selectedStoreIds, updateStorePreferences, availableStores
+    addItem, selectedChainIds, updateStorePreferences, availableStores
   } = useCart();
   const [viewMode, setViewMode] = useState<'mix' | 'single'>('mix');
   const [isRenameOpen, setIsRenameOpen] = useState(false);
@@ -45,7 +45,7 @@ const CartPage = () => {
   useEffect(() => {
     setNewCartName(cartName);
   }, [cartName]);
-  const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(selectedStoreIds);
+  const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(selectedChainIds);
   const [isApplying, setIsApplying] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -64,14 +64,13 @@ const CartPage = () => {
 
   // Sync local selection with context
   useEffect(() => {
-    setLocalSelectedIds(selectedStoreIds);
-  }, [selectedStoreIds]);
+    setLocalSelectedIds(selectedChainIds);
+  }, [selectedChainIds]);
 
   const chainGroups = useMemo(() => {
-    const groups: Record<string, { storeIds: number[]; logo: string | null }> = {};
+    const groups: Record<string, { chainId: number; logo: string | null }> = {};
     for (const s of availableStores) {
-      if (!groups[s.chain_name]) groups[s.chain_name] = { storeIds: [], logo: s.chain_logo };
-      groups[s.chain_name].storeIds.push(s.store_id);
+      if (!groups[s.chain_name]) groups[s.chain_name] = { chainId: s.chain_id, logo: s.chain_logo };
     }
     return groups;
   }, [availableStores]);
@@ -238,17 +237,16 @@ const CartPage = () => {
     }
   };
 
-  const isChainSelected = (storeIds: number[]) =>
-    localSelectedIds.length === 0 || storeIds.some(id => localSelectedIds.includes(id));
+  const isChainSelected = (chainId: number) =>
+    localSelectedIds.length === 0 || localSelectedIds.includes(chainId);
 
-  const toggleChain = (storeIds: number[]) => {
+  const toggleChain = (chainId: number) => {
     setLocalSelectedIds(prev => {
-      const allIds = availableStores.map(s => s.store_id);
+      const allIds = Object.values(chainGroups).map(g => g.chainId);
       const effective = prev.length === 0 ? allIds : prev;
-      const hasAny = storeIds.some(id => effective.includes(id));
-      return hasAny
-        ? effective.filter(id => !storeIds.includes(id))
-        : [...prev, ...storeIds.filter(id => !prev.includes(id))];
+      return effective.includes(chainId)
+        ? effective.filter(id => id !== chainId)
+        : [...prev, chainId];
     });
   };
 
@@ -262,11 +260,12 @@ const CartPage = () => {
     }
   };
 
-  const switchToChain = async (chainName: string, fallbackStoreId: number) => {
+  const switchToChain = async (chainName: string) => {
     setIsApplying(true);
     try {
-      const storeIds = chainGroups[chainName]?.storeIds ?? [fallbackStoreId];
-      await updateStorePreferences(storeIds);
+      const chainId = chainGroups[chainName]?.chainId;
+      if (!chainId) return;
+      await updateStorePreferences([chainId]);
       toast({ title: `Показываю только ${chainName}` });
     } finally {
       setIsApplying(false);
@@ -385,12 +384,12 @@ const CartPage = () => {
                 <p className="text-xs text-muted-foreground">Загрузка...</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {Object.entries(chainGroups).map(([chainName, { storeIds, logo }]) => {
-                    const isSelected = isChainSelected(storeIds);
+                  {Object.entries(chainGroups).map(([chainName, { chainId, logo }]) => {
+                    const isSelected = isChainSelected(chainId);
                     return (
                       <button
                         key={chainName}
-                        onClick={() => toggleChain(storeIds)}
+                        onClick={() => toggleChain(chainId)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${isSelected
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border bg-secondary/50 text-muted-foreground"
@@ -527,7 +526,7 @@ const CartPage = () => {
                     <div className="flex items-center gap-2">
                       {isOwner && (
                         <button
-                          onClick={() => switchToChain(chainName, storeItems[0].store_id)}
+                          onClick={() => switchToChain(chainName)}
                           disabled={isApplying}
                           className="text-[10px] text-muted-foreground hover:text-primary transition-colors disabled:opacity-50 flex items-center gap-1"
                           title="Показать корзину только из этого магазина"

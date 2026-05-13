@@ -46,6 +46,7 @@ export interface UnavailableProduct {
 export interface AvailableStore {
   store_id: number;
   store_name: string;
+  chain_id: number;
   chain_name: string;
   chain_logo: string | null;
 }
@@ -85,7 +86,7 @@ interface CartContextType {
   totalPrice: number;
   isOwner: boolean;
   isLoading: boolean;
-  selectedStoreIds: number[];
+  selectedChainIds: number[];
   availableStores: AvailableStore[];
 
   // Actions
@@ -97,7 +98,7 @@ interface CartContextType {
   renameCart: (newName: string) => Promise<void>;
   archiveCart: () => Promise<void>;
   deleteCart: (uuid: string) => Promise<void>;
-  updateStorePreferences: (storeIds: number[]) => Promise<void>;
+  updateStorePreferences: (chainIds: number[]) => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -111,7 +112,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [isOwner, setIsOwner] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [selectedStoreIds, setSelectedStoreIds] = useState<number[]>([]);
+  const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
   const [availableStores, setAvailableStores] = useState<AvailableStore[]>([]);
   const [singleStoreTotals, setSingleStoreTotals] = useState<SingleStoreTotal[]>([]);
 
@@ -153,8 +154,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const fetchPreferences = async () => {
     try {
       const pref = await apiClient.get<any>(API_ENDPOINTS.storePreferences());
-      if (pref && pref.store_ids) {
-        setSelectedStoreIds(pref.store_ids);
+      if (pref && pref.chain_ids) {
+        setSelectedChainIds(pref.chain_ids);
       }
     } catch (e) {
       console.error("Failed to fetch preferences:", e);
@@ -290,10 +291,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateStorePreferences = async (storeIds: number[]) => {
+  const updateStorePreferences = async (chainIds: number[]) => {
     try {
-      await apiClient.patch(API_ENDPOINTS.storePreferences(), { store_ids: storeIds });
-      setSelectedStoreIds(storeIds);
+      await apiClient.patch(API_ENDPOINTS.storePreferences(), { chain_ids: chainIds });
+      setSelectedChainIds(chainIds);
       if (cartUuid) {
         await fetchCartSummary(cartUuid);
       }
@@ -305,7 +306,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CartContext.Provider
       value={{
-        cartUuid, cartName, items, unavailableProducts, singleStoreTotals, totalItems, totalPrice, isOwner, isLoading, selectedStoreIds, availableStores,
+        cartUuid, cartName, items, unavailableProducts, singleStoreTotals, totalItems, totalPrice, isOwner, isLoading, selectedChainIds, availableStores,
         fetchCart, addItem, removeItem, updateQuantity, clearCart, renameCart, archiveCart, deleteCart, updateStorePreferences
       }}
     >
