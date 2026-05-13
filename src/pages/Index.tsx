@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
+import { useQueryClient } from "@tanstack/react-query";
 import { Search, ArrowUp, Clock, X } from "lucide-react";
 import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
@@ -10,19 +11,26 @@ import { useInfiniteBestDeals, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
-import { getChainIdsFromCookie, setChainIdsToCookie } from "@/lib/chainCookies";
+import { useCart } from "@/context/CartContext";
 
 
 const Index = () => {
-  const [selectedChainIds, setSelectedChainIds] = useState<number[]>(getChainIdsFromCookie);
+  const { selectedChainIds: savedChainIds, updateStorePreferences } = useCart();
+  const [selectedChainIds, setSelectedChainIds] = useState<number[]>(savedChainIds);
+  const queryClient = useQueryClient();
 
-  const { 
-    data: bestDealsData, 
+  // Keep local selection in sync when preferences load from backend
+  useEffect(() => {
+    setSelectedChainIds(savedChainIds);
+  }, [savedChainIds]);
+
+  const {
+    data: bestDealsData,
     isLoading: isLoadingDeals,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useInfiniteBestDeals(selectedChainIds.length > 0 ? selectedChainIds : undefined);
+  } = useInfiniteBestDeals();
   const { data: chainsData } = useChains();
   const navigate = useNavigate();
 
@@ -67,14 +75,13 @@ const Index = () => {
     setShowHistory(false);
   };
 
-  const toggleChain = (chainId: number) => {
-    setSelectedChainIds((prev) => {
-      const next = prev.includes(chainId)
-        ? prev.filter((id) => id !== chainId)
-        : [...prev, chainId];
-      setChainIdsToCookie(next);
-      return next;
-    });
+  const toggleChain = async (chainId: number) => {
+    const next = selectedChainIds.includes(chainId)
+      ? selectedChainIds.filter((id) => id !== chainId)
+      : [...selectedChainIds, chainId];
+    setSelectedChainIds(next);
+    await updateStorePreferences(next);
+    queryClient.invalidateQueries({ queryKey: ['bestDeals-infinite'] });
   };
 
   // Load more pages when scrolling to bottom
@@ -180,9 +187,10 @@ const Index = () => {
 
             {selectedChainIds.length > 0 && (
               <button
-                onClick={() => {
+                onClick={async () => {
                   setSelectedChainIds([]);
-                  setChainIdsToCookie([]);
+                  await updateStorePreferences([]);
+                  queryClient.invalidateQueries({ queryKey: ['bestDeals-infinite'] });
                 }}
                 type="button"
                 className="text-xs text-primary hover:text-primary/80 transition-colors ml-1 font-medium"
