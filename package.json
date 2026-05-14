@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "start": "node server.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "deploy:vercel": "bash scripts/vercel-preview-deploy.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

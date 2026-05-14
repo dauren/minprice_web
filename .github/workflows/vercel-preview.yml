@@ -1,0 +1,52 @@
+name: Deploy Vercel Preview
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'README.md'
+      - 'VERCEL.md'
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  vercel-preview:
+    name: Deploy preview for non-production branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel preview
+        id: vercel
+        uses: amondnet/vercel-action@v42
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: .
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # production is false by default for non-main branches and PR previews
+
+      - name: Notify Telegram chat with preview URL
+        if: ${{ success() && steps.vercel.outputs.preview-url != '' }}
+        uses: appleboy/telegram-action@v0.4.0
+        with:
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          message: |
+            🧪 minprice.kz preview deployment ready
+            URL: ${{ steps.vercel.outputs.preview-url }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
