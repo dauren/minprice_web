@@ -8,20 +8,6 @@ const APP_LINK =
 const DISMISSED_KEY = "minprice_ios_app_banner_dismissed_at";
 const DISMISS_DAYS = 7;
 
-const isIosDevice = () => {
-  if (typeof window === "undefined") return false;
-
-  const ua = window.navigator.userAgent;
-  const platform = window.navigator.platform;
-  const maxTouchPoints = window.navigator.maxTouchPoints || 0;
-  const standalone = window.matchMedia("(display-mode: standalone)").matches;
-
-  const isiPhoneOrIPad = /iPad|iPhone|iPod/.test(ua);
-  const iPadOsDesktopMode = platform === "MacIntel" && maxTouchPoints > 1;
-
-  return !standalone && (isiPhoneOrIPad || iPadOsDesktopMode);
-};
-
 const isRecentlyDismissed = () => {
   try {
     const dismissedAt = Number(localStorage.getItem(DISMISSED_KEY));
@@ -38,7 +24,7 @@ const IosAppBanner = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setVisible(isIosDevice() && !isRecentlyDismissed());
+    setVisible(!isRecentlyDismissed());
   }, []);
 
   const dismiss = () => {
@@ -53,8 +39,8 @@ const IosAppBanner = () => {
   if (!visible) return null;
 
   return (
-    <div className="sm:hidden bg-background px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2">
-      <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-border/80 bg-card/95 px-3 py-2.5 shadow-[0_12px_36px_hsl(195_85%_48%/0.16)] backdrop-blur-xl">
+    <div className="bg-background px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2 sm:pt-3">
+      <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-border/80 bg-card/95 px-3 py-2.5 shadow-[0_12px_36px_hsl(195_85%_48%/0.16)] backdrop-blur-xl sm:max-w-6xl sm:px-4">
         <img
           src={logo}
           alt="minprice.kz"
