@@ -2,8 +2,6 @@ name: Deploy Vercel Preview
 
 on:
   push:
-    branches-ignore:
-      - main
     paths-ignore:
       - '**/*.md'
       - 'README.md'
@@ -21,7 +19,7 @@ permissions:
 
 jobs:
   vercel-preview:
-    name: Deploy preview for non-production branch
+    name: Deploy Vercel preview
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,7 +34,8 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # production is false by default for non-main branches and PR previews
+          vercel-args: '--target=preview'
+          # Force preview target even on main branch (prod deploy remains separate)
 
       - name: Notify Telegram chat with preview URL
         if: ${{ success() && steps.vercel.outputs.preview-url != '' && secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
