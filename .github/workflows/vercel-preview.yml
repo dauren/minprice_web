@@ -42,13 +42,17 @@ jobs:
 
       - name: Notify Telegram chat with preview URL
         if: ${{ success() && steps.vercel.outputs.preview-url != '' && env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
-        uses: appleboy/telegram-action@v0.4.0
-        with:
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          message: |
-            🧪 minprice.kz preview deployment ready
-            URL: ${{ steps.vercel.outputs.preview-url }}
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Actor: ${{ github.actor }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          message=$(cat <<MSG
+          🧪 minprice.kz preview deployment ready
+          URL: ${{ steps.vercel.outputs.preview-url }}
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+          Actor: ${{ github.actor }}
+          MSG
+          )
+          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}"
