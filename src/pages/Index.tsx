@@ -14,6 +14,8 @@ import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/l
 import { useCart } from "@/context/CartContext";
 
 
+const AUTO_LOAD_PAGES_LIMIT = 2;
+
 const Index = () => {
   const { selectedChainIds: savedChainIds, updateStorePreferences } = useCart();
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>(savedChainIds);
@@ -84,12 +86,16 @@ const Index = () => {
     queryClient.invalidateQueries({ queryKey: ['bestDeals-infinite'] });
   };
 
-  // Load more pages when scrolling to bottom
+  const loadedPagesCount = bestDealsData?.pages.length || 0;
+  const canAutoLoadMore = loadedPagesCount < AUTO_LOAD_PAGES_LIMIT;
+
+  // Load the first extra page automatically. After that, keep the footer reachable
+  // and let users decide when they want more products.
   useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage && canAutoLoadMore) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [inView, hasNextPage, isFetchingNextPage, canAutoLoadMore, fetchNextPage]);
 
   const allDeals = useMemo(() => {
     if (!bestDealsData?.pages) return [];
@@ -227,12 +233,23 @@ const Index = () => {
             </div>
 
             {hasNextPage && (
-              <div ref={ref} className="w-full flex justify-center mt-8 h-12">
-                <div className="flex gap-1.5 items-center justify-center">
-                  <div className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.3s]" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.15s]" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce" />
-                </div>
+              <div ref={ref} className="w-full flex justify-center mt-8 min-h-12">
+                {canAutoLoadMore ? (
+                  <div className="flex gap-1.5 items-center justify-center" aria-label="Загружаем ещё предложения">
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.3s]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.15s]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce" />
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className="rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isFetchingNextPage ? "Загружаем..." : "Показать ещё товары"}
+                  </button>
+                )}
               </div>
             )}
           </>
