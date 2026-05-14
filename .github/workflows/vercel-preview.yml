@@ -39,7 +39,7 @@ jobs:
           # production is false by default for non-main branches and PR previews
 
       - name: Notify Telegram chat with preview URL
-        if: ${{ success() && steps.vercel.outputs.preview-url != '' }}
+        if: ${{ success() && steps.vercel.outputs.preview-url != '' && secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
         uses: appleboy/telegram-action@v0.4.0
         with:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
