@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
 import mascot from "@/assets/logo.png";
-import { useInfiniteSearch, useChains } from "@/hooks/useApi";
+import { useInfiniteSearch, useChains, useSearchSuggestions } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
@@ -73,6 +73,8 @@ const SearchPage = () => {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
   const { data: chainsData } = useChains();
+  const { data: suggestionsData } = useSearchSuggestions(inputValue);
+  const suggestions = suggestionsData?.suggestions || [];
 
   // Close history dropdown when clicking outside
   useEffect(() => {
@@ -134,7 +136,7 @@ const SearchPage = () => {
     if (!query || !searchData?.pages) return [];
 
     return searchData.pages.flatMap((page) => {
-      const pageHits = transformProducts(page.hits || []);
+      const pageHits = transformProducts(page.hits || [], page.queryID);
       
       if (sortBy === "price") {
         pageHits.sort((a, b) => {
@@ -190,7 +192,7 @@ const SearchPage = () => {
                 <ScanBarcode className="w-4.5 h-4.5" />
               </button>
             )}
-            {showHistory && !query && searchHistory.length > 0 && (
+            {showHistory && !query && searchHistory.length > 0 && !inputValue && (
               <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
                 {searchHistory.map((term) => (
                   <button
@@ -208,6 +210,22 @@ const SearchPage = () => {
                     >
                       <X className="w-3 h-3" />
                     </button>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {showHistory && inputValue && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                {suggestions.map((term, index) => (
+                  <button
+                    key={`${term}-${index}`}
+                    type="button"
+                    onClick={() => handleHistoryClick(term)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                  >
+                    <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="flex-1 text-left truncate">{term}</span>
                   </button>
                 ))}
               </div>

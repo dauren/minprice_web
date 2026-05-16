@@ -13,6 +13,8 @@ import type {
   ChainsResponse,
   CategoriesResponse,
   ProductsResponse,
+  AlgoliaConfigResponse,
+  QuerySuggestionsResponse,
 } from '@/types/api';
 
 // Search products
@@ -47,6 +49,24 @@ export const useInfiniteSearch = (query: string, chainIds?: number[]) => {
     },
     initialPageParam: 0,
     enabled: query.length > 0,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useAlgoliaConfig = () => {
+  return useQuery({
+    queryKey: ['algoliaConfig'],
+    queryFn: () => apiClient.get<AlgoliaConfigResponse>(API_ENDPOINTS.algoliaConfig()),
+    staleTime: Infinity,
+  });
+};
+
+export const useSearchSuggestions = (query: string, limit?: number) => {
+  return useQuery({
+    queryKey: ['searchSuggestions', query, limit],
+    queryFn: () => apiClient.get<QuerySuggestionsResponse>(API_ENDPOINTS.searchSuggestions(query, limit)),
+    enabled: query.length > 1,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });

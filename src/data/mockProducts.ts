@@ -35,6 +35,8 @@ export interface Product {
   additionalImages?: string[];
   pricePerUnit?: number;       // calculated unit price
   pricePerUnitLabel?: string;  // unit label, e.g. "г", "мл", "шт"
+  queryID?: string;
+  __position?: number;
 }
 
 export const allProducts: Product[] = [

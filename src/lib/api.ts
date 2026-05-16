@@ -132,6 +132,12 @@ export const API_ENDPOINTS = {
     if (page !== undefined) url += `&page=${page}`;
     return url;
   },
+  searchSuggestions: (query: string, limit?: number) => {
+    let url = `/search/suggestions/?q=${encodeURIComponent(query)}`;
+    if (limit) url += `&limit=${limit}`;
+    return url;
+  },
+  algoliaConfig: () => '/algolia-config/',
   bestDeals: (cityId?: number, chainIds?: number[], page?: number) => {
     const params = new URLSearchParams();
     if (cityId) params.append('city_id', cityId.toString());

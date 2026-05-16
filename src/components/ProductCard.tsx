@@ -88,6 +88,14 @@ const ProductCard = ({ product }: { product: Product }) => {
   const cartItem = items.find((i) => i.product.uuid === product.id);
   const quantity = cartItem?.quantity || 0;
 
+  const handleProductClick = () => {
+    import('@/lib/algoliaInsights').then(({ sendProductClickEvent }) => {
+      if (product.queryID && product.__position !== undefined) {
+        sendProductClickEvent('Product Clicked', product.queryID, [product.id], [product.__position]);
+      }
+    });
+  };
+
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -97,6 +105,9 @@ const ProductCard = ({ product }: { product: Product }) => {
     toast({
       title: "Добавлено в корзину",
       description: product.name,
+    });
+    import('@/lib/algoliaInsights').then(({ sendProductAddToCartEvent }) => {
+      sendProductAddToCartEvent('Product Added to Cart', product.queryID, [product.id], bestStore.price, 1);
     });
   };
 
@@ -127,6 +138,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   return (
     <Link
       to={`/product/${product.id}`}
+      onClick={handleProductClick}
       className="group flex flex-col rounded-xl transition-all duration-200 overflow-hidden h-full"
     >
       {/* Image */}

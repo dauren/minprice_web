@@ -53,7 +53,7 @@ const calculateDiscountPercent = (currentPrice: number, oldPrice: number): numbe
 };
 
 // Transform API Product to Mock Product
-export const transformProduct = (apiProduct: ApiProduct | Deal): MockProduct => {
+export const transformProduct = (apiProduct: ApiProduct | Deal, queryID?: string): MockProduct => {
   // Product detail endpoint returns stores in price_range.stores
   // Other endpoints (deals, discounts) return stores directly
   const apiStores = 'price_range' in apiProduct && apiProduct.price_range?.stores
@@ -178,10 +178,12 @@ export const transformProduct = (apiProduct: ApiProduct | Deal): MockProduct => 
     additionalImages: 'additional_images' in apiProduct ? apiProduct.additional_images : undefined,
     pricePerUnit,
     pricePerUnitLabel,
+    __position: ('__position' in apiProduct) ? apiProduct.__position : undefined,
+    queryID,
   };
 };
 
 // Transform array of products
-export const transformProducts = (apiProducts: (ApiProduct | Deal)[]): MockProduct[] => {
-  return apiProducts.map(transformProduct);
+export const transformProducts = (apiProducts: (ApiProduct | Deal)[], queryID?: string): MockProduct[] => {
+  return apiProducts.map(p => transformProduct(p, queryID));
 };

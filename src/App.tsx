@@ -20,6 +20,9 @@ import CartHistoryPage from "./pages/CartHistoryPage";
 import SharedCartPage from "./pages/SharedCartPage";
 import NotFound from "./pages/NotFound";
 import CityDetectionDialog from "./components/CityDetectionDialog";
+import { useEffect } from "react";
+import { initAlgoliaInsights } from "./lib/algoliaInsights";
+import { apiClient } from "./lib/api";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +41,17 @@ function ScrollToTop() {
   return null;
 }
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    // Initialize session and then Algolia Insights
+    apiClient.get('/session/init/').then((res: any) => {
+      if (res?.guest_uuid) {
+        initAlgoliaInsights(res.guest_uuid);
+      }
+    }).catch(console.error);
+  }, []);
+
+  return (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -74,6 +87,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
-);
+  );
+};
 
 export default App;

@@ -116,6 +116,7 @@ export interface Product {
   title_unified_at?: string | null;
   created_at?: string;
   updated_at?: string;
+  __position?: number;
 }
 
 export interface Deal {
@@ -170,6 +171,17 @@ export interface SearchResponse {
   nbPages: number;
   hitsPerPage: number;
   query: string;
+  queryID?: string;
+}
+
+export interface AlgoliaConfigResponse {
+  app_id: string;
+  search_api_key: string;
+  index_name: string;
+}
+
+export interface QuerySuggestionsResponse {
+  suggestions: string[];
 }
 
 export interface City {

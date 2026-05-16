@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
-import { useInfiniteBestDeals, useChains } from "@/hooks/useApi";
+import { useInfiniteBestDeals, useChains, useSearchSuggestions } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
@@ -38,6 +38,9 @@ const Index = () => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>(getSearchHistory);
+  const { data: suggestionsData } = useSearchSuggestions(searchQuery);
+  const suggestions = suggestionsData?.suggestions || [];
+  
   const historyRef = useRef<HTMLDivElement>(null);
   const { ref, inView } = useInView();
 
@@ -157,6 +160,22 @@ const Index = () => {
                     >
                       <X className="w-3 h-3" />
                     </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {showHistory && searchQuery && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                {suggestions.map((term, index) => (
+                  <button
+                    key={`${term}-${index}`}
+                    type="button"
+                    onMouseDown={() => handleIndexHistoryClick(term)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                  >
+                    <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="flex-1 text-left truncate">{term}</span>
                   </button>
                 ))}
               </div>
