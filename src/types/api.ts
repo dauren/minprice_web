@@ -180,8 +180,14 @@ export interface AlgoliaConfigResponse {
   index_name: string;
 }
 
+export interface QuerySuggestion {
+  query: string;
+  objectID?: string;
+}
+
 export interface QuerySuggestionsResponse {
-  suggestions: string[];
+  queryID?: string;
+  suggestions: QuerySuggestion[];
 }
 
 export interface City {

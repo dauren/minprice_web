@@ -108,6 +108,15 @@ const SearchPage = () => {
     setShowHistory(false);
   };
 
+  const handleSuggestionClick = (term: string, queryID?: string, objectID?: string, position?: number) => {
+    if (queryID && objectID && position !== undefined) {
+      import('@/lib/algoliaInsights').then(({ sendSuggestionClickEvent }) => {
+        sendSuggestionClickEvent(queryID, objectID, position);
+      });
+    }
+    handleHistoryClick(term);
+  };
+
   const handleRemoveHistory = (e: React.MouseEvent, term: string) => {
     e.stopPropagation();
     removeSearchHistoryItem(term);
@@ -217,15 +226,15 @@ const SearchPage = () => {
             
             {showHistory && inputValue && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
-                {suggestions.map((term, index) => (
+                {suggestions.map((suggestion, index) => (
                   <button
-                    key={`${term}-${index}`}
+                    key={`${suggestion.query}-${index}`}
                     type="button"
-                    onClick={() => handleHistoryClick(term)}
+                    onClick={() => handleSuggestionClick(suggestion.query, suggestionsData?.queryID, suggestion.objectID, index + 1)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
                   >
                     <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <span className="flex-1 text-left truncate">{term}</span>
+                    <span className="flex-1 text-left truncate">{suggestion.query}</span>
                   </button>
                 ))}
               </div>

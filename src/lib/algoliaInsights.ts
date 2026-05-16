@@ -4,6 +4,7 @@ import { AlgoliaConfigResponse } from '@/types/api';
 
 let isInitialized = false;
 let globalIndexName = 'prod_canonical_products';
+let globalSuggestionsIndexName = 'prod_canonical_products_query_suggestions';
 
 export const initAlgoliaInsights = async (uuid: string) => {
   if (isInitialized) return;
@@ -16,6 +17,7 @@ export const initAlgoliaInsights = async (uuid: string) => {
       useCookie: true,
     });
     globalIndexName = config.index_name;
+    globalSuggestionsIndexName = globalIndexName + '_query_suggestions';
     // Use the same guest UUID for Algolia userToken
     aa('setUserToken', uuid);
     isInitialized = true;
@@ -37,6 +39,21 @@ export const sendProductClickEvent = (
     queryID,
     objectIDs,
     positions,
+  });
+};
+
+export const sendSuggestionClickEvent = (
+  queryID: string,
+  objectID: string,
+  position: number
+) => {
+  if (!isInitialized || !queryID) return;
+  aa('clickedObjectIDsAfterSearch', {
+    index: globalSuggestionsIndexName,
+    eventName: 'Suggestion Clicked',
+    queryID,
+    objectIDs: [objectID],
+    positions: [position],
   });
 };
 
