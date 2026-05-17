@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { apiClient, API_ENDPOINTS } from "@/lib/api";
+import { useCity } from "@/context/CityContext";
 
 // ExtProduct properties mapped from backend API responses
 export interface CartItemProduct {
@@ -104,6 +105,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const { selectedCityId } = useCity();
   const [cartUuid, setCartUuid] = useState<string | null>(null);
   const [cartName, setCartName] = useState<string>("Новая Корзина");
   const [items, setItems] = useState<CartItem[]>([]);
@@ -118,7 +120,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchCartSummary = async (uuid: string) => {
     try {
-      const data = await apiClient.get<any>(API_ENDPOINTS.cartSummary(uuid));
+      const data = await apiClient.get<any>(API_ENDPOINTS.cartSummary(uuid, selectedCityId));
 
       setCartName(data.cart.name);
       setIsOwner(data.cart.is_owner !== false);
@@ -189,6 +191,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     fetchCart();
   }, []);
+
+  useEffect(() => {
+    if (cartUuid) {
+      fetchCartSummary(cartUuid);
+    }
+  }, [selectedCityId]);
 
   const addItem = async (productId: string, quantity: number = 1) => {
     try {
