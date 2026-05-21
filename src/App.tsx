@@ -79,6 +79,7 @@ const App = () => {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/cart-history" element={<CartHistoryPage />} />
                 <Route path="/cart/:uuid" element={<SharedCartPage />} />
+                <Route path="/:chainSlug" element={<Index />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

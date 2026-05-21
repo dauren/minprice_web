@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
+import NotFound from "./NotFound";
 import { useQueryClient } from "@tanstack/react-query";
 import { Search, ArrowUp, Clock, X } from "lucide-react";
 import Header from "@/components/Header";
@@ -15,14 +16,29 @@ import { useCart } from "@/context/CartContext";
 
 
 const Index = () => {
+  const { chainSlug } = useParams<{ chainSlug?: string }>();
   const { selectedChainIds: savedChainIds, updateStorePreferences } = useCart();
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>(savedChainIds);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  // Keep local selection in sync when preferences load from backend
-  useEffect(() => {
-    setSelectedChainIds(savedChainIds);
-  }, [savedChainIds]);
+  const { data: chainsData, isLoading: isLoadingChains } = useChains();
+
+  const urlSlugs = useMemo(() => {
+    if (!chainSlug) return [];
+    return chainSlug.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  }, [chainSlug]);
+
+  const urlChainIds = useMemo(() => {
+    if (urlSlugs.length === 0 || !chainsData?.chains) return [];
+    return urlSlugs
+      .map(slug => chainsData.chains.find(c => c.slug.toLowerCase() === slug)?.id)
+      .filter((id): id is number => id !== undefined);
+  }, [urlSlugs, chainsData]);
+
+  const activeChainIds = useMemo(() => {
+    return chainSlug ? urlChainIds : selectedChainIds;
+  }, [chainSlug, urlChainIds, selectedChainIds]);
 
   const {
     data: bestDealsData,
@@ -30,9 +46,7 @@ const Index = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useInfiniteBestDeals();
-  const { data: chainsData } = useChains();
-  const navigate = useNavigate();
+  } = useInfiniteBestDeals(activeChainIds);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -42,6 +56,26 @@ const Index = () => {
   const suggestions = suggestionsData?.suggestions || [];
   
   const historyRef = useRef<HTMLDivElement>(null);
+
+  // Sync URL chains to stored preferences in context/session
+  useEffect(() => {
+    if (chainSlug && chainsData?.chains && urlChainIds.length > 0) {
+      const hasDiff =
+        urlChainIds.length !== savedChainIds.length ||
+        urlChainIds.some((id) => !savedChainIds.includes(id));
+      if (hasDiff) {
+        updateStorePreferences(urlChainIds);
+      }
+    }
+  }, [chainSlug, urlChainIds, savedChainIds, chainsData, updateStorePreferences]);
+
+  // Keep local selection in sync when preferences load from backend and no URL slugs are present
+  useEffect(() => {
+    if (!chainSlug) {
+      setSelectedChainIds(savedChainIds);
+    }
+  }, [savedChainIds, chainSlug]);
+
   const { ref, inView } = useInView();
 
   useEffect(() => {
@@ -88,12 +122,23 @@ const Index = () => {
   };
 
   const toggleChain = async (chainId: number) => {
-    const next = selectedChainIds.includes(chainId)
-      ? selectedChainIds.filter((id) => id !== chainId)
-      : [...selectedChainIds, chainId];
-    setSelectedChainIds(next);
+    const currentList = activeChainIds;
+    const next = currentList.includes(chainId)
+      ? currentList.filter((id) => id !== chainId)
+      : [...currentList, chainId];
+
     await updateStorePreferences(next);
-    queryClient.invalidateQueries({ queryKey: ['bestDeals-infinite'] });
+    setSelectedChainIds(next);
+
+    const nextSlugs = next
+      .map((id) => chainsData?.chains.find((c) => c.id === id)?.slug)
+      .filter(Boolean);
+
+    if (nextSlugs.length === 0) {
+      navigate("/");
+    } else {
+      navigate(`/${nextSlugs.join(",")}`);
+    }
   };
 
   // Load more pages when scrolling to bottom
@@ -110,6 +155,11 @@ const Index = () => {
   }, [bestDealsData]);
 
   const totalDealsCount = bestDealsData?.pages[0]?.total || allDeals.length;
+
+  // Return 404 if slug in URL is unrecognized (placed below all hook calls to satisfy rules of hooks)
+  if (chainSlug && !isLoadingChains && urlChainIds.length === 0) {
+    return <NotFound />;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-40 sm:pb-24">
@@ -196,7 +246,7 @@ const Index = () => {
         {chainsData && chainsData.chains.length > 0 && (
           <div className="flex items-center gap-2 mb-6">
             {chainsData.chains.map((chain) => {
-              const isActive = selectedChainIds.includes(chain.id);
+              const isActive = activeChainIds.includes(chain.id);
               return (
                 <button
                   key={chain.id}
@@ -213,12 +263,14 @@ const Index = () => {
               );
             })}
 
-            {selectedChainIds.length > 0 && (
+            {activeChainIds.length > 0 && (
               <button
                 onClick={async () => {
                   setSelectedChainIds([]);
                   await updateStorePreferences([]);
-                  queryClient.invalidateQueries({ queryKey: ['bestDeals-infinite'] });
+                  if (chainSlug) {
+                    navigate("/");
+                  }
                 }}
                 type="button"
                 className="text-xs text-primary hover:text-primary/80 transition-colors ml-1 font-medium"
