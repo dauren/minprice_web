@@ -69,6 +69,7 @@ export const apiClient = {
     const response = await fetch(url, {
       headers: {
         'X-Guest-UUID': uuid,
+        'X-Platform': 'web',
       },
       credentials: 'omit',
     });
@@ -83,7 +84,8 @@ export const apiClient = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Guest-UUID': uuid
+        'X-Guest-UUID': uuid,
+        'X-Platform': 'web',
       },
       credentials: 'omit',
       body: data ? JSON.stringify(data) : undefined,
@@ -99,7 +101,8 @@ export const apiClient = {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'X-Guest-UUID': uuid
+        'X-Guest-UUID': uuid,
+        'X-Platform': 'web',
       },
       credentials: 'omit',
       body: data ? JSON.stringify(data) : undefined,
@@ -114,7 +117,8 @@ export const apiClient = {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
       headers: {
-        'X-Guest-UUID': uuid
+        'X-Guest-UUID': uuid,
+        'X-Platform': 'web',
       },
       credentials: 'omit',
     });
