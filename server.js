@@ -30,6 +30,26 @@ const BOT_RE =
 
 const isBot = (ua) => BOT_RE.test(ua || "");
 
+const SSR_SOURCES = [
+    [/telegrambot/i,        'telegram'],
+    [/whatsapp|viber/i,     'whatsapp'],
+    [/facebookexternalhit/i,'facebook'],
+    [/vkshare/i,            'vk'],
+    [/twitterbot/i,         'twitter'],
+    [/linkedinbot/i,        'linkedin'],
+    [/slackbot/i,           'slack'],
+    [/discordbot/i,         'discord'],
+    [/googlebot/i,          'google'],
+    [/yandexbot/i,          'yandex'],
+    [/bingbot/i,            'bing'],
+    [/applebot/i,           'apple'],
+    [/pinterest/i,          'pinterest'],
+];
+const getSsrSource = (ua) => {
+    for (const [re, name] of SSR_SOURCES) if (re.test(ua || '')) return name;
+    return 'other';
+};
+
 // ─── Утилита: вставить мета-теги в index.html ─────────────────────────────
 function escapeHtml(value) {
     return String(value ?? "")
@@ -242,7 +262,7 @@ function injectMeta(html, { title, description, image, url, body = "", jsonLd = 
 async function proxySeoDiscovery(req, res) {
     try {
         const response = await fetch(`https://backend.minprice.kz${req.path}`, {
-            headers: { Accept: req.path.endsWith(".txt") ? "text/plain" : "application/xml", "X-Platform": "ssr" },
+            headers: { Accept: req.path.endsWith(".txt") ? "text/plain" : "application/xml", "X-Platform": "ssr", "X-SSR-Source": getSsrSource(req.headers["user-agent"]) },
             signal: AbortSignal.timeout(5000),
         });
         const text = await response.text();
@@ -302,7 +322,7 @@ app.get(["/product/:uuid", "/product/:uuid/:slug"], async (req, res) => {
 
     try {
         const response = await fetch(`${API_BASE}/products/${uuid}/`, {
-            headers: { Accept: "application/json", "X-Platform": "ssr" },
+            headers: { Accept: "application/json", "X-Platform": "ssr", "X-SSR-Source": getSsrSource(ua) },
             signal: AbortSignal.timeout(5000),
         });
 
@@ -365,7 +385,7 @@ app.get([
 
     try {
         const response = await fetch(`https://backend.minprice.kz${req.path}`, {
-            headers: { Accept: "text/html", "X-Platform": "ssr" },
+            headers: { Accept: "text/html", "X-Platform": "ssr", "X-SSR-Source": getSsrSource(ua) },
             signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) throw new Error(`backend ${response.status}`);
