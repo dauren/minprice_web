@@ -242,7 +242,7 @@ function injectMeta(html, { title, description, image, url, body = "", jsonLd = 
 async function proxySeoDiscovery(req, res) {
     try {
         const response = await fetch(`https://backend.minprice.kz${req.path}`, {
-            headers: { Accept: req.path.endsWith(".txt") ? "text/plain" : "application/xml" },
+            headers: { Accept: req.path.endsWith(".txt") ? "text/plain" : "application/xml", "X-Platform": "ssr" },
             signal: AbortSignal.timeout(5000),
         });
         const text = await response.text();
@@ -302,7 +302,7 @@ app.get(["/product/:uuid", "/product/:uuid/:slug"], async (req, res) => {
 
     try {
         const response = await fetch(`${API_BASE}/products/${uuid}/`, {
-            headers: { Accept: "application/json" },
+            headers: { Accept: "application/json", "X-Platform": "ssr" },
             signal: AbortSignal.timeout(5000),
         });
 
@@ -365,7 +365,7 @@ app.get([
 
     try {
         const response = await fetch(`https://backend.minprice.kz${req.path}`, {
-            headers: { Accept: "text/html" },
+            headers: { Accept: "text/html", "X-Platform": "ssr" },
             signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) throw new Error(`backend ${response.status}`);
