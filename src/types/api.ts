@@ -108,6 +108,8 @@ export interface Product {
   linked_stores_count?: number;
   min_price?: number;
   max_price?: number;
+  savings?: number;
+  savings_percent?: number;
   stores?: StorePrice[];
   product_links?: ProductLink[];
   price_range?: PriceRange;
@@ -136,6 +138,8 @@ export interface Deal {
   linked_stores_count: number;
   min_price: number;
   max_price: number;
+  savings: number;
+  savings_percent: number;
   stores: StorePrice[];
   anomalies: any[];
 }

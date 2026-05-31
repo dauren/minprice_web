@@ -46,12 +46,6 @@ export const transformStorePrice = (apiStore: ApiStorePrice): MockStorePrice => 
   };
 };
 
-// Calculate discount percentage
-const calculateDiscountPercent = (currentPrice: number, oldPrice: number): number => {
-  if (!oldPrice || oldPrice <= currentPrice) return 0;
-  return Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
-};
-
 // Transform API Product to Mock Product
 export const transformProduct = (apiProduct: ApiProduct | Deal, queryID?: string): MockProduct => {
   // Product detail endpoint returns stores in price_range.stores
@@ -71,38 +65,17 @@ export const transformProduct = (apiProduct: ApiProduct | Deal, queryID?: string
   const inStockStores = stores.filter(s => s.inStock !== false);
   const priceStores = inStockStores.length > 0 ? inStockStores : stores;
 
-  // Calculate minimum price (only in-stock)
   const minPrice = priceStores.length > 0
     ? Math.min(...priceStores.map(s => s.price))
     : 0;
 
-  // Determine reference price using median of in-stock stores (more honest than max)
-  let maxPrice = minPrice;
+  // Use backend-computed savings so web, mobile, and all clients agree
+  const priceRange = 'price_range' in apiProduct ? apiProduct.price_range : undefined;
+  const savings = priceRange?.savings ?? apiProduct.savings ?? 0;
+  const savingsPercent = priceRange?.savings_percent ?? apiProduct.savings_percent ?? 0;
 
-  if (priceStores.length === 1) {
-    // If only 1 in-stock store, rely on its own discount
-    maxPrice = priceStores[0].oldPrice || priceStores[0].price;
-  } else if (priceStores.length >= 2) {
-    // Use median price across in-stock stores for a fair reference
-    const refPrices = priceStores.map(s => s.oldPrice || s.price).sort((a, b) => a - b);
-    const mid = Math.floor(refPrices.length / 2);
-    maxPrice = refPrices.length % 2 === 0
-      ? Math.round((refPrices[mid - 1] + refPrices[mid]) / 2)
-      : refPrices[mid];
-  } else {
-    // Fallback if no stores array is available
-    maxPrice = ('price_range' in apiProduct && apiProduct.price_range?.max)
-      ? apiProduct.price_range.max
-      : apiProduct.max_price || minPrice;
-  }
-
-  // Ensure maxPrice is not less than minPrice due to some odd data
-  if (maxPrice < minPrice) {
-    maxPrice = minPrice;
-  }
-
-  const discountPercent = calculateDiscountPercent(minPrice, maxPrice);
-  const savingsAmount = Math.round(maxPrice - minPrice);
+  const discountPercent = Math.round(savingsPercent);
+  const savingsAmount = Math.round(savings);
 
   // Handle measure_unit_qty which can be string or number
   const measureQty = apiProduct.measure_unit_qty
