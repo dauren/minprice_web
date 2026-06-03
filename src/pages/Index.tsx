@@ -168,6 +168,25 @@ const Index = () => {
       <Header />
 
       <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 mb-8">
+        {statsData && (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{statsData.product_count.toLocaleString()}+</p>
+              <p className="text-xs text-muted-foreground mt-1">товаров в базе</p>
+            </div>
+            <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{statsData.price_count.toLocaleString()}+</p>
+              <p className="text-xs text-muted-foreground mt-1">цен отслеживается</p>
+            </div>
+            {statsData.avg_savings_pct && (
+              <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
+                <p className="text-xl sm:text-2xl font-bold text-green-500">до {statsData.avg_savings_pct}%</p>
+                <p className="text-xs text-muted-foreground mt-1">экономия при сравнении</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Search bar under hero */}
         <form onSubmit={handleSearch} className="mb-6">
           <div
@@ -278,25 +297,6 @@ const Index = () => {
               >
                 Сбросить
               </button>
-            )}
-          </div>
-        )}
-
-        {statsData && (
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
-              <p className="text-xl sm:text-2xl font-bold text-foreground">{statsData.product_count.toLocaleString()}+</p>
-              <p className="text-xs text-muted-foreground mt-1">товаров в базе</p>
-            </div>
-            <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
-              <p className="text-xl sm:text-2xl font-bold text-foreground">{statsData.price_count.toLocaleString()}+</p>
-              <p className="text-xs text-muted-foreground mt-1">цен отслеживается</p>
-            </div>
-            {statsData.avg_savings_pct && (
-              <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
-                <p className="text-xl sm:text-2xl font-bold text-green-500">до {statsData.avg_savings_pct}%</p>
-                <p className="text-xs text-muted-foreground mt-1">экономия при сравнении</p>
-              </div>
             )}
           </div>
         )}
