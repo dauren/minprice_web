@@ -127,10 +127,12 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
               <CitySelector />
 
               <button
-                className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+                className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 h-8 sm:h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all"
                 onClick={() => setIsScannerOpen(true)}
+                title="Сканировать штрихкод"
               >
                 <ScanBarcode className="w-[18px] h-[18px]" />
+                <span className="hidden sm:inline text-sm font-medium">Штрихкод</span>
               </button>
 
               <button

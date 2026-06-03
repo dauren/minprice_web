@@ -182,25 +182,27 @@ const SearchPage = () => {
               onChange={(e) => setInputValue(e.target.value)}
               onFocus={() => setShowHistory(true)}
               placeholder="Поиск товаров..."
-              className="w-full h-12 sm:h-14 pl-12 pr-12 rounded-2xl bg-secondary/60 border-2 border-transparent text-foreground text-base placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:bg-card focus:shadow-[0_0_20px_4px_hsl(var(--primary)/0.12)] transition-all"
+              className="w-full h-12 sm:h-14 pl-12 pr-[100px] rounded-2xl bg-secondary/60 border-2 border-transparent text-foreground text-base placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:bg-card focus:shadow-[0_0_20px_4px_hsl(var(--primary)/0.12)] transition-all"
             />
-            {inputValue ? (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-muted hover:bg-muted-foreground/20 flex items-center justify-center transition-colors"
-              >
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            ) : (
+            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              {inputValue && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="w-8 h-8 rounded-full bg-muted hover:bg-muted-foreground/20 flex items-center justify-center transition-colors shrink-0"
+                >
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setIsScannerOpen(true)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center shadow-sm transition-all shrink-0"
+                title="Сканировать штрихкод"
               >
-                <ScanBarcode className="w-4.5 h-4.5" />
+                <ScanBarcode className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
               </button>
-            )}
+            </div>
             {showHistory && !query && searchHistory.length > 0 && !inputValue && (
               <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
                 {searchHistory.map((term) => (
