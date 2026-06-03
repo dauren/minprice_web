@@ -114,16 +114,22 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
           <div className="mb-8">
             <h3 className="text-[11px] font-bold text-cyan-500 uppercase tracking-widest mb-3 px-1">Поддержка</h3>
             <div className="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm border border-black/5 dark:border-white/5">
-              <SupportLink 
-                href="mailto:support@minprice.kz" 
-                title="Написать нам" 
-                subtitle="support@minprice.kz" 
+              <SupportLink
+                href="mailto:support@minprice.kz"
+                title="Написать нам"
+                subtitle="support@minprice.kz"
               />
               <div className="h-px bg-black/5 dark:bg-white/5 mx-4" />
-              <SupportLink 
-                href="https://wa.me/77066989960" 
-                title="WhatsApp" 
-                subtitle="+7 (706) 698-99-60" 
+              <SupportLink
+                href="mailto:api@minprice.kz"
+                title="Получить доступ к API"
+                subtitle="api@minprice.kz"
+              />
+              <div className="h-px bg-black/5 dark:bg-white/5 mx-4" />
+              <SupportLink
+                href="https://wa.me/77066989960"
+                title="WhatsApp"
+                subtitle="+7 (706) 698-99-60"
                 external
               />
             </div>
