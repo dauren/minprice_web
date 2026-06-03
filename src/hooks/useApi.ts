@@ -15,6 +15,7 @@ import type {
   ProductsResponse,
   AlgoliaConfigResponse,
   QuerySuggestionsResponse,
+  HomepageStatsResponse,
 } from '@/types/api';
 
 // Search products
@@ -162,6 +163,15 @@ export const useChains = () => {
   return useQuery({
     queryKey: ['chains'],
     queryFn: () => apiClient.get<ChainsResponse>(API_ENDPOINTS.chains()),
+  });
+};
+
+export const useHomepageStats = () => {
+  return useQuery({
+    queryKey: ['homepage-stats'],
+    queryFn: () => apiClient.get<HomepageStatsResponse>(API_ENDPOINTS.homepageStats()),
+    staleTime: 4 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 };
 

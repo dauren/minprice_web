@@ -236,6 +236,12 @@ export interface CategoriesResponse {
   categories: Category[];
 }
 
+export interface HomepageStatsResponse {
+  product_count: number;
+  price_count: number;
+  avg_savings_pct: number | null;
+}
+
 export interface ProductsResponse {
   count: number;
   next: string | null;

@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
-import { useInfiniteBestDeals, useChains, useSearchSuggestions } from "@/hooks/useApi";
+import { useInfiniteBestDeals, useChains, useSearchSuggestions, useHomepageStats } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
@@ -23,6 +23,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   const { data: chainsData, isLoading: isLoadingChains } = useChains();
+  const { data: statsData } = useHomepageStats();
 
   const urlSlugs = useMemo(() => {
     if (!chainSlug) return [];
@@ -277,6 +278,25 @@ const Index = () => {
               >
                 Сбросить
               </button>
+            )}
+          </div>
+        )}
+
+        {statsData && (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{statsData.product_count.toLocaleString()}+</p>
+              <p className="text-xs text-muted-foreground mt-1">товаров в базе</p>
+            </div>
+            <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{statsData.price_count.toLocaleString()}+</p>
+              <p className="text-xs text-muted-foreground mt-1">цен отслеживается</p>
+            </div>
+            {statsData.avg_savings_pct && (
+              <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
+                <p className="text-xl sm:text-2xl font-bold text-green-500">до {statsData.avg_savings_pct}%</p>
+                <p className="text-xs text-muted-foreground mt-1">экономия при сравнении</p>
+              </div>
             )}
           </div>
         )}

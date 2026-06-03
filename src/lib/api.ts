@@ -170,6 +170,7 @@ export const API_ENDPOINTS = {
   priceIncreases: (cityId?: number) => `/price-increases/${cityId ? `?city_id=${cityId}` : ''}`,
   cities: () => '/cities/',
   chains: () => '/chains/',
+  homepageStats: () => '/homepage-stats/',
   categories: () => '/categories/',
   products: (params?: {
     canonical_category?: number;
