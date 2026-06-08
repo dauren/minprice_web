@@ -5,7 +5,6 @@ import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
-import mascot from "@/assets/logo.png";
 import PageMeta from "@/components/PageMeta";
 import { useDiscounts, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
@@ -79,26 +78,33 @@ const DiscountsPage = () => {
         <div className="min-h-screen bg-background pb-32 sm:pb-16">
             <PageMeta
                 title="Скидки"
-                description="Лучшие скидки на продукты в супермаркетах Казахстана. Сравните цены и сэкономьте на minprice.kz."
+                description="Лучшие скидки на продукты в супермаркетах Казахстана. Сравните цены и сэкономьте на arzan.kz."
                 url="/discounts"
             />
             <Header />
 
-            <div className="max-w-5xl mx-auto px-3 sm:px-6 pt-5 sm:pt-8">
+            <div className="mx-auto max-w-6xl px-3 pt-4 sm:px-6 sm:pt-6">
                 {/* Page Title */}
-                <div className="flex items-center gap-2.5 mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
-                        <Tag className="w-5 h-5 text-white" />
+                <div className="mb-5 flex items-center justify-between gap-3 pb-3">
+                    <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center bg-white text-black">
+                        <Tag className="h-5 w-5" />
                     </div>
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Скидки</h1>
-                        <p className="text-xs text-muted-foreground">Лучшие предложения со скидками</p>
+                        <span className="az-kicker mb-1">deal desk</span>
+                        <h1 className="text-2xl font-semibold text-black sm:text-3xl">Скидки</h1>
+                        <p className="text-xs font-medium text-black/45">Витрина товаров, где цена заметно ниже</p>
+                    </div>
+                    </div>
+                    <div className="hidden text-right sm:block">
+                        <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">arzan.kz</p>
+                        <p className="text-sm font-medium text-black/45">price drops</p>
                     </div>
                 </div>
 
                 {/* Store Icon Filters */}
                 {chainsData && chainsData.chains.length > 0 && (
-                    <div className="flex items-center gap-2 mb-5">
+                    <div className="mb-5 flex items-center gap-2 overflow-x-auto scrollbar-hide">
                         {chainsData.chains.map((chain) => {
                             const isActive = selectedChainIds.includes(chain.id);
                             return (
@@ -106,9 +112,9 @@ const DiscountsPage = () => {
                                     key={chain.id}
                                     onClick={() => toggleChain(chain.id)}
                                     title={chain.name}
-                                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all border-2 ${isActive
-                                        ? "border-primary bg-primary/10 shadow-[0_0_8px_hsl(var(--primary)/0.3)] scale-110"
-                                        : "border-border bg-card hover:border-foreground/30 opacity-60 hover:opacity-100"
+                                    className={`flex h-10 w-10 shrink-0 items-center justify-center border transition-colors ${isActive
+                                        ? "border-transparent bg-white opacity-100"
+                                        : "border-transparent bg-white opacity-35 hover:opacity-100"
                                         }`}
                                 >
                                     <StoreLogo store={chain.name} logoUrl={chain.logo} size="md" />
@@ -123,7 +129,7 @@ const DiscountsPage = () => {
                                     setChainIdsToCookie([]); 
                                     setPage(1); 
                                 }}
-                                className="text-xs text-primary hover:text-primary/80 transition-colors ml-1 font-medium"
+                                className="ml-1 text-xs font-medium text-black/45 transition-colors hover:text-black"
                             >
                                 Сбросить
                             </button>
@@ -132,8 +138,8 @@ const DiscountsPage = () => {
                 )}
 
                 {/* Results Header */}
-                <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm text-muted-foreground">
+                <div className="mb-4 flex items-center justify-between border-b-2 border-foreground pb-2">
+                    <p className="text-xs font-medium text-black/45">
                         {!isLoading && `${total} товаров`}
                     </p>
 
@@ -141,7 +147,7 @@ const DiscountsPage = () => {
                     <div className="relative">
                         <button
                             onClick={() => setShowSortMenu(!showSortMenu)}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                            className="flex items-center gap-1.5 bg-white px-3 py-2 text-xs font-medium text-black/45 transition-colors hover:text-black"
                         >
                             <ArrowUpDown className="w-3.5 h-3.5" />
                             {sortBy === "discount" ? "По скидке" : "По цене"}
@@ -149,7 +155,7 @@ const DiscountsPage = () => {
                         {showSortMenu && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setShowSortMenu(false)} />
-                                <div className="absolute right-0 mt-1 z-50 w-40 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                                <div className="absolute right-0 z-50 mt-1 w-40 overflow-hidden bg-white">
                                     <button
                                         onClick={() => { setSortBy("discount"); setShowSortMenu(false); }}
                                         className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === "discount" ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
@@ -174,7 +180,7 @@ const DiscountsPage = () => {
                 {isLoading ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                         {Array.from({ length: 12 }).map((_, i) => (
-                            <div key={i} className="h-[400px] rounded-xl bg-secondary/50 animate-pulse" />
+                            <div key={i} className="h-[400px] border border-border bg-secondary/50 animate-pulse" />
                         ))}
                     </div>
                 ) : sortedProducts.length > 0 ? (
@@ -191,7 +197,7 @@ const DiscountsPage = () => {
                                 <button
                                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                                     disabled={page <= 1}
-                                    className="px-3 py-2 rounded-lg text-sm font-medium bg-secondary text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                    className="bg-white px-3 py-2 text-sm font-medium text-black/45 transition-colors hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     ←
                                 </button>
@@ -210,9 +216,9 @@ const DiscountsPage = () => {
                                         <button
                                             key={pageNum}
                                             onClick={() => setPage(pageNum)}
-                                            className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${page === pageNum
-                                                ? "bg-foreground text-background"
-                                                : "bg-secondary text-muted-foreground hover:text-foreground"
+                                            className={`h-9 w-9 border text-sm font-medium transition-colors ${page === pageNum
+                                                ? "bg-[#148a42]/10 text-[#148a42]"
+                                                : "border-border bg-secondary text-muted-foreground hover:text-foreground"
                                                 }`}
                                         >
                                             {pageNum}
@@ -222,7 +228,7 @@ const DiscountsPage = () => {
                                 <button
                                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                                     disabled={page >= totalPages}
-                                    className="px-3 py-2 rounded-lg text-sm font-medium bg-secondary text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                    className="bg-white px-3 py-2 text-sm font-medium text-black/45 transition-colors hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     →
                                 </button>
@@ -230,9 +236,8 @@ const DiscountsPage = () => {
                         )}
                     </>
                 ) : (
-                    <div className="text-center py-20">
-                        <img src={mascot} alt="Нет скидок" className="w-20 h-20 mx-auto mb-4 object-contain opacity-50" />
-                        <p className="text-muted-foreground font-medium">Нет товаров со скидками</p>
+                    <div className="mx-auto max-w-md bg-white py-14 text-center">
+                        <p className="font-medium text-black">Нет товаров со скидками</p>
                         <p className="text-xs text-muted-foreground mt-1.5">
                             {selectedChainIds.length > 0
                                 ? "Попробуйте сбросить фильтры магазинов"

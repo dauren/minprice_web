@@ -119,8 +119,8 @@ const ProductPage = () => {
         <Header />
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-4 animate-pulse">
           <div className="h-6 bg-secondary/50 rounded w-1/3" />
-          <div className="h-56 bg-secondary/50 rounded-2xl" />
-          <div className="h-32 bg-secondary/50 rounded-2xl" />
+          <div className="h-56 bg-muted/30" />
+          <div className="h-32 bg-muted/30" />
         </div>
       </div>
     );
@@ -132,7 +132,7 @@ const ProductPage = () => {
         <Header />
         <div className="max-w-2xl mx-auto px-4 py-20 text-center">
           <p className="text-muted-foreground">Товар не найден</p>
-          <Link to="/" className="text-sm text-primary underline mt-4 inline-block">На главную</Link>
+          <Link to="/" className="mt-4 inline-block text-sm text-black underline">На главную</Link>
         </div>
       </div>
     );
@@ -153,7 +153,7 @@ const ProductPage = () => {
       });
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.download = `minprice-${product.name.replace(/[^a-zA-Z0-9а-яА-Я]/g, '_').substring(0, 30)}.png`;
+      link.download = `arzan-${product.name.replace(/[^a-zA-Z0-9а-яА-Я]/g, '_').substring(0, 30)}.png`;
       link.href = dataUrl;
       link.click();
     } catch (error) {
@@ -180,7 +180,7 @@ const ProductPage = () => {
       />
       <Header forceDance={hasCucumber} />
 
-      <main className="max-w-2xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
+      <main className="mx-auto max-w-3xl px-3 py-5 sm:px-6 sm:py-8">
         {/* Back + Share */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -197,14 +197,14 @@ const ProductPage = () => {
         </div>
 
         {/* Product hero card */}
-        <div className="bg-card rounded-2xl overflow-hidden mb-3 border border-border">
+        <div className="mb-4 overflow-hidden bg-white">
           <div className="flex gap-4 p-4">
             {/* Image */}
             {(() => {
               const allImages = [product.image, ...(product.additionalImages || [])].filter(Boolean);
               const currentImage = allImages[selectedImageIndex] || product.image;
               return (
-                <div className="relative w-32 h-32 sm:w-44 sm:h-44 shrink-0 rounded-xl overflow-hidden bg-secondary/30">
+                <div className="relative h-32 w-32 shrink-0 overflow-hidden bg-white sm:h-48 sm:w-48">
                   <div className="absolute top-1.5 left-1.5 z-10 flex gap-1 flex-col items-start">
                     {product.discountPercent > 0 && (
                       <span className="discount-badge text-[10px]">-{product.discountPercent}%</span>
@@ -228,13 +228,13 @@ const ProductPage = () => {
                     <>
                       <button
                         onClick={() => { setSelectedImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length); setImgError(false); }}
-                        className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+                        className="absolute left-1 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center bg-white/80 text-black transition-colors hover:bg-white"
                       >
                         <ChevronLeft className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => { setSelectedImageIndex((prev) => (prev + 1) % allImages.length); setImgError(false); }}
-                        className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+                        className="absolute right-1 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center bg-white/80 text-black transition-colors hover:bg-white"
                       >
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>
@@ -255,7 +255,7 @@ const ProductPage = () => {
 
             {/* Info */}
             <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-              <h1 className="text-sm sm:text-base font-semibold text-foreground leading-snug">
+              <h1 className="text-base font-semibold leading-snug text-black sm:text-xl">
                 {product.name}
               </h1>
               <p className="text-xs text-muted-foreground">{product.weight}</p>
@@ -279,7 +279,7 @@ const ProductPage = () => {
               <div className="mt-auto flex items-baseline gap-2">
                 {hasStores ? (
                   <>
-                    <span className="price-new text-lg">{bestPrice} ₸</span>
+                    <span className="az-price-chip text-base">{bestPrice} ₸</span>
                     {worstPrice > bestPrice && (
                       <span className="price-old text-sm">{worstPrice} ₸</span>
                     )}
@@ -295,14 +295,14 @@ const ProductPage = () => {
 
         {/* Store prices – expandable with ext_product title */}
         {!hasStores && (
-          <div className="bg-card rounded-2xl border border-border overflow-hidden mb-3 p-4 text-center">
+          <div className="mb-3 overflow-hidden bg-white p-4 text-center">
             <p className="text-sm text-muted-foreground">Этот товар сейчас недоступен ни в одном магазине</p>
           </div>
         )}
 
-        {hasStores && <div className="bg-card rounded-2xl border border-border overflow-hidden mb-3">
-          <div className="px-4 py-2.5 border-b border-border">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Цены по магазинам</p>
+        {hasStores && <div className="mb-4 overflow-hidden bg-white">
+          <div className="px-4 py-2.5">
+            <p className="text-xs font-medium text-black/45">Цены по магазинам</p>
           </div>
 
           {product.stores.map((store, i) => {
@@ -314,11 +314,11 @@ const ProductPage = () => {
               <div key={key} className={`border-b border-border last:border-0 transition-colors ${isExpanded ? "bg-secondary/30" : ""} ${store.inStock === false ? "opacity-60 grayscale" : ""}`}>
                 {/* Main row */}
                 <div
-                  className="flex items-center gap-3 px-4 py-3 cursor-pointer"
+                  className="flex cursor-pointer items-center gap-3 px-4 py-3"
                   onClick={() => setExpandedStore(isExpanded ? null : key)}
                 >
                   {/* Logo */}
-                  <div className="w-8 h-8 rounded-full bg-background border border-border flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden bg-white">
                     <StoreLogo store={store.store} logoUrl={store.storeImage} size="md" />
                   </div>
 
@@ -356,12 +356,12 @@ const ProductPage = () => {
                   <div className="px-4 pb-3 space-y-2">
                     {/* ext_product image + title + copy */}
                     {(store.extProductTitle || store.extProductImage) && (
-                      <div className="flex items-start gap-2.5 bg-background rounded-xl p-2.5 border border-border">
+                      <div className="flex items-start gap-2.5 bg-white p-2.5">
                         {store.extProductImage && (
                           <img
                             src={store.extProductImage}
                             alt={store.extProductTitle || ""}
-                            className="w-14 h-14 rounded-lg object-cover shrink-0 bg-secondary/30"
+                            className="h-14 w-14 shrink-0 object-cover bg-secondary/30"
                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
                           />
                         )}
@@ -393,7 +393,7 @@ const ProductPage = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="w-full flex items-center justify-center gap-1.5 h-9 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all"
+                        className="flex h-9 w-full items-center justify-center gap-1.5 text-xs font-medium text-black/45 transition-colors hover:text-black"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         Открыть в магазине
@@ -411,12 +411,12 @@ const ProductPage = () => {
           {quantity === 0 ? (
             <button
               onClick={() => addItem(product.id, 1)}
-              className="w-full h-11 rounded-xl border border-primary text-primary text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-primary/5 active:scale-[0.98] transition-all"
+              className="flex h-11 w-full items-center justify-center gap-1.5 bg-[#148a42]/10 text-sm font-medium text-[#148a42] transition-colors hover:bg-[#148a42]/15 active:scale-[0.98]"
             >
               <span>+ В корзину — {bestPrice} ₸</span>
             </button>
           ) : (
-            <div className="flex items-center h-11 rounded-xl bg-primary overflow-hidden">
+            <div className="flex h-11 items-center overflow-hidden bg-[#148a42]/10 text-[#148a42]">
               <button
                 onClick={() => { if (cartItem) { cartItem.quantity <= 1 ? removeItem(cartItem.product.uuid) : updateQuantity(cartItem.product.uuid, cartItem.quantity - 1); } }}
                 className="h-full px-5 flex items-center justify-center text-primary-foreground hover:bg-primary-foreground/10 active:scale-90 transition-all"
@@ -437,13 +437,13 @@ const ProductPage = () => {
 
         {/* Price History Chart */}
         {chartData.length > 0 && (
-          <div ref={chartRef} className="bg-card rounded-2xl border border-border p-4 sm:p-5 relative overflow-hidden">
+          <div ref={chartRef} className="relative overflow-hidden bg-white p-4 sm:p-5">
 
             <div className="flex items-start justify-between mb-4 relative z-10 w-full gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
                   <h2 className="text-sm font-semibold text-foreground">Динамика цен</h2>
-                  <span className="text-[9px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded uppercase font-medium whitespace-nowrap hidden sm:inline-block">minprice.kz</span>
+                  <span className="text-[9px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded uppercase font-medium whitespace-nowrap hidden sm:inline-block">arzan.kz</span>
                 </div>
                 <p className="text-[11px] sm:text-xs text-muted-foreground break-words whitespace-normal leading-normal pb-0.5">
                   {product.name}

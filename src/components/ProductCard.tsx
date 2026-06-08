@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Plus, Minus, Scale, ImageOff } from "lucide-react";
+import { Plus, Minus, ImageOff } from "lucide-react";
 import { Product } from "@/data/mockProducts";
 import { useCart } from "@/context/CartContext";
 import StoreLogo from "@/components/StoreLogo";
@@ -63,7 +63,7 @@ const SmartTitle = ({ title }: { title: string }) => {
   return (
     <h3 
       ref={containerRef} 
-      className="text-[13px] text-foreground leading-snug max-h-[2.25rem] min-h-[2.25rem] overflow-hidden break-words" 
+      className="max-h-[2.5rem] min-h-[2.5rem] overflow-hidden break-words text-sm font-medium leading-snug text-black"
       title={title}
     >
       {title}
@@ -139,57 +139,45 @@ const ProductCard = ({ product }: { product: Product }) => {
     <Link
       to={`/product/${product.id}`}
       onClick={handleProductClick}
-      className="group flex flex-col rounded-xl transition-all duration-200 overflow-hidden h-full"
+      className="group flex h-full flex-col overflow-hidden bg-white text-black transition-opacity hover:opacity-80"
     >
-      {/* Image */}
-      <div className="relative p-3 pb-0">
+      <div className="relative bg-white">
         <div className="absolute top-2 left-2 z-10 flex gap-1">
           {product.discountPercent > 0 && (
-            <span className="discount-badge">-{product.discountPercent}%</span>
-          )}
-          {product.savingsAmount > 0 && (
-            <span className="savings-badge">-{product.savingsAmount} ₸</span>
+            <span className="bg-[#148a42] px-1.5 py-1 text-[11px] font-medium leading-none text-white">-{product.discountPercent}%</span>
           )}
         </div>
-        <div className="aspect-square rounded-lg bg-secondary/50 overflow-hidden flex items-center justify-center">
+        <div className="flex aspect-square items-center justify-center overflow-hidden bg-white p-3">
           <img
             src={product.image}
             alt={product.name}
-            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${imgError ? 'hidden' : ''}`}
+            className={`h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.02] ${imgError ? 'hidden' : ''}`}
             loading="lazy"
             onError={() => setImgError(true)}
           />
-          {imgError && <ImageOff className="w-10 h-10 text-muted-foreground/20" />}
+          {imgError && <ImageOff className="h-10 w-10 text-muted-foreground/20" />}
         </div>
       </div>
 
-      {/* Price + Name */}
-      <div className="px-3 pt-2.5 pb-1.5">
-        <div className="flex items-baseline gap-1.5 mb-0.5">
-          <span className="price-new">{bestStore.price} ₸</span>
+      <div className="px-3 pb-2 pt-2">
+        <div className="flex min-h-8 flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-xl font-semibold leading-none tracking-normal text-[#148a42]">{bestStore.price} ₸</span>
+          {worstPrice > bestStore.price && (
+            <span className="text-sm font-normal text-black/35 line-through">{worstPrice} ₸</span>
+          )}
         </div>
-        {product.pricePerUnit != null && product.pricePerUnitLabel && (
-          <div className="inline-flex items-center gap-1 mb-1 px-1.5 py-0.5 rounded-md bg-muted/60 border border-border/50 w-fit">
-            <Scale className="w-3 h-3 text-muted-foreground/70 shrink-0" />
-            <span className="text-[12px] font-semibold text-muted-foreground leading-none">
-              {product.pricePerUnit} ₸/{product.pricePerUnitLabel}
-            </span>
-          </div>
-        )}
         <SmartTitle title={product.name} />
-
       </div>
 
-      {/* Store prices - fixed height */}
-      <div className="px-3 py-1.5 border-t border-border flex-1">
+      <div className="mx-3 mt-auto py-2 text-black">
         <div className="space-y-1">
           {displayStores.map((store, i) => {
             const isBest = store.price === bestStore.price && store.inStock !== false;
             return (
-              <div key={`${store.store}-${i}`} className={`flex items-center justify-between text-[11px] h-[18px] ${store.inStock === false ? "opacity-60 grayscale" : ""}`}>
+              <div key={`${store.store}-${i}`} className={`flex h-[20px] items-center justify-between text-[11px] ${store.inStock === false ? "opacity-60 grayscale" : ""}`}>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <StoreLogo store={store.store} size="sm" logoUrl={store.storeImage} />
-                  <span className="text-muted-foreground truncate">{store.store}</span>
+                  <span className={`${isBest ? "text-black" : "text-black/45"} truncate font-medium`}>{store.store}</span>
                   {isBest && product.stores.length > 1 && (
                     <span className="best-price-label">min</span>
                   )}
@@ -200,7 +188,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                       {store.oldPrice}
                     </span>
                   )}
-                  <span className={`font-medium ${isBest ? "text-foreground" : "text-muted-foreground"} ${store.inStock === false ? "line-through" : ""}`}>
+                  <span className={`font-medium ${isBest ? "text-black" : "text-black/45"} ${store.inStock === false ? "line-through" : ""}`}>
                     {store.price} ₸
                   </span>
                 </div>
@@ -215,30 +203,30 @@ const ProductCard = ({ product }: { product: Product }) => {
       </div>
 
       {/* Add button / quantity control - always at bottom */}
-      <div className="px-3 pb-3 pt-1.5 mt-auto">
+      <div className="px-3 pb-3 pt-1.5">
         {quantity === 0 ? (
           <button
             onClick={handleAdd}
-            className={`w-full h-9 rounded-xl border border-primary text-primary text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-primary/5 active:scale-[0.96] transition-all duration-200 ${justAdded ? "animate-cart-pop bg-primary text-primary-foreground border-primary" : ""
+            className={`flex h-9 w-full items-center justify-center gap-1.5 bg-[#148a42]/10 px-3 text-sm font-medium text-[#148a42] transition-colors hover:bg-[#148a42]/15 ${justAdded ? "bg-[#148a42]/15" : ""
               }`}
           >
             <Plus className="w-3.5 h-3.5" />
-            Добавить
+            {justAdded ? "Добавлено" : "В корзину"}
           </button>
         ) : (
-          <div className="flex items-center h-9 rounded-xl bg-primary overflow-hidden transition-all duration-200 animate-scale-in">
+          <div className="flex h-9 animate-scale-in items-center justify-center gap-3 overflow-hidden bg-[#148a42]/10 text-[#148a42] transition-colors">
             <button
               onClick={handleDecrement}
-              className="h-full px-3 flex items-center justify-center text-primary-foreground hover:bg-primary-foreground/10 active:scale-90 transition-all"
+              className="flex h-full items-center justify-center px-2 text-[#148a42]/70 transition-colors hover:text-[#148a42]"
             >
               <Minus className="w-4 h-4" />
             </button>
-            <span className="flex-1 text-center text-sm font-semibold text-primary-foreground">
+            <span className="flex-1 text-center text-sm font-semibold text-[#148a42]">
               {quantity}
             </span>
             <button
               onClick={handleIncrement}
-              className="h-full px-3 flex items-center justify-center text-primary-foreground hover:bg-primary-foreground/10 active:scale-90 transition-all"
+              className="flex h-full items-center justify-center px-2 text-[#148a42]/70 transition-colors hover:text-[#148a42]"
             >
               <Plus className="w-4 h-4" />
             </button>

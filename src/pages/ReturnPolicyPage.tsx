@@ -15,7 +15,7 @@ const ReturnPolicyPage = () => {
         <div className="min-h-screen bg-background pb-20">
             <PageMeta
                 title="Политика возврата товара"
-                description="Условия возврата товаров для пользователей сервиса minprice.kz."
+                description="Условия возврата товаров для пользователей сервиса arzan.kz."
                 url="/return-policy"
             />
             <Header />
@@ -34,13 +34,13 @@ const ReturnPolicyPage = () => {
 
                 <Section title="1. Общая информация">
                     <p>
-                        minprice.kz — информационный сервис для сравнения цен на продукты питания в
+                        arzan.kz — информационный сервис для сравнения цен на продукты питания в
                         супермаркетах Казахстана. Сервис не является интернет-магазином, не продаёт товары,
                         не принимает оплату и не осуществляет доставку товаров пользователям.
                     </p>
                     <p>
                         Данная страница описывает общий порядок возврата товаров, информация о которых может
-                        отображаться на сайте minprice.kz.
+                        отображаться на сайте arzan.kz.
                     </p>
                 </Section>
 
@@ -64,7 +64,7 @@ const ReturnPolicyPage = () => {
                         оформить обращение на возврат у продавца, у которого был приобретён товар.
                     </p>
                     <p>
-                        minprice.kz не осуществляет обмен товаров, так как не является продавцом, не принимает
+                        arzan.kz не осуществляет обмен товаров, так как не является продавцом, не принимает
                         оплату и не доставляет товары пользователям.
                     </p>
                 </Section>
@@ -83,34 +83,34 @@ const ReturnPolicyPage = () => {
 
                 <Section title="5. Ошибки в цене или информации о товаре">
                     <p>
-                        Цены и данные о товарах на minprice.kz носят информационный характер и могут отличаться
+                        Цены и данные о товарах на arzan.kz носят информационный характер и могут отличаться
                         от актуальных условий продавца на момент покупки. Окончательная цена, наличие товара и
                         условия покупки определяются продавцом.
                     </p>
                     <p>
                         Если пользователь заметил ошибку в цене, названии, изображении или описании товара на
-                        minprice.kz, он может сообщить об этом в поддержку сервиса.
+                        arzan.kz, он может сообщить об этом в поддержку сервиса.
                     </p>
                 </Section>
 
-                <Section title="6. Контакты поддержки minprice.kz">
+                <Section title="6. Контакты поддержки arzan.kz">
                     <p>
                         По вопросам работы сайта или некорректной информации о товарах можно обратиться в
-                        поддержку minprice.kz:
+                        поддержку arzan.kz:
                     </p>
                     <ul className="list-disc list-inside space-y-1 pl-2">
                         <li>
                             Email:{" "}
                             <a
-                                href="mailto:support@minprice.kz"
+                                href="mailto:support@arzan.kz"
                                 className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity"
                             >
-                                support@minprice.kz
+                                support@arzan.kz
                             </a>
                         </li>
                         <li>
                             <a
-                                href="https://t.me/minpricekz_feedback"
+                                href="https://t.me/arzankz_feedback"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity"

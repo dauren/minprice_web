@@ -6,7 +6,6 @@ import { useInView } from "react-intersection-observer";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
-import mascot from "@/assets/logo.png";
 import { useInfiniteSearch, useChains, useSearchSuggestions } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
@@ -170,11 +169,25 @@ const SearchPage = () => {
     <div className="min-h-screen bg-background pb-32 sm:pb-16">
       <Header />
 
-      <div className="max-w-5xl mx-auto px-3 sm:px-6 pt-5 sm:pt-8">
+      <div className="mx-auto max-w-6xl px-3 pt-4 sm:px-6 sm:pt-6">
+        <div className="mb-4 flex flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <span className="az-kicker mb-2">search desk</span>
+            <h1 className="text-2xl font-semibold leading-tight text-black sm:text-3xl">
+              {query ? `Ищем: ${query}` : "Поиск по витрине arzan"}
+            </h1>
+          </div>
+          {query && !isLoading && (
+            <p className="text-xs font-medium text-black/45">
+              {sortedProducts.length} найдено
+            </p>
+          )}
+        </div>
+
         {/* Search Input */}
         <form onSubmit={handleSearch} className="mb-5">
           <div className="relative group" ref={historyRef}>
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/35 transition-colors group-focus-within:text-black" />
             <input
               ref={inputRef}
               type="text"
@@ -182,14 +195,14 @@ const SearchPage = () => {
               onChange={(e) => setInputValue(e.target.value)}
               onFocus={() => setShowHistory(true)}
               placeholder="Поиск товаров..."
-              className="w-full h-12 sm:h-14 pl-12 pr-[100px] rounded-2xl bg-secondary/60 border-2 border-transparent text-foreground text-base placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:bg-card focus:shadow-[0_0_20px_4px_hsl(var(--primary)/0.12)] transition-all"
+              className="h-12 w-full bg-white pl-12 pr-[100px] text-base font-medium text-black placeholder:text-black/35 transition-colors focus:outline-none sm:h-14"
             />
             <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
               {inputValue && (
                 <button
                   type="button"
                   onClick={clearSearch}
-                  className="w-8 h-8 rounded-full bg-muted hover:bg-muted-foreground/20 flex items-center justify-center transition-colors shrink-0"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center border border-border bg-muted transition-colors hover:bg-muted-foreground/20"
                 >
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
@@ -197,20 +210,20 @@ const SearchPage = () => {
               <button
                 type="button"
                 onClick={() => setIsScannerOpen(true)}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center shadow-sm transition-all shrink-0"
+                className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#148a42]/10 text-[#148a42] transition-colors hover:bg-[#148a42]/15"
                 title="Сканировать штрихкод"
               >
                 <ScanBarcode className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
               </button>
             </div>
             {showHistory && !query && searchHistory.length > 0 && !inputValue && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden bg-white">
                 {searchHistory.map((term) => (
                   <button
                     key={term}
                     type="button"
                     onClick={() => handleHistoryClick(term)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-black transition-colors hover:bg-[#148a42]/5"
                   >
                     <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <span className="flex-1 text-left truncate">{term}</span>
@@ -227,13 +240,13 @@ const SearchPage = () => {
             )}
             
             {showHistory && inputValue && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden bg-white">
                 {suggestions.map((suggestion, index) => (
                   <button
                     key={`${suggestion.query}-${index}`}
                     type="button"
                     onClick={() => handleSuggestionClick(suggestion.query, suggestionsData?.queryID, suggestion.objectID, index + 1)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-black transition-colors hover:bg-[#148a42]/5"
                   >
                     <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <span className="flex-1 text-left truncate">{suggestion.query}</span>
@@ -246,7 +259,7 @@ const SearchPage = () => {
 
         {/* Store Icon Filters */}
         {chainsData && chainsData.chains.length > 0 && (
-          <div className="flex items-center gap-2 mb-5">
+          <div className="mb-5 flex items-center gap-2 overflow-x-auto scrollbar-hide">
             {chainsData.chains.map((chain) => {
               const isActive = selectedChainIds.includes(chain.id);
               return (
@@ -254,9 +267,9 @@ const SearchPage = () => {
                   key={chain.id}
                   onClick={() => toggleChain(chain.id)}
                   title={chain.name}
-                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all border-2 ${isActive
-                    ? "border-primary bg-primary/10 shadow-[0_0_8px_hsl(var(--primary)/0.3)] scale-110"
-                    : "border-border bg-card hover:border-foreground/30 opacity-60 hover:opacity-100"
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center border transition-colors ${isActive
+                    ? "border-transparent bg-white opacity-100"
+                    : "border-transparent bg-white opacity-35 hover:opacity-100"
                     }`}
                 >
                   <StoreLogo store={chain.name} logoUrl={chain.logo} size="md" />
@@ -270,7 +283,7 @@ const SearchPage = () => {
                   setSelectedChainIds([]);
                   setChainIdsToCookie([]);
                 }}
-                className="text-xs text-primary hover:text-primary/80 transition-colors ml-1 font-medium"
+                className="ml-1 text-xs font-medium text-black/45 transition-colors hover:text-black"
               >
                 Сбросить
               </button>
@@ -279,28 +292,16 @@ const SearchPage = () => {
         )}
 
         {/* Results Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold text-foreground">
-              {query ? `Результаты: «${query}»` : "Поиск"}
-            </h1>
-            {query && !isLoading && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {sortedProducts.length}{" "}
-                {sortedProducts.length === 1
-                  ? "товар"
-                  : sortedProducts.length < 5
-                    ? "товара"
-                    : "товаров"}
-              </p>
-            )}
-          </div>
+        <div className="mb-4 flex items-center justify-between border-b-2 border-foreground pb-2">
+          <p className="text-xs font-medium text-black/45">
+            {query ? "результаты" : "начните с запроса"}
+          </p>
 
           {/* Sort Toggle */}
           <div className="relative">
             <button
               onClick={() => setShowSortMenu(!showSortMenu)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 bg-white px-3 py-2 text-xs font-medium text-black/45 transition-colors hover:text-black"
             >
               <ArrowUpDown className="w-3.5 h-3.5" />
               {sortBy === "discount" ? "По скидке" : "По цене"}
@@ -308,7 +309,7 @@ const SearchPage = () => {
             {showSortMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowSortMenu(false)} />
-                <div className="absolute right-0 mt-1 z-50 w-40 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute right-0 z-50 mt-1 w-40 overflow-hidden bg-white">
                   <button
                     onClick={() => { setSortBy("discount"); setShowSortMenu(false); }}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === "discount" ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
@@ -331,15 +332,14 @@ const SearchPage = () => {
 
         {/* Products Grid */}
         {!query ? (
-          <div className="text-center py-24">
-            <img src={mascot} alt="Поиск" className="w-20 h-20 mx-auto mb-4 object-contain opacity-40" />
-            <p className="text-muted-foreground font-medium">Введите запрос для поиска</p>
+          <div className="mx-auto max-w-md bg-white py-16 text-center">
+            <p className="font-medium text-black">Введите запрос для поиска</p>
             <p className="text-xs text-muted-foreground mt-1.5">Например: молоко, хлеб, курица</p>
           </div>
         ) : isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
             {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="h-[400px] rounded-xl bg-secondary/50 animate-pulse" />
+              <div key={i} className="h-[400px] border border-border bg-secondary/50 animate-pulse" />
             ))}
           </div>
         ) : sortedProducts.length > 0 ? (
@@ -362,9 +362,8 @@ const SearchPage = () => {
             )}
           </>
         ) : (
-          <div className="text-center py-20">
-            <img src={mascot} alt="Ничего не найдено" className="w-20 h-20 mx-auto mb-4 object-contain opacity-50" />
-            <p className="text-muted-foreground font-medium">
+          <div className="mx-auto max-w-md bg-white py-14 text-center">
+            <p className="font-medium text-black">
               По запросу «{query}» ничего не найдено
             </p>
             <p className="text-xs text-muted-foreground mt-1.5">

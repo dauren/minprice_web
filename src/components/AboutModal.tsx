@@ -17,26 +17,26 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-w-md mx-auto w-full rounded-t-[32px] p-0 bg-[#F4F6F9] dark:bg-zinc-950 border-none overflow-hidden max-h-[80vh] flex flex-col">
+      <DrawerContent className="mx-auto flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden border-t border-black/10 bg-white p-0">
         <VisuallyHidden>
-          <DrawerTitle>О приложении minprice.kz</DrawerTitle>
+          <DrawerTitle>О приложении arzan.kz</DrawerTitle>
         </VisuallyHidden>
         
         <div className="overflow-y-auto px-4 pb-5 pt-2 sm:px-6 custom-scrollbar">
           {/* Header Card */}
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 mb-6 shadow-sm border border-black/5 dark:border-white/5 relative">
+          <div className="relative mb-6 border border-black/10 bg-white p-5">
             <button 
               onClick={() => onOpenChange(false)}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center bg-white text-black/45 transition-colors hover:text-black"
             >
               <X className="w-4 h-4 text-foreground" />
             </button>
 
             <div className="flex items-start gap-3 mb-4">
-              <img src={logo} alt="minprice" className="w-16 h-16 object-contain" />
+              <img src={logo} alt="arzan.kz" className="w-16 h-16 object-contain" />
               <div className="pt-1">
-                <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 text-[11px] font-semibold mb-1">
-                  Сравнение цен
+                <div className="mb-1 inline-flex items-center text-[11px] font-medium text-black/45">
+                  Арзан баға
                 </div>
                 <div className="text-[11px] text-muted-foreground leading-tight">
                   Алматы, Астана, Шымкент
@@ -45,18 +45,18 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
             </div>
 
             <div>
-              <div className="text-3xl font-extrabold tracking-tight text-foreground flex items-baseline">
-                minprice<span className="text-primary">.kz</span>
+              <div className="az-logo flex items-baseline text-3xl text-black">
+                Arzan.kz
               </div>
               <div className="text-base text-muted-foreground font-medium mt-1">
-                Минимальные цены.
+                Выгодные цены рядом.
               </div>
             </div>
           </div>
 
           {/* Features */}
           <div className="mb-6">
-            <h3 className="text-[11px] font-bold text-cyan-500 uppercase tracking-widest mb-3 px-1">Что умеет</h3>
+            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">Что умеет</h3>
             <div className="flex flex-col gap-2">
               <FeatureCard 
                 icon={<Tag className="w-5 h-5 text-emerald-500" />}
@@ -87,7 +87,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
 
           {/* Stores */}
           <div className="mb-6">
-            <h3 className="text-[11px] font-bold text-cyan-500 uppercase tracking-widest mb-3 px-1">Сравниваем в:</h3>
+            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">Сравниваем в:</h3>
             <div className="grid grid-cols-3 gap-2">
               {chainsData?.chains.map((chain) => (
                 <StoreCard 
@@ -102,8 +102,8 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
 
           {/* Documents */}
           <div className="mb-6">
-            <h3 className="text-[11px] font-bold text-cyan-500 uppercase tracking-widest mb-3 px-1">Документы</h3>
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm border border-black/5 dark:border-white/5">
+            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">Документы</h3>
+            <div className="overflow-hidden border border-black/10 bg-white">
               <DocLink href="/privacy" title="Политика конфиденциальности" />
               <div className="h-px bg-black/5 dark:bg-white/5 mx-4" />
               <DocLink href="/public-offer" title="Публичная оферта" />
@@ -112,18 +112,18 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
 
           {/* Support */}
           <div className="mb-8">
-            <h3 className="text-[11px] font-bold text-cyan-500 uppercase tracking-widest mb-3 px-1">Поддержка</h3>
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm border border-black/5 dark:border-white/5">
+            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">Поддержка</h3>
+            <div className="overflow-hidden border border-black/10 bg-white">
               <SupportLink
-                href="mailto:support@minprice.kz"
+                href="mailto:support@arzan.kz"
                 title="Написать нам"
-                subtitle="support@minprice.kz"
+                subtitle="support@arzan.kz"
               />
               <div className="h-px bg-black/5 dark:bg-white/5 mx-4" />
               <SupportLink
-                href="mailto:api@minprice.kz"
+                href="mailto:api@arzan.kz"
                 title="Получить доступ к API"
-                subtitle="api@minprice.kz"
+                subtitle="api@arzan.kz"
               />
               <div className="h-px bg-black/5 dark:bg-white/5 mx-4" />
               <SupportLink
@@ -156,8 +156,8 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
 
 function FeatureCard({ icon, iconBg, title, desc }: { icon: React.ReactNode, iconBg: string, title: string, desc: string }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-black/5 dark:border-white/5">
-      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${iconBg}`}>
+    <div className="flex items-center gap-4 border border-black/10 bg-white p-4">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center ${iconBg}`}>
         {icon}
       </div>
       <div>
@@ -170,8 +170,8 @@ function FeatureCard({ icon, iconBg, title, desc }: { icon: React.ReactNode, ico
 
 function StoreCard({ name, displayName, logoUrl }: { name: string; displayName: string; logoUrl?: string | null }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-3 flex flex-col items-center justify-center gap-2 shadow-sm border border-black/5 dark:border-white/5 aspect-square">
-      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-secondary/30 overflow-hidden">
+    <div className="flex aspect-square flex-col items-center justify-center gap-2 border border-black/10 bg-white p-3">
+      <div className="flex h-10 w-10 items-center justify-center overflow-hidden bg-black/[0.03]">
         <StoreLogo store={name} logoUrl={logoUrl} className="!w-10 !h-10 !rounded-none object-contain p-1" />
       </div>
       <div className="text-[11px] font-bold text-foreground text-center line-clamp-1 w-full">{displayName}</div>

@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
-import { useInfiniteBestDeals, useChains, useSearchSuggestions, useHomepageStats } from "@/hooks/useApi";
+import { useInfiniteBestDeals, useChains, useSearchSuggestions } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
@@ -23,8 +23,6 @@ const Index = () => {
   const navigate = useNavigate();
 
   const { data: chainsData, isLoading: isLoadingChains } = useChains();
-  const { data: statsData } = useHomepageStats();
-
   const urlSlugs = useMemo(() => {
     if (!chainSlug) return [];
     return chainSlug.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
@@ -167,65 +165,38 @@ const Index = () => {
       <PageMeta />
       <Header />
 
-      <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 mb-8">
-        {statsData && (
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
-              <p className="text-xl sm:text-2xl font-bold text-foreground">{statsData.product_count.toLocaleString()}+</p>
-              <p className="text-xs text-muted-foreground mt-1">товаров в базе</p>
-            </div>
-            <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
-              <p className="text-xl sm:text-2xl font-bold text-foreground">{statsData.price_count.toLocaleString()}+</p>
-              <p className="text-xs text-muted-foreground mt-1">цен отслеживается</p>
-            </div>
-            {statsData.avg_savings_pct && (
-              <div className="bg-card rounded-xl p-3 sm:p-4 text-center shadow-sm border border-border">
-                <p className="text-xl sm:text-2xl font-bold text-green-500">до {statsData.avg_savings_pct}%</p>
-                <p className="text-xs text-muted-foreground mt-1">экономия при сравнении</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Search bar under hero */}
-        <form onSubmit={handleSearch} className="mb-6">
+      <section className="mx-auto mb-8 max-w-7xl px-3 pt-4 sm:px-6 sm:pt-6">
+        <form onSubmit={handleSearch} className="mx-auto mb-4 max-w-3xl">
           <div
             ref={historyRef}
-            className={`relative flex items-center rounded-2xl transition-all duration-200 ${searchFocused
-              ? "bg-card border-2 border-primary shadow-[0_0_20px_4px_hsl(var(--primary)/0.18)]"
-              : "bg-secondary/70 border-2 border-transparent hover:border-border"
-              }`}
+            className={`relative flex items-center border bg-white transition-colors ${searchFocused ? "border-black" : "border-black/10"}`}
           >
             <Search
-              className={`absolute left-4 w-5 h-5 transition-colors ${searchFocused ? "text-primary" : "text-muted-foreground"
-                }`}
+              className={`absolute left-4 h-5 w-5 transition-colors ${searchFocused ? "text-black" : "text-black/35"}`}
             />
             <input
               type="text"
-              placeholder="Найти самые низкие цены..."
+              placeholder="Что ищем дешевле?"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => { setSearchFocused(true); setShowHistory(true); }}
               onBlur={() => setSearchFocused(false)}
-              className="w-full pl-12 pr-14 h-12 sm:h-14 bg-transparent text-foreground text-[15px] sm:text-base placeholder:text-muted-foreground/60 focus:outline-none"
+              className="h-12 w-full bg-transparent pl-12 pr-14 text-[15px] font-medium text-black placeholder:text-black/35 focus:outline-none sm:h-14 sm:text-base"
             />
             <button
               type="submit"
-              className={`absolute right-2 h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center transition-all ${searchQuery.trim()
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"
-                }`}
+              className={`absolute right-1.5 flex h-9 w-9 items-center justify-center transition-colors sm:h-10 sm:w-10 ${searchQuery.trim() ? "bg-[#148a42]/10 text-[#148a42] hover:bg-[#148a42]/15" : "bg-white text-black/35 hover:text-black"}`}
             >
               <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             {showHistory && !searchQuery && searchHistory.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden border border-black/10 bg-white">
                 {searchHistory.map((term) => (
                   <button
                     key={term}
                     type="button"
                     onMouseDown={() => handleIndexHistoryClick(term)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-black transition-colors hover:bg-[#148a42]/5"
                   >
                     <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <span className="flex-1 text-left truncate">{term}</span>
@@ -245,13 +216,13 @@ const Index = () => {
             )}
             
             {showHistory && searchQuery && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden border border-black/10 bg-white">
                 {suggestions.map((suggestion, index) => (
                   <button
                     key={`${suggestion.query}-${index}`}
                     type="button"
                     onMouseDown={() => handleSuggestionClick(suggestion.query, suggestionsData?.queryID, suggestion.objectID, index + 1)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/50 transition-colors"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-black transition-colors hover:bg-[#148a42]/5"
                   >
                     <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <span className="flex-1 text-left truncate">{suggestion.query}</span>
@@ -264,7 +235,7 @@ const Index = () => {
 
         {/* Store Icon Filters */}
         {chainsData && chainsData.chains.length > 0 && (
-          <div className="flex items-center gap-2 mb-6">
+          <div className="mx-auto mb-7 flex max-w-3xl items-center gap-1.5 overflow-x-auto scrollbar-hide">
             {chainsData.chains.map((chain) => {
               const isActive = activeChainIds.includes(chain.id);
               return (
@@ -273,9 +244,9 @@ const Index = () => {
                   onClick={() => toggleChain(chain.id)}
                   title={chain.name}
                   type="button"
-                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all border-2 ${isActive
-                    ? "border-primary bg-primary/10 shadow-[0_0_8px_hsl(var(--primary)/0.3)] scale-110"
-                    : "border-border bg-card hover:border-foreground/30 opacity-60 hover:opacity-100"
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center border bg-white transition-colors ${isActive
+                    ? "border-black"
+                    : "border-black/10 hover:border-black/30"
                     }`}
                 >
                   <StoreLogo store={chain.name} logoUrl={chain.logo} size="md" />
@@ -293,7 +264,7 @@ const Index = () => {
                   }
                 }}
                 type="button"
-                className="text-xs text-primary hover:text-primary/80 transition-colors ml-1 font-medium"
+                className="ml-1 text-xs font-medium text-black/45 transition-colors hover:text-black"
               >
                 Сбросить
               </button>
@@ -301,17 +272,17 @@ const Index = () => {
           </div>
         )}
 
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            🔥 Выгодные предложения
+        <div className="mb-4 flex items-end justify-between pb-2">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-black sm:text-xl">
+            Выгодные предложения
           </h2>
-          <span className="text-sm text-muted-foreground">{totalDealsCount} товаров</span>
+          <span className="text-xs font-medium text-black/45">{totalDealsCount} товаров</span>
         </div>
 
         {isLoadingDeals ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
             {Array.from({ length: 15 }).map((_, i) => (
-              <div key={i} className="h-[400px] rounded-xl bg-secondary/50 animate-pulse" />
+              <div key={i} className="h-[400px] bg-muted/30 animate-pulse" />
             ))}
           </div>
         ) : allDeals.length === 0 ? (
@@ -349,10 +320,7 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <span className="text-base font-bold text-foreground">minprice.kz</span>
-          <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-            Сравнение цен на продукты среди магазинов Казахстана
-          </p>
+          <span className="az-logo text-base text-foreground">Arzan.kz</span>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground font-medium">
           <Link to="/search" className="hover:text-foreground transition-colors">Поиск</Link>
@@ -360,15 +328,14 @@ const Footer = () => (
           <Link to="/discounts" className="hover:text-foreground transition-colors">Скидки</Link>
           <Link to="/cart" className="hover:text-foreground transition-colors">Корзина</Link>
           <Link to="/public-offer" className="hover:text-foreground transition-colors">Оферта</Link>
-          <a href="mailto:support@minprice.kz" className="hover:text-foreground transition-colors">Поддержка</a>
+          <a href="mailto:support@arzan.kz" className="hover:text-foreground transition-colors">Поддержка</a>
         </div>
       </div>
       <div className="mt-6 pt-4 border-t border-border text-center text-xs text-muted-foreground">
-        © 2026 minprice.kz — Все цены актуальны на момент обновления
+        © 2026 arzan.kz — цены актуальны на момент обновления
       </div>
     </div>
   </footer>
 );
 
 export default Index;
-

@@ -1,11 +1,9 @@
-import { Search, ShoppingCart, Home, Tag, Moon, Sun, LayoutGrid, ScanBarcode, ArrowUp, Clock, X, Info } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Search, ShoppingCart, Home, Tag, LayoutGrid, ScanBarcode, Info } from "lucide-react";
+import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import CitySelector from "@/components/CitySelector";
 import IosAppBanner from "@/components/IosAppBanner";
-import logo from "@/assets/logo.png";
-import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { AboutModal } from "@/components/AboutModal";
 
@@ -18,57 +16,12 @@ const navItems = [
 ];
 
 const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [searchHistory, setSearchHistory] = useState<string[]>(getSearchHistory);
   const { totalItems } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const historyRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (historyRef.current && !historyRef.current.contains(e.target as Node)) {
-        setShowHistory(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const toggleTheme = () => {
-    const next = !isDark;
-    document.documentElement.classList.toggle("dark", next);
-    localStorage.setItem("theme", next ? "dark" : "light");
-    setIsDark(next);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      addSearchHistory(searchQuery.trim());
-      setSearchHistory(getSearchHistory());
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-      setShowHistory(false);
-    } else {
-      navigate("/search");
-    }
-  };
-
-  const handleHeaderHistoryClick = (term: string) => {
-    addSearchHistory(term);
-    setSearchHistory(getSearchHistory());
-    navigate(`/search?q=${encodeURIComponent(term)}`);
-    setSearchQuery("");
-    setShowHistory(false);
-  };
-
-  const isSearchPage = location.pathname.startsWith("/search");
   const qParams = new URLSearchParams(location.search);
   const q = qParams.get("q") || "";
   const isCucumberQuery = q.toLowerCase().includes("огурец") || q.toLowerCase().includes("огурцы");
@@ -77,21 +30,16 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
   return (
     <>
       <IosAppBanner />
-      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6">
-          {/* Top row: logo + nav + actions */}
-          <div className="flex items-center justify-between h-12 sm:h-14 gap-3">
-            <Link to="/" className="shrink-0 flex items-center gap-1.5 group">
-              <img src={logo} alt="minprice.kz" className={`w-9 h-9 sm:w-11 sm:h-11 object-contain origin-bottom ${isDancing ? "animate-dance" : "group-hover:animate-dance"}`} />
-              <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
-                minprice.kz
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-white">
+        <div className="mx-auto max-w-none px-3 sm:px-6">
+          <div className="relative flex h-12 items-center justify-between gap-3 sm:h-14">
+            <Link to="/" className="group flex shrink-0 items-center" aria-label="Arzan.kz">
+              <span className={`az-logo text-[20px] text-black sm:text-[24px] ${isDancing ? "animate-dance" : ""}`}>
+                Arzan.kz
               </span>
             </Link>
 
-
-
-            {/* Desktop Navigation */}
-            <nav className="hidden sm:flex items-center gap-5 shrink-0">
+            <nav className="hidden shrink-0 items-center gap-1 sm:flex">
               {navItems.map((item) => {
                 const active = item.matchExact
                   ? location.pathname === item.to
@@ -101,13 +49,13 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
                   <Link
                     key={item.label}
                     to={item.to}
-                    className={`text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1.5 relative ${active ? "text-foreground" : "text-muted-foreground"
+                    className={`relative flex h-9 items-center gap-1.5 px-2 text-xs font-normal tracking-normal transition-colors ${active ? "text-black" : "text-black/35 hover:text-black"
                       }`}
                   >
                     <item.icon className="w-4 h-4" />
                     {item.label}
                     {item.hasBadge && totalItems > 0 && (
-                      <span className="absolute -top-2 -right-3 w-4 h-4 rounded-full bg-foreground text-background text-[10px] font-semibold flex items-center justify-center">
+                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center bg-white px-1 text-[10px] font-medium text-black">
                         {totalItems}
                       </span>
                     )}
@@ -116,30 +64,22 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
               })}
             </nav>
 
-            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-              <button
-                onClick={toggleTheme}
-                className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
-              >
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-
+            <div className="flex shrink-0 items-center gap-3 sm:gap-4">
               <CitySelector />
 
               <button
-                className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 h-8 sm:h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all"
+                className="flex h-9 w-9 items-center justify-center bg-white text-black/35 transition-colors hover:text-black"
                 onClick={() => setIsScannerOpen(true)}
                 title="Сканировать штрихкод"
               >
-                <ScanBarcode className="w-[18px] h-[18px]" />
-                <span className="hidden sm:inline text-sm font-medium">Штрихкод</span>
+                <ScanBarcode className="h-5 w-5" />
               </button>
 
               <button
-                className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+                className="hidden h-9 w-9 items-center justify-center bg-white text-black/35 transition-colors hover:text-black sm:flex"
                 onClick={() => setIsAboutOpen(true)}
               >
-                <Info className="w-[18px] h-[18px]" />
+                <Info className="h-[18px] w-[18px]" />
               </button>
             </div>
           </div>
@@ -167,8 +107,8 @@ const MobileBottomNav = () => {
   const { totalItems } = useCart();
 
   return (
-    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around h-14">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white pb-[env(safe-area-inset-bottom)] sm:hidden">
+      <div className="grid h-14 grid-cols-5 items-center">
         {navItems.map((item) => {
           const active = item.matchExact
             ? location.pathname === item.to
@@ -178,13 +118,15 @@ const MobileBottomNav = () => {
             <Link
               key={item.label}
               to={item.to}
-              className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 transition-colors ${active ? "text-foreground" : "text-muted-foreground"
+              className={`relative flex min-w-0 flex-1 flex-col items-center gap-0.5 px-2 py-1.5 transition-colors ${active ? "text-black" : "text-black/30"
                 }`}
             >
-              <item.icon className="w-5 h-5" />
-              <span className="text-[11px] font-medium">{item.label}</span>
+              <span className="flex h-7 w-9 items-center justify-center">
+                <item.icon className="h-5 w-5" />
+              </span>
+              <span className="text-[10px] font-medium">{item.label}</span>
               {item.hasBadge && totalItems > 0 && (
-                <span className="absolute -top-0.5 right-1 w-4 h-4 rounded-full bg-foreground text-background text-[10px] font-semibold flex items-center justify-center">
+                <span className="absolute right-1 top-0 flex h-4 min-w-4 items-center justify-center bg-white px-1 text-[10px] font-medium text-black">
                   {totalItems}
                 </span>
               )}

@@ -1,4 +1,4 @@
-const STORAGE_KEY = "minprice_search_history";
+const STORAGE_KEY = "arzan_search_history";
 const MAX_ITEMS = 10;
 
 export function getSearchHistory(): string[] {

@@ -1,5 +1,5 @@
 /**
- * minprice.kz — SSR Meta Proxy
+ * arzan.kz — SSR Meta Proxy
  *
  * Для людей → отдаёт dist/index.html (обычный SPA)
  * Для ботов (TG, WA, FB, VK, crawler) → подтягивает данные с API
@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 const API_BASE = process.env.API_BASE_URL || "https://backend.minprice.kz/api";
 
-const SITE_URL = "https://minprice.kz";
+const SITE_URL = "https://arzan.kz";
 const DIST_DIR = path.join(__dirname, "dist");
 const SEO_DISCOVERY_RE = /^\/(?:robots\.txt|sitemap(?:-products(?:-\d+)?)?\.xml|sitemap-(?:categories|stores|static)\.xml)$/;
 
@@ -106,13 +106,13 @@ function buildJsonLd(product, url, image, description) {
             {
                 "@type": "Organization",
                 "@id": `${SITE_URL}/#organization`,
-                "name": "minprice.kz",
+                "name": "arzan.kz",
                 "url": SITE_URL,
             },
             {
                 "@type": "WebSite",
                 "@id": `${SITE_URL}/#website`,
-                "name": "minprice.kz",
+                "name": "arzan.kz",
                 "url": SITE_URL,
                 "publisher": { "@id": `${SITE_URL}/#organization` },
                 "potentialAction": {
@@ -193,7 +193,7 @@ function renderProductFacts(product, url, jsonLd) {
       </style>
       <main>
         <article class="card">
-          <p><a href="${SITE_URL}/">minprice.kz</a></p>
+          <p><a href="${SITE_URL}/">arzan.kz</a></p>
           <h1>${escapeHtml(product.title)}</h1>
           <p>${escapeHtml(product.brand_canonical || product.brand || "")}</p>
           <div class="facts">
@@ -202,7 +202,7 @@ function renderProductFacts(product, url, jsonLd) {
             ${lastUpdated ? `<span class="pill">Цены обновлены: <time datetime="${escapeHtml(lastUpdated)}">${escapeHtml(lastUpdated)}</time></span>` : ""}
           </div>
           ${product.image_url ? `<p><img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.title)}" width="240"></p>` : ""}
-          <p>${escapeHtml(product.description || "Сравнение цен, наличие, магазины и время обновления на minprice.kz.")}</p>
+          <p>${escapeHtml(product.description || "Сравнение цен, наличие, магазины и время обновления на arzan.kz.")}</p>
           <p>Каноническая страница: <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>
         </article>
         <section class="card">
@@ -233,7 +233,7 @@ function injectMeta(html, { title, description, image, url, body = "", jsonLd = 
     <meta name="description" content="${d}" />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="${u}" />
-    <meta property="og:site_name" content="minprice.kz" />
+    <meta property="og:site_name" content="arzan.kz" />
     <meta property="og:type" content="product" />
     <meta property="og:url" content="${u}" />
     <meta property="og:title" content="${t}" />
@@ -341,10 +341,10 @@ app.get(["/product/:uuid", "/product/:uuid/:slug"], async (req, res) => {
         const prices = stores.map((s) => s.price).filter(Boolean);
         const minPrice = prices.length ? Math.min(...prices) : null;
 
-        const title = `${name}${weight ? ` ${weight}` : ""} — minprice.kz`;
+        const title = `${name}${weight ? ` ${weight}` : ""} — arzan.kz`;
         const description = minPrice
             ? `${name} — от ${minPrice} ₸. Сравните цены в магазинах Казахстана.`
-            : `${name} — сравнение цен в Казахстане на minprice.kz`;
+            : `${name} — сравнение цен в Казахстане на arzan.kz`;
         const image = product.image_url || `${SITE_URL}/og-image.png`;
         const url = productCanonicalUrl(product);
         const jsonLd = buildJsonLd(product, url, image, description);
@@ -356,11 +356,11 @@ app.get(["/product/:uuid", "/product/:uuid/:slug"], async (req, res) => {
     } catch (err) {
         console.error("Meta proxy error:", err.message);
         res.status(200).send(injectMeta(indexHtml, {
-            title: "Товар — minprice.kz",
-            description: "Страница товара minprice.kz. Цены, магазины и наличие временно недоступны для предварительного просмотра.",
+            title: "Товар — arzan.kz",
+            description: "Страница товара arzan.kz. Цены, магазины и наличие временно недоступны для предварительного просмотра.",
             image: `${SITE_URL}/og-image.png`,
             url: `${SITE_URL}/product/${uuid}`,
-            body: `<main><h1>Товар minprice.kz</h1><p>Цены и наличие временно недоступны для предварительного просмотра.</p><p>Идентификатор товара: ${escapeHtml(uuid)}</p></main>`,
+            body: `<main><h1>Товар arzan.kz</h1><p>Цены и наличие временно недоступны для предварительного просмотра.</p><p>Идентификатор товара: ${escapeHtml(uuid)}</p></main>`,
         }));
     }
 });
@@ -404,5 +404,5 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`minprice.kz server running on http://localhost:${PORT}`);
+    console.log(`arzan.kz server running on http://localhost:${PORT}`);
 });
