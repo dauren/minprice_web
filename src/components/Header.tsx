@@ -8,6 +8,7 @@ import logo from "@/assets/logo.png";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { AboutModal } from "@/components/AboutModal";
+import AuthButton from "@/components/AuthButton";
 
 const navItems = [
   { to: "/", icon: Home, label: "Главная", matchExact: true },
@@ -141,6 +142,8 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
               >
                 <Info className="w-[18px] h-[18px]" />
               </button>
+
+              <AuthButton />
             </div>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from './auth';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.minprice.kz/api';
 const GUEST_UUID_KEY = 'minprice_guest_uuid';
 
@@ -55,6 +57,68 @@ const initSession = async (): Promise<string> => {
   return sessionPromise;
 };
 
+// ── JWT auth: attach Authorization header + transparently refresh on 401 ────────
+
+let refreshPromise: Promise<string | null> | null = null;
+
+const refreshAccessToken = async (): Promise<string | null> => {
+  const refresh = getRefreshToken();
+  if (!refresh) return null;
+
+  if (!refreshPromise) {
+    refreshPromise = fetch(`${API_BASE_URL}/auth/token/refresh/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'omit',
+      body: JSON.stringify({ refresh }),
+    })
+      .then(async (res) => {
+        if (!res.ok) { clearTokens(); return null; }
+        const data = await res.json();
+        if (data.access) {
+          // simplejwt rotates refresh tokens — keep the new one if present
+          setTokens({ access: data.access, refresh: data.refresh || refresh });
+          return data.access as string;
+        }
+        clearTokens();
+        return null;
+      })
+      .catch(() => { clearTokens(); return null; })
+      .finally(() => { refreshPromise = null; });
+  }
+  return refreshPromise;
+};
+
+// Shared fetch: injects guest UUID + platform + (optional) Bearer token.
+// On a 401 with a refresh token available, refreshes once and retries.
+const coreFetch = async (
+  endpoint: string,
+  init: RequestInit = {},
+  retried = false,
+): Promise<Response> => {
+  const uuid = await initSession();
+  const access = getAccessToken();
+
+  const headers: Record<string, string> = {
+    'X-Guest-UUID': uuid,
+    'X-Platform': 'web',
+    ...(init.headers as Record<string, string> | undefined),
+  };
+  if (access) headers['Authorization'] = `Bearer ${access}`;
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...init,
+    headers,
+    credentials: 'omit',
+  });
+
+  if (response.status === 401 && access && !retried) {
+    const newAccess = await refreshAccessToken();
+    if (newAccess) return coreFetch(endpoint, init, true);
+  }
+  return response;
+};
+
 export const apiClient = {
   get: async <T>(endpoint: string): Promise<T> => {
     // If the endpoint IS the session init, bypass the wrapper to avoid infinite loops
@@ -63,31 +127,16 @@ export const apiClient = {
       return response.json();
     }
 
-    const uuid = await initSession();
-    const url = `${API_BASE_URL}${endpoint}`;
-
-    const response = await fetch(url, {
-      headers: {
-        'X-Guest-UUID': uuid,
-        'X-Platform': 'web',
-      },
-      credentials: 'omit',
-    });
+    const response = await coreFetch(endpoint, { method: 'GET' });
     if (!response.ok) {
       throw new Error(`API Error: ${response.statusText}`);
     }
     return response.json();
   },
   post: async <T>(endpoint: string, data?: any): Promise<T> => {
-    const uuid = await initSession();
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await coreFetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Guest-UUID': uuid,
-        'X-Platform': 'web',
-      },
-      credentials: 'omit',
+      headers: { 'Content-Type': 'application/json' },
       body: data ? JSON.stringify(data) : undefined,
     });
     if (!response.ok) {
@@ -96,15 +145,9 @@ export const apiClient = {
     return response.json();
   },
   patch: async <T>(endpoint: string, data?: any): Promise<T> => {
-    const uuid = await initSession();
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await coreFetch(endpoint, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Guest-UUID': uuid,
-        'X-Platform': 'web',
-      },
-      credentials: 'omit',
+      headers: { 'Content-Type': 'application/json' },
       body: data ? JSON.stringify(data) : undefined,
     });
     if (!response.ok) {
@@ -113,15 +156,7 @@ export const apiClient = {
     return response.json();
   },
   delete: async (endpoint: string): Promise<void> => {
-    const uuid = await initSession();
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'DELETE',
-      headers: {
-        'X-Guest-UUID': uuid,
-        'X-Platform': 'web',
-      },
-      credentials: 'omit',
-    });
+    const response = await coreFetch(endpoint, { method: 'DELETE' });
     if (!response.ok) {
       throw new Error(`API Error: ${response.statusText}`);
     }
@@ -201,5 +236,9 @@ export const API_ENDPOINTS = {
   quickAdd: () => '/cart/add/',
   storePreferences: () => '/store-preferences/',
   cartTransfer: () => '/cart/transfer/',
-  sessionInit: () => '/session/init/'
+  sessionInit: () => '/session/init/',
+  // Auth
+  authTelegram: () => '/auth/telegram/',
+  authMe: () => '/auth/me/',
+  authTokenRefresh: () => '/auth/token/refresh/',
 } as const;

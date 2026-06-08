@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "re
 import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/context/CartContext";
 import { CityProvider } from "@/context/CityContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { useLayoutEffect } from "react";
 import Index from "./pages/Index";
 import ProductPage from "./pages/ProductPage";
@@ -55,6 +56,7 @@ const App = () => {
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <AuthProvider>
         <CityProvider>
           <CartProvider>
             <CityDetectionDialog />
@@ -85,6 +87,7 @@ const App = () => {
             </BrowserRouter>
           </CartProvider>
         </CityProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
