@@ -108,7 +108,9 @@ const coreFetch = async (
     'X-Platform': 'web',
     ...(init.headers as Record<string, string> | undefined),
   };
-  if (access) headers['Authorization'] = `Bearer ${access}`;
+  // Only send the JWT to the auth backend — it is signed by that backend and a
+  // different products backend (split mode) would reject it as 401 token_not_valid.
+  if (access && baseFor(endpoint) === AUTH_BASE_URL) headers['Authorization'] = `Bearer ${access}`;
 
   const response = await fetch(`${baseFor(endpoint)}${endpoint}`, {
     ...init,
@@ -116,7 +118,7 @@ const coreFetch = async (
     credentials: 'omit',
   });
 
-  if (response.status === 401 && access && !retried) {
+  if (response.status === 401 && access && !retried && baseFor(endpoint) === AUTH_BASE_URL) {
     const newAccess = await refreshAccessToken();
     if (newAccess) return coreFetch(endpoint, init, true);
   }
