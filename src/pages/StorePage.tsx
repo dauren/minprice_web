@@ -32,20 +32,21 @@ const StorePage = () => {
     <div className="min-h-screen bg-background pb-32 sm:pb-16">
       <PageMeta
         title={title}
-        description={`${title}. Актуальные предложения, наличие и цены на minprice.kz.`}
+        description={`${title}. Актуальные предложения, наличие и цены на arzan.kz.`}
         url={citySlug ? `/city/${citySlug}/stores/${chainSlug}` : `/stores/${chainSlug}`}
       />
       <Header />
 
-      <main className="max-w-6xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4">
+      <main className="mx-auto max-w-6xl px-3 py-5 sm:px-6 sm:py-8">
+        <Link to="/" className="az-min-link mb-4 inline-flex items-center gap-1.5">
           <ArrowLeft className="w-3.5 h-3.5" />
           Главная
         </Link>
 
-        <section className="mb-5">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{title}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+        <section className="az-sheet mb-5 p-4 sm:p-5">
+          <span className="az-kicker mb-2">store board</span>
+          <h1 className="text-2xl font-black leading-tight text-foreground sm:text-4xl">{title}</h1>
+          <p className="mt-2 max-w-2xl text-sm font-semibold text-muted-foreground">
             Товары с актуальными предложениями источника. Канонические страницы товаров содержат цены, наличие и время обновления.
           </p>
         </section>
@@ -53,7 +54,7 @@ const StorePage = () => {
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
             {Array.from({ length: 12 }).map((_, index) => (
-              <div key={index} className="h-[360px] rounded-xl bg-secondary/50 animate-pulse" />
+              <div key={index} className="h-[360px] border border-border bg-secondary/50 animate-pulse" />
             ))}
           </div>
         ) : products.length > 0 ? (
@@ -63,7 +64,7 @@ const StorePage = () => {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+          <div className="az-empty text-sm text-muted-foreground">
             Пока нет доступных товаров для этого магазина.
           </div>
         )}

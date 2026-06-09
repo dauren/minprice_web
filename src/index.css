@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,83 +7,91 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 210 40% 12%;
+    --background-mid: 0 0% 96%;
+    --foreground: 0 0% 4%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 210 40% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 48% 10%;
 
-    --popover: 0 0% 98%;
-    --popover-foreground: 210 40% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 48% 10%;
 
-    --primary: 195 85% 48%;
+    --primary: 0 0% 4%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 15% 93%;
-    --secondary-foreground: 210 40% 12%;
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 224 48% 10%;
 
-    --muted: 210 10% 93%;
-    --muted-foreground: 210 18% 45%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 34%;
 
-    --accent: 210 15% 90%;
-    --accent-foreground: 210 40% 12%;
+    --accent: 0 0% 4%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 90% 55%;
+    --destructive: 344 95% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 88%;
-    --input: 210 15% 88%;
-    --ring: 195 85% 48%;
+    --border: 0 0% 12%;
+    --input: 0 0% 86%;
+    --ring: 0 0% 4%;
 
-    --radius: 0.75rem;
+    --radius: 0rem;
 
-    /* Custom tokens */
-    --discount-bg: 0 90% 55%;
+    --discount-bg: 0 0% 4%;
     --discount-foreground: 0 0% 100%;
-    --savings-bg: 160 75% 38%;
+    --savings-bg: 0 0% 4%;
     --savings-foreground: 0 0% 100%;
-    --price-old: 210 18% 55%;
-    --price-new: 210 40% 12%;
-    --surface-hover: 210 15% 95%;
+    --price-old: 216 18% 42%;
+    --price-new: 224 48% 10%;
+    --surface-hover: 0 0% 96%;
 
-    --sidebar-background: 210 10% 96%;
-    --sidebar-foreground: 210 25% 25%;
-    --sidebar-primary: 195 85% 48%;
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 0 0% 4%;
+    --sidebar-primary: 0 0% 4%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 15% 91%;
-    --sidebar-accent-foreground: 210 40% 12%;
-    --sidebar-border: 210 15% 88%;
-    --sidebar-ring: 195 85% 48%;
+    --sidebar-accent: 0 0% 92%;
+    --sidebar-accent-foreground: 0 0% 4%;
+    --sidebar-border: 0 0% 86%;
+    --sidebar-ring: 0 0% 4%;
   }
 
   .dark {
-    --background: 210 25% 7%;
-    --foreground: 170 20% 92%;
-    --card: 210 20% 10%;
-    --card-foreground: 170 20% 92%;
-    --popover: 210 20% 10%;
-    --popover-foreground: 170 20% 92%;
-    --primary: 195 55% 50%;
-    --primary-foreground: 210 25% 7%;
-    --secondary: 210 15% 14%;
-    --secondary-foreground: 170 20% 92%;
-    --muted: 210 15% 14%;
-    --muted-foreground: 170 10% 55%;
-    --accent: 210 15% 14%;
-    --accent-foreground: 170 20% 92%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 210 15% 18%;
-    --input: 210 15% 18%;
-    --ring: 195 55% 50%;
-    --price-new: 170 20% 92%;
-    --sidebar-background: 210 25% 7%;
-    --sidebar-foreground: 170 15% 85%;
-    --sidebar-primary: 195 55% 50%;
-    --sidebar-primary-foreground: 210 25% 7%;
-    --sidebar-accent: 210 15% 14%;
-    --sidebar-accent-foreground: 170 15% 85%;
-    --sidebar-border: 210 15% 18%;
-    --sidebar-ring: 195 55% 50%;
+    --background: 0 0% 5%;
+    --background-mid: 0 0% 10%;
+    --foreground: 0 0% 96%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 0 0% 96%;
+    --primary-foreground: 0 0% 5%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 66%;
+
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 5%;
+
+    --destructive: 344 82% 54%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 0% 96%;
+
+    --discount-bg: 0 0% 96%;
+    --discount-foreground: 0 0% 5%;
+    --savings-bg: 0 0% 96%;
+    --savings-foreground: 0 0% 5%;
+    --price-old: 0 0% 62%;
+    --price-new: 0 0% 96%;
+    --surface-hover: 0 0% 16%;
   }
 }
 
@@ -96,19 +104,58 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    letter-spacing: -0.011em;
+    letter-spacing: 0;
+    background: hsl(var(--background));
+    min-height: 100vh;
   }
 }
 
 @layer components {
+  .az-logo {
+    font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+
+  .az-sheet,
+  .az-slab,
+  .az-table-card {
+    @apply bg-white;
+  }
+
+  .az-kicker {
+    @apply inline-flex items-center text-[10px] font-medium uppercase tracking-[0.16em] text-black/45;
+  }
+
+  .az-price-chip {
+    @apply inline-flex items-center justify-center text-xl font-semibold leading-none tracking-normal text-[#148a42];
+  }
+
+  .az-action {
+    @apply inline-flex items-center justify-center gap-1.5 bg-white px-3 py-2 text-xs font-medium text-black transition-colors hover:text-black/60;
+  }
+
+  .az-action-primary {
+    @apply inline-flex items-center justify-center gap-1.5 bg-[#148a42]/10 px-3 py-2 text-xs font-medium text-[#148a42] transition-colors hover:bg-[#148a42]/15;
+  }
+
+  .az-min-link {
+    @apply text-xs font-medium text-black/45 transition-colors hover:text-black;
+  }
+
+  .az-empty {
+    @apply mx-auto max-w-md bg-white px-5 py-14 text-center;
+  }
+
   .discount-badge {
-    @apply inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold tracking-tight;
+    @apply inline-flex items-center px-1.5 py-0.5 text-[11px] font-semibold tracking-tight;
     background: hsl(var(--discount-bg));
     color: hsl(var(--discount-foreground));
   }
 
   .savings-badge {
-    @apply inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold tracking-tight;
+    @apply inline-flex items-center px-1.5 py-0.5 text-[11px] font-semibold tracking-tight;
     background: hsl(var(--savings-bg));
     color: hsl(var(--savings-foreground));
   }
@@ -124,7 +171,7 @@
   }
 
   .best-price-label {
-    @apply text-[9px] font-bold uppercase px-1 py-px rounded;
+    @apply px-1 py-px text-[9px] font-medium;
     background: hsl(var(--savings-bg) / 0.15);
     color: hsl(var(--savings-bg));
   }

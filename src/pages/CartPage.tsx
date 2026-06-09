@@ -130,7 +130,7 @@ const CartPage = () => {
       if (navigator.share) {
         try {
           await navigator.share({
-            title: cartName || "Моя корзина MinPrice",
+            title: cartName || "Моя корзина arzan.kz",
             url: url
           });
           return;

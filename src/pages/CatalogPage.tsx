@@ -132,7 +132,7 @@ const CatalogPage = () => {
   return (
     <div className="min-h-screen bg-background pb-32 sm:pb-16">
       <Header />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex gap-6">
+      <div className="mx-auto flex max-w-7xl gap-6 px-3 py-4 sm:px-6 sm:py-6">
         {/* Desktop sidebar */}
         <CategorySidebar
           activeCategory={categoryIdNum}
@@ -142,16 +142,16 @@ const CatalogPage = () => {
         <main className="flex-1 min-w-0">
           {/* Header */}
           {displayCategory && (
-            <div className="flex items-center gap-3 mb-4">
+            <div className="az-sheet mb-4 flex items-center gap-3 p-4">
               <button
                 onClick={() => navigate("/catalog")}
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent transition-colors shrink-0"
+                className="flex h-8 w-8 shrink-0 items-center justify-center border border-border transition-colors hover:bg-accent"
               >
                 <ArrowLeft className="w-4 h-4 text-muted-foreground" />
               </button>
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="text-xl">{categoryEmoji}</span>
-                <h1 className="text-lg font-semibold tracking-tight text-foreground truncate">
+                <h1 className="truncate text-2xl font-black text-foreground">
                   {categoryName}
                 </h1>
               </div>
@@ -161,12 +161,12 @@ const CatalogPage = () => {
           {/* Subcategories chips */}
           {displayCategory && subcategories.length > 0 && (
             <div className="overflow-x-auto scrollbar-hide -mx-3 px-3 mb-4">
-              <div className="flex gap-1.5 w-max">
+              <div className="flex w-max gap-1.5">
                 <button
                   onClick={() => navigate(`/catalog/${displayCategory.id}`)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${isAllActive
+                  className={`border px-3 py-1.5 text-xs font-black uppercase whitespace-nowrap transition-all ${isAllActive
                     ? "bg-foreground text-background"
-                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                    : "border-border bg-secondary text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   Все
@@ -177,7 +177,7 @@ const CatalogPage = () => {
                     <button
                       key={sub.id}
                       onClick={() => navigate(`/catalog/${sub.id}`)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${isActive ? "bg-foreground text-background" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+                      className={`border px-3 py-1.5 text-xs font-black uppercase whitespace-nowrap transition-all ${isActive ? "bg-foreground text-background" : "border-border bg-secondary text-muted-foreground hover:text-foreground"}`}
                     >
                       {sub.emoji} {sub.name}
                     </button>
@@ -196,7 +196,7 @@ const CatalogPage = () => {
                 placeholder={`Искать в «${categoryName}»...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 h-10 bg-secondary rounded-xl text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="h-11 w-full border-2 border-foreground bg-card pl-9 pr-3 text-sm font-semibold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
               />
             </div>
           )}
@@ -205,7 +205,7 @@ const CatalogPage = () => {
           {isLoadingProducts ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
               {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="h-[400px] rounded-xl bg-secondary/50 animate-pulse" />
+                <div key={i} className="h-[400px] border border-border bg-secondary/50 animate-pulse" />
               ))}
             </div>
           ) : !categoryIdNum && categoriesData?.categories ? (
@@ -218,15 +218,15 @@ const CatalogPage = () => {
                   const hasChildren = cat.children && cat.children.length > 0;
 
                   return (
-                    <div key={cat.id} className="rounded-xl overflow-hidden">
+                    <div key={cat.id} className="az-table-card">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => toggleExpand(cat.id)}
-                          className="flex-1 flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-accent/50 transition-colors rounded-lg"
+                          className="flex flex-1 items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-accent/50"
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-2xl leading-none">{cat.emoji || '📦'}</span>
-                            <span className="text-sm font-medium text-foreground">{cat.name}</span>
+                            <span className="text-sm font-black text-foreground">{cat.name}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             {/* Assuming we might not have exact count, omitted or you can add if api provides */}
@@ -247,7 +247,7 @@ const CatalogPage = () => {
                         <div className="pl-12 pr-4 pb-2 space-y-0.5">
                           <button
                             onClick={() => navigate(`/catalog/${cat.id}`)}
-                            className="w-full flex items-center justify-between gap-2 py-2.5 px-3 rounded-lg text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                            className="flex w-full items-center justify-between gap-2 border border-border px-3 py-2.5 text-sm font-black text-primary transition-colors hover:bg-secondary"
                           >
                             <span>Все в категории</span>
                             <ChevronRight className="w-3.5 h-3.5" />
@@ -256,7 +256,7 @@ const CatalogPage = () => {
                             <button
                               key={sub.id}
                               onClick={() => navigate(`/catalog/${sub.id}`)}
-                              className="w-full flex items-center justify-between gap-2 py-2.5 px-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+                              className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
                             >
                               <div className="flex items-center gap-2">
                                 {sub.emoji && <span className="text-base">{sub.emoji}</span>}
@@ -272,11 +272,11 @@ const CatalogPage = () => {
                 })}
               </div>
               {/* Desktop placeholder */}
-              <div className="hidden lg:flex flex-col items-center justify-center py-24 text-center bg-secondary/20 rounded-2xl border border-dashed border-border">
-                <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+              <div className="az-empty hidden lg:flex flex-col items-center justify-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center border-2 border-foreground bg-secondary">
                   <span className="text-3xl opacity-50 grayscale">🔍</span>
                 </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">Выберите категорию</h3>
+                <h3 className="mb-2 text-lg font-black text-foreground">Выберите категорию</h3>
                 <p className="text-sm text-muted-foreground max-w-[250px]">
                   Используйте меню слева, чтобы найти нужные вам товары
                 </p>
@@ -306,7 +306,7 @@ const CatalogPage = () => {
               )}
             </>
           ) : (
-            <div className="text-center py-16">
+            <div className="az-empty">
               <span className="text-4xl mb-3 block">{categoryEmoji}</span>
               <p className="text-muted-foreground text-sm">
                 {searchQuery.trim()

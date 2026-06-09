@@ -15,7 +15,7 @@ const OfertaPage = () => {
         <div className="min-h-screen bg-background pb-20">
             <PageMeta
                 title="Публичная оферта"
-                description="Условия использования сервиса сравнения цен minprice.kz."
+                description="Условия использования сервиса сравнения цен arzan.kz."
                 url="/public-offer"
             />
             <Header />
@@ -34,9 +34,9 @@ const OfertaPage = () => {
 
                 <Section title="1. Общие положения">
                     <p>
-                        Настоящий документ является публичной офертой ТОО «minprice.kz» (далее — «Сервис») и
+                        Настоящий документ является публичной офертой ТОО «arzan.kz» (далее — «Сервис») и
                         определяет условия использования сервиса сравнения цен, размещённого по адресу{" "}
-                        <span className="text-foreground font-medium">minprice.kz</span> (далее — «Сайт»).
+                        <span className="text-foreground font-medium">arzan.kz</span> (далее — «Сайт»).
                     </p>
                     <p>
                         Использование Сайта означает полное и безоговорочное принятие пользователем условий
@@ -141,15 +141,15 @@ const OfertaPage = () => {
                         <li>
                             Email:{" "}
                             <a
-                                href="mailto:support@minprice.kz"
+                                href="mailto:support@arzan.kz"
                                 className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity"
                             >
-                                support@minprice.kz
+                                support@arzan.kz
                             </a>
                         </li>
                         <li>
                             <a
-                                href="https://t.me/minpricekz_feedback"
+                                href="https://t.me/arzankz_feedback"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity"

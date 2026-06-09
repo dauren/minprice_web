@@ -1,10 +1,10 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE_NAME = "minprice.kz";
-const BASE_URL = "https://minprice.kz";
+const SITE_NAME = "arzan.kz";
+const BASE_URL = "https://arzan.kz";
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const DEFAULT_DESCRIPTION =
-    "Сравнивайте цены на продукты питания в супермаркетах Казахстана. Находим минимальную цену среди Magnum, Arbuz, Airba Fresh, A-Store и других.";
+    "Сравнивайте цены на продукты питания в супермаркетах Казахстана. arzan.kz помогает быстро найти выгодную цену среди популярных магазинов.";
 
 interface PageMetaProps {
     title?: string;
@@ -21,7 +21,7 @@ const PageMeta = ({
     url,
     type = "website",
 }: PageMetaProps) => {
-    const fullTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — сравнение цен на продукты`;
+    const fullTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — выгодные цены на продукты`;
     const fullUrl = url ? `${BASE_URL}${url}` : BASE_URL;
 
     return (
