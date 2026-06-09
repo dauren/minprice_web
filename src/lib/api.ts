@@ -1,6 +1,10 @@
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from './auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.minprice.kz/api';
+// Auth (/auth/*) may target a different backend than products/data — e.g. staging
+// for auth, prod for the catalog. Falls back to API_BASE_URL when not split.
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL || API_BASE_URL;
+const baseFor = (endpoint: string) => (endpoint.startsWith('/auth/') ? AUTH_BASE_URL : API_BASE_URL);
 const GUEST_UUID_KEY = 'minprice_guest_uuid';
 
 let sessionPromise: Promise<string> | null = null;
@@ -66,7 +70,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
   if (!refresh) return null;
 
   if (!refreshPromise) {
-    refreshPromise = fetch(`${API_BASE_URL}/auth/token/refresh/`, {
+    refreshPromise = fetch(`${AUTH_BASE_URL}/auth/token/refresh/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'omit',
@@ -106,7 +110,7 @@ const coreFetch = async (
   };
   if (access) headers['Authorization'] = `Bearer ${access}`;
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(`${baseFor(endpoint)}${endpoint}`, {
     ...init,
     headers,
     credentials: 'omit',
