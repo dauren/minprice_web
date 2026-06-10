@@ -511,7 +511,7 @@ const ProductPage = () => {
 
         {/* Similar products */}
         {similarProducts.length > 0 && (
-          <div className="mt-4 overflow-hidden bg-white p-4 sm:p-5">
+          <div className="mt-4 overflow-hidden bg-card rounded-2xl border border-border p-4 sm:p-5">
             <h2 className="text-sm font-semibold text-foreground mb-3">Похожие товары</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
               {similarProducts.map((p) => (
