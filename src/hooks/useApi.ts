@@ -16,6 +16,7 @@ import type {
   AlgoliaConfigResponse,
   QuerySuggestionsResponse,
   HomepageStatsResponse,
+  SimilarProductsResponse,
 } from '@/types/api';
 
 // Search products
@@ -147,6 +148,19 @@ export const usePriceHistory = (uuid: string) => {
     queryKey: ['priceHistory', uuid, selectedCityId],
     queryFn: () => apiClient.get<PriceHistoryResponse>(API_ENDPOINTS.priceHistory(uuid, selectedCityId)),
     enabled: !!uuid,
+  });
+};
+
+// Get similar products for a product
+export const useSimilarProducts = (uuid: string, limit?: number) => {
+  const { selectedCityId } = useCity();
+  return useQuery({
+    queryKey: ['similarProducts', uuid, selectedCityId, limit],
+    queryFn: () =>
+      apiClient.get<SimilarProductsResponse>(API_ENDPOINTS.similarProducts(uuid, selectedCityId, limit)),
+    enabled: !!uuid,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 };
 
