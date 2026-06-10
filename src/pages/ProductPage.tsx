@@ -8,8 +8,9 @@ import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import { useCart } from "@/context/CartContext";
 import { useCity } from "@/context/CityContext";
-import { useProduct, usePriceHistory } from "@/hooks/useApi";
-import { transformProduct } from "@/lib/transformers";
+import { useProduct, usePriceHistory, useSimilarProducts } from "@/hooks/useApi";
+import { transformProduct, transformProducts } from "@/lib/transformers";
+import ProductCard from "@/components/ProductCard";
 
 const LINE_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -38,6 +39,12 @@ const ProductPage = () => {
 
   const { data: productData, isLoading, isError } = useProduct(id || "");
   const { data: priceHistoryData } = usePriceHistory(id || "");
+  const { data: similarData } = useSimilarProducts(id || "", 8);
+
+  const similarProducts = useMemo(() => {
+    if (!similarData?.results?.length) return [];
+    return transformProducts(similarData.results);
+  }, [similarData]);
 
   const product = useMemo(() => {
     if (!productData) return null;
@@ -498,6 +505,18 @@ const ProductPage = () => {
                   ))}
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Similar products */}
+        {similarProducts.length > 0 && (
+          <div className="mt-4 overflow-hidden bg-white p-4 sm:p-5">
+            <h2 className="text-sm font-semibold text-foreground mb-3">Похожие товары</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+              {similarProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
             </div>
           </div>
         )}

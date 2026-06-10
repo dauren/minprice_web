@@ -223,6 +223,11 @@ export interface PriceHistoryResponse {
   stores: PriceHistoryStore[];
 }
 
+export interface SimilarProductsResponse {
+  product_uuid: string;
+  results: Product[];
+}
+
 export interface Category {
   id: number;
   name: string;
