@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 interface BarcodeScannerModalProps {
   open: boolean;
@@ -32,7 +33,7 @@ export function BarcodeScannerModal({ open, onOpenChange, onScan }: BarcodeScann
       if (!readerElement) {
         setIsLoading(false);
         isInitializingRef.current = false;
-        setError("Ошибка: элемент сканера не найден.");
+        setError(t.scanner.errorNoElement);
         return;
       }
 
@@ -71,7 +72,7 @@ export function BarcodeScannerModal({ open, onOpenChange, onScan }: BarcodeScann
       }).catch((err) => {
         setIsLoading(false);
         isInitializingRef.current = false;
-        setError("Не удалось получить доступ к камере. Пожалуйста, разрешите использование камеры в настройках браузера.");
+        setError(t.scanner.errorCamera);
         console.error(err);
       });
     }, 100);
@@ -94,14 +95,14 @@ export function BarcodeScannerModal({ open, onOpenChange, onScan }: BarcodeScann
     }}>
       <DialogContent className="sm:max-w-md overflow-hidden bg-card/95 backdrop-blur-xl border-border/50 p-4 sm:p-6">
         <DialogHeader className="mb-2">
-          <DialogTitle className="text-center font-bold tracking-tight">Отсканируйте штрихкод</DialogTitle>
+          <DialogTitle className="text-center font-bold tracking-tight">{t.scanner.title}</DialogTitle>
         </DialogHeader>
         
         <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center border border-border shadow-inner">
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-sm z-10">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <p className="text-sm font-medium text-muted-foreground animate-pulse">Запуск камеры...</p>
+              <p className="text-sm font-medium text-muted-foreground animate-pulse">{t.scanner.loading}</p>
             </div>
           )}
           {error && (
@@ -114,7 +115,7 @@ export function BarcodeScannerModal({ open, onOpenChange, onScan }: BarcodeScann
         
         <div className="mt-4 text-center">
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Поместите штрихкод в центр экрана. Сканирование произойдет автоматически.
+            {t.scanner.hint}
           </p>
         </div>
       </DialogContent>

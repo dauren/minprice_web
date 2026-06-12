@@ -1,6 +1,7 @@
 import { MapPin } from "lucide-react";
 import { useCity } from "@/context/CityContext";
 import { useCities } from "@/hooks/useApi";
+import { t } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -34,10 +35,10 @@ const CityDetectionDialog = () => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="w-5 h-5" />
-            Выберите город
+            {t.city.selectCity}
           </DialogTitle>
           <DialogDescription>
-            Пожалуйста, выберите ваш город:
+            {t.city.selectCityPrompt}
           </DialogDescription>
         </DialogHeader>
 

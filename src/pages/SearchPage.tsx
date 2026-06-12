@@ -11,6 +11,7 @@ import { transformProducts } from "@/lib/transformers";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { getChainIdsFromCookie, setChainIdsToCookie } from "@/lib/chainCookies";
+import { t } from "@/lib/i18n";
 
 
 const SearchPage = () => {
@@ -172,14 +173,14 @@ const SearchPage = () => {
       <div className="mx-auto max-w-6xl px-3 pt-4 sm:px-6 sm:pt-6">
         <div className="mb-4 flex flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <span className="az-kicker mb-2">search desk</span>
+            <span className="az-kicker mb-2">{t.search.kicker}</span>
             <h1 className="text-2xl font-semibold leading-tight text-black sm:text-3xl">
-              {query ? `Ищем: ${query}` : "Поиск по витрине arzan"}
+              {t.search.heading(query)}
             </h1>
           </div>
           {query && !isLoading && (
             <p className="text-xs font-medium text-black/45">
-              {sortedProducts.length} найдено
+              {t.search.found(sortedProducts.length)}
             </p>
           )}
         </div>
@@ -194,7 +195,7 @@ const SearchPage = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onFocus={() => setShowHistory(true)}
-              placeholder="Поиск товаров..."
+              placeholder={t.search.placeholder}
               className="h-12 w-full bg-white pl-12 pr-[100px] text-base font-medium text-black placeholder:text-black/35 transition-colors focus:outline-none sm:h-14"
             />
             <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
@@ -211,7 +212,7 @@ const SearchPage = () => {
                 type="button"
                 onClick={() => setIsScannerOpen(true)}
                 className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#148a42]/10 text-[#148a42] transition-colors hover:bg-[#148a42]/15"
-                title="Сканировать штрихкод"
+                title={t.nav.scanBarcode}
               >
                 <ScanBarcode className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
               </button>
@@ -285,7 +286,7 @@ const SearchPage = () => {
                 }}
                 className="ml-1 text-xs font-medium text-black/45 transition-colors hover:text-black"
               >
-                Сбросить
+                {t.search.reset}
               </button>
             )}
           </div>
@@ -294,7 +295,7 @@ const SearchPage = () => {
         {/* Results Header */}
         <div className="mb-4 flex items-center justify-between border-b-2 border-foreground pb-2">
           <p className="text-xs font-medium text-black/45">
-            {query ? "результаты" : "начните с запроса"}
+            {query ? t.search.results : t.search.startWithQuery}
           </p>
 
           {/* Sort Toggle */}
@@ -304,7 +305,7 @@ const SearchPage = () => {
               className="flex items-center gap-1.5 bg-white px-3 py-2 text-xs font-medium text-black/45 transition-colors hover:text-black"
             >
               <ArrowUpDown className="w-3.5 h-3.5" />
-              {sortBy === "discount" ? "По скидке" : "По цене"}
+              {sortBy === "discount" ? t.search.sortByDiscount : t.search.sortByPrice}
             </button>
             {showSortMenu && (
               <>
@@ -315,14 +316,14 @@ const SearchPage = () => {
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === "discount" ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                       }`}
                   >
-                    По скидке
+                    {t.search.sortByDiscount}
                   </button>
                   <button
                     onClick={() => { setSortBy("price"); setShowSortMenu(false); }}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === "price" ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                       }`}
                   >
-                    По цене
+                    {t.search.sortByPrice}
                   </button>
                 </div>
               </>
@@ -333,8 +334,8 @@ const SearchPage = () => {
         {/* Products Grid */}
         {!query ? (
           <div className="mx-auto max-w-md bg-white py-16 text-center">
-            <p className="font-medium text-black">Введите запрос для поиска</p>
-            <p className="text-xs text-muted-foreground mt-1.5">Например: молоко, хлеб, курица</p>
+            <p className="font-medium text-black">{t.search.emptyPrompt}</p>
+            <p className="text-xs text-muted-foreground mt-1.5">{t.search.emptyHint}</p>
           </div>
         ) : isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
@@ -364,12 +365,12 @@ const SearchPage = () => {
         ) : (
           <div className="mx-auto max-w-md bg-white py-14 text-center">
             <p className="font-medium text-black">
-              По запросу «{query}» ничего не найдено
+              {t.search.noResults(query)}
             </p>
             <p className="text-xs text-muted-foreground mt-1.5">
               {selectedChainIds.length > 0
-                ? "Попробуйте сбросить фильтры магазинов"
-                : "Попробуйте изменить запрос"
+                ? t.search.tryResetFilters
+                : t.search.tryChangeQuery
               }
             </p>
           </div>

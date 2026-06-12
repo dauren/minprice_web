@@ -9,6 +9,7 @@ import PageMeta from "@/components/PageMeta";
 import { useDiscounts, useChains } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { getChainIdsFromCookie, setChainIdsToCookie } from "@/lib/chainCookies";
+import { t } from "@/lib/i18n";
 
 const DiscountsPage = () => {
     const navigationType = useNavigationType();
@@ -77,8 +78,8 @@ const DiscountsPage = () => {
     return (
         <div className="min-h-screen bg-background pb-32 sm:pb-16">
             <PageMeta
-                title="Скидки"
-                description="Лучшие скидки на продукты в супермаркетах Казахстана. Сравните цены и сэкономьте на arzan.kz."
+                title={t.discounts.metaTitle}
+                description={t.discounts.metaDesc}
                 url="/discounts"
             />
             <Header />
@@ -91,14 +92,14 @@ const DiscountsPage = () => {
                         <Tag className="h-5 w-5" />
                     </div>
                     <div>
-                        <span className="az-kicker mb-1">deal desk</span>
-                        <h1 className="text-2xl font-semibold text-black sm:text-3xl">Скидки</h1>
-                        <p className="text-xs font-medium text-black/45">Витрина товаров, где цена заметно ниже</p>
+                        <span className="az-kicker mb-1">{t.discounts.kicker}</span>
+                        <h1 className="text-2xl font-semibold text-black sm:text-3xl">{t.discounts.heading}</h1>
+                        <p className="text-xs font-medium text-black/45">{t.discounts.subheading}</p>
                     </div>
                     </div>
                     <div className="hidden text-right sm:block">
                         <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">arzan.kz</p>
-                        <p className="text-sm font-medium text-black/45">price drops</p>
+                        <p className="text-sm font-medium text-black/45">{t.discounts.priceDrops}</p>
                     </div>
                 </div>
 
@@ -131,7 +132,7 @@ const DiscountsPage = () => {
                                 }}
                                 className="ml-1 text-xs font-medium text-black/45 transition-colors hover:text-black"
                             >
-                                Сбросить
+                                {t.discounts.reset}
                             </button>
                         )}
                     </div>
@@ -140,7 +141,7 @@ const DiscountsPage = () => {
                 {/* Results Header */}
                 <div className="mb-4 flex items-center justify-between border-b-2 border-foreground pb-2">
                     <p className="text-xs font-medium text-black/45">
-                        {!isLoading && `${total} товаров`}
+                        {!isLoading && t.discounts.itemCount(total)}
                     </p>
 
                     {/* Sort Toggle */}
@@ -150,7 +151,7 @@ const DiscountsPage = () => {
                             className="flex items-center gap-1.5 bg-white px-3 py-2 text-xs font-medium text-black/45 transition-colors hover:text-black"
                         >
                             <ArrowUpDown className="w-3.5 h-3.5" />
-                            {sortBy === "discount" ? "По скидке" : "По цене"}
+                            {sortBy === "discount" ? t.discounts.sortByDiscount : t.discounts.sortByPrice}
                         </button>
                         {showSortMenu && (
                             <>
@@ -161,14 +162,14 @@ const DiscountsPage = () => {
                                         className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === "discount" ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                                             }`}
                                     >
-                                        По скидке
+                                        {t.discounts.sortByDiscount}
                                     </button>
                                     <button
                                         onClick={() => { setSortBy("price"); setShowSortMenu(false); }}
                                         className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === "price" ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                                             }`}
                                     >
-                                        По цене
+                                        {t.discounts.sortByPrice}
                                     </button>
                                 </div>
                             </>
@@ -237,11 +238,11 @@ const DiscountsPage = () => {
                     </>
                 ) : (
                     <div className="mx-auto max-w-md bg-white py-14 text-center">
-                        <p className="font-medium text-black">Нет товаров со скидками</p>
+                        <p className="font-medium text-black">{t.discounts.noDiscounts}</p>
                         <p className="text-xs text-muted-foreground mt-1.5">
                             {selectedChainIds.length > 0
-                                ? "Попробуйте сбросить фильтры магазинов"
-                                : "Попробуйте позже"
+                                ? t.discounts.tryResetFilters
+                                : t.discounts.tryLater
                             }
                         </p>
                     </div>

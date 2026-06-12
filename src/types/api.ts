@@ -232,6 +232,7 @@ export interface SimilarProductsResponse {
 export interface Category {
   id: number;
   name: string;
+  name_kz?: string | null;
   emoji: string | null;
   level: number;
   priority: number;

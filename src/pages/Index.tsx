@@ -13,6 +13,7 @@ import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 import { useCart } from "@/context/CartContext";
+import { t } from "@/lib/i18n";
 
 
 const Index = () => {
@@ -176,7 +177,7 @@ const Index = () => {
             />
             <input
               type="text"
-              placeholder="Что ищем дешевле?"
+              placeholder={t.index.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => { setSearchFocused(true); setShowHistory(true); }}
@@ -266,7 +267,7 @@ const Index = () => {
                 type="button"
                 className="ml-1 text-xs font-medium text-black/45 transition-colors hover:text-black"
               >
-                Сбросить
+                {t.index.reset}
               </button>
             )}
           </div>
@@ -274,9 +275,9 @@ const Index = () => {
 
         <div className="mb-4 flex items-end justify-between pb-2">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-black sm:text-xl">
-            Выгодные предложения
+            {t.index.bestDeals}
           </h2>
-          <span className="text-xs font-medium text-black/45">{totalDealsCount} товаров</span>
+          <span className="text-xs font-medium text-black/45">{t.index.itemCount(totalDealsCount)}</span>
         </div>
 
         {isLoadingDeals ? (
@@ -287,7 +288,7 @@ const Index = () => {
           </div>
         ) : allDeals.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground">
-            Нет доступных скидок
+            {t.index.noDeals}
           </div>
         ) : (
           <>
@@ -323,16 +324,16 @@ const Footer = () => (
           <span className="az-logo text-base text-foreground">Arzan.kz</span>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground font-medium">
-          <Link to="/search" className="hover:text-foreground transition-colors">Поиск</Link>
-          <Link to="/catalog" className="hover:text-foreground transition-colors">Каталог</Link>
-          <Link to="/discounts" className="hover:text-foreground transition-colors">Скидки</Link>
-          <Link to="/cart" className="hover:text-foreground transition-colors">Корзина</Link>
-          <Link to="/public-offer" className="hover:text-foreground transition-colors">Оферта</Link>
-          <a href="mailto:support@arzan.kz" className="hover:text-foreground transition-colors">Поддержка</a>
+          <Link to="/search" className="hover:text-foreground transition-colors">{t.footer.search}</Link>
+          <Link to="/catalog" className="hover:text-foreground transition-colors">{t.footer.catalog}</Link>
+          <Link to="/discounts" className="hover:text-foreground transition-colors">{t.footer.discounts}</Link>
+          <Link to="/cart" className="hover:text-foreground transition-colors">{t.footer.cart}</Link>
+          <Link to="/public-offer" className="hover:text-foreground transition-colors">{t.footer.offer}</Link>
+          <a href="mailto:support@arzan.kz" className="hover:text-foreground transition-colors">{t.footer.support}</a>
         </div>
       </div>
       <div className="mt-6 pt-4 border-t border-border text-center text-xs text-muted-foreground">
-        © 2026 arzan.kz — цены актуальны на момент обновления
+        {t.footer.copyright}
       </div>
     </div>
   </footer>

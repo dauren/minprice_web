@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { apiClient, API_ENDPOINTS } from "@/lib/api";
 import { useCity } from "@/context/CityContext";
+import { t } from "@/lib/i18n";
 
 // ExtProduct properties mapped from backend API responses
 export interface CartItemProduct {
@@ -107,7 +108,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { selectedCityId } = useCity();
   const [cartUuid, setCartUuid] = useState<string | null>(null);
-  const [cartName, setCartName] = useState<string>("Новая Корзина");
+  const [cartName, setCartName] = useState<string>(t.cart.defaultName);
   const [items, setItems] = useState<CartItem[]>([]);
   const [unavailableProducts, setUnavailableProducts] = useState<UnavailableProduct[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);

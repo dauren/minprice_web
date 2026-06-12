@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useCategories } from "@/hooks/useApi";
+import { t, getCategoryName } from "@/lib/i18n";
 
 interface CategorySidebarProps {
   activeCategory: number | null;
@@ -35,7 +36,7 @@ const CategorySidebar = ({ activeCategory, onCategorySelect }: CategorySidebarPr
 
   return (
     <aside className="hidden lg:block w-56 shrink-0 sticky top-16 self-start max-h-[calc(100vh-4rem)] overflow-y-auto scrollbar-hide">
-      <h2 className="text-sm font-semibold text-foreground mb-2 px-2">Категории</h2>
+      <h2 className="text-sm font-semibold text-foreground mb-2 px-2">{t.catalog.categoriesHeading}</h2>
       <nav className="space-y-0.5">
         {/* All items section removed */}
 
@@ -55,7 +56,7 @@ const CategorySidebar = ({ activeCategory, onCategorySelect }: CategorySidebarPr
                     }`}
                 >
                   <span className="text-sm leading-none">{cat.emoji || '📦'}</span>
-                  <span className="truncate">{cat.name}</span>
+                  <span className="truncate">{getCategoryName(cat)}</span>
                 </button>
                 {hasChildren && (
                   <button
@@ -78,7 +79,7 @@ const CategorySidebar = ({ activeCategory, onCategorySelect }: CategorySidebarPr
                           : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
                         }`}
                     >
-                      {sub.name}
+                      {getCategoryName(sub)}
                     </button>
                   ))}
                 </div>

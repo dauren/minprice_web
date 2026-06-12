@@ -6,6 +6,7 @@ import { useCart, CartItem } from "@/context/CartContext";
 import mascot from "@/assets/logo.png";
 import { API_ENDPOINTS, apiClient } from "@/lib/api";
 import { toRuUnit } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 
 const SharedCartPage = () => {
     const { uuid } = useParams<{ uuid: string }>();
@@ -33,7 +34,7 @@ const SharedCartPage = () => {
                 }
             } catch (e: any) {
                 console.error("Error fetching shared cart:", e);
-                setError(e.message || "Не удалось загрузить корзину.");
+                setError(e.message || (import.meta.env.VITE_SITE_LANG === "kk" ? "Себетті жүктеу сәтсіз болды." : "Не удалось загрузить корзину."));
             } finally {
                 setIsLoading(false);
             }
@@ -98,7 +99,7 @@ const SharedCartPage = () => {
                         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
-                        На главную
+                        {t.sharedCart.backHome}
                     </Link>
 
                     <div className="flex items-center justify-between gap-4">
@@ -111,19 +112,19 @@ const SharedCartPage = () => {
                                 disabled={isMakingActive}
                                 className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shrink-0 disabled:opacity-60"
                             >
-                                {isMakingActive ? "..." : "Сделать активной"}
+                                {isMakingActive ? "..." : t.sharedCart.makeActive}
                             </button>
                         )}
                     </div>
                     {!isOwner && (
-                        <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded mt-2 inline-block">С вами поделились этой корзиной</span>
+                        <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded mt-2 inline-block">{t.sharedCart.sharedWithYou}</span>
                     )}
                 </div>
 
                 {items.length === 0 ? (
                     <div className="text-center py-16">
-                        <img src={mascot} alt="Корзина пуста" className="w-20 h-20 mx-auto mb-3 object-contain opacity-50" />
-                        <p className="text-muted-foreground text-sm mb-1">Корзина пуста</p>
+                        <img src={mascot} alt={t.sharedCart.empty} className="w-20 h-20 mx-auto mb-3 object-contain opacity-50" />
+                        <p className="text-muted-foreground text-sm mb-1">{t.sharedCart.empty}</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -137,7 +138,7 @@ const SharedCartPage = () => {
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-medium text-foreground">{store}</span>
                                             <span className="text-[11px] text-muted-foreground">
-                                                {storeItems.length} {storeItems.length === 1 ? "товар" : "товаров"}
+                                                {t.sharedCart.itemCount(storeItems.length)}
                                             </span>
                                         </div>
                                         <span className="text-xs font-medium text-foreground">
@@ -172,8 +173,8 @@ const SharedCartPage = () => {
 
                                             <div className="flex items-center justify-between mt-2 pl-[3.5rem] sm:pl-[4.25rem]">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="text-xs text-muted-foreground">{item.quantity} шт.</span>
-                                                    <span className="text-[11px] text-muted-foreground">{item.price.toLocaleString()} ₸ / шт</span>
+                                                    <span className="text-xs text-muted-foreground">{item.quantity} {t.sharedCart.pcs}</span>
+                                                    <span className="text-[11px] text-muted-foreground">{item.price.toLocaleString()} {t.sharedCart.perPcs}</span>
                                                 </div>
 
                                                 <span className="text-sm font-semibold text-foreground">
@@ -190,7 +191,7 @@ const SharedCartPage = () => {
                         <div className="border border-border rounded-xl px-3 sm:px-4 py-3 bg-card">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">
-                                    Итого {storeEntries.length} {storeEntries.length === 1 ? "магазин" : "магазина"}
+                                    {t.sharedCart.storeTotal(storeEntries.length)}
                                 </span>
                                 <span className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
                                     {totalPrice.toLocaleString()} ₸

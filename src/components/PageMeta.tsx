@@ -2,6 +2,9 @@ import { Helmet } from "react-helmet-async";
 
 const SITE_NAME = import.meta.env.VITE_SITE_NAME as string;
 const BASE_URL = import.meta.env.VITE_SITE_URL as string;
+const SITE_LANG = import.meta.env.VITE_SITE_LANG as string;
+const ALT_URL = (import.meta.env.VITE_ALTERNATE_SITE_URL as string) || "";
+const ALT_LANG = SITE_LANG === "kk" ? "ru" : "kk";
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const DEFAULT_DESCRIPTION = import.meta.env.VITE_SITE_DESCRIPTION as string;
 
@@ -22,11 +25,18 @@ const PageMeta = ({
 }: PageMetaProps) => {
     const fullTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — ${import.meta.env.VITE_SITE_TAGLINE}`;
     const fullUrl = url ? `${BASE_URL}${url}` : BASE_URL;
+    const altUrl = ALT_URL ? fullUrl.replace(BASE_URL, ALT_URL) : "";
 
     return (
         <Helmet>
             <title>{fullTitle}</title>
             <meta name="description" content={description} />
+
+            {/* Canonical + hreflang */}
+            <link rel="canonical" href={fullUrl} />
+            <link rel="alternate" hreflang={SITE_LANG} href={fullUrl} />
+            {altUrl && <link rel="alternate" hreflang={ALT_LANG} href={altUrl} />}
+            {altUrl && <link rel="alternate" hreflang="x-default" href={altUrl} />}
 
             {/* Open Graph */}
             <meta property="og:site_name" content={SITE_NAME} />

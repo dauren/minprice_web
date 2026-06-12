@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import { useCart } from "@/context/CartContext";
 import { API_ENDPOINTS, apiClient } from "@/lib/api";
 import mascot from "@/assets/logo.png";
+import { t } from "@/lib/i18n";
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
     AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
@@ -46,7 +47,7 @@ const CartHistoryPage = () => {
             }
         } catch (e: any) {
             console.error("Error fetching cart history:", e);
-            setError(e.message || "Не удалось загрузить историю корзин.");
+            setError(e.message || (import.meta.env.VITE_SITE_LANG === "kk" ? "Себет тарихын жүктеу сәтсіз болды." : "Не удалось загрузить историю корзин."));
         } finally {
             setIsLoading(false);
         }
@@ -86,13 +87,13 @@ const CartHistoryPage = () => {
                         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
-                        К текущей корзине
+                        {t.cartHistory.backToCart}
                     </Link>
 
                     <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-                        <ShoppingCart className="w-5 h-5" /> История корзин
+                        <ShoppingCart className="w-5 h-5" /> {t.cartHistory.heading}
                     </h1>
-                    <p className="text-sm text-muted-foreground mt-1">Здесь хранятся ваши прошлые и сохраненные корзины.</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t.cartHistory.subheading}</p>
                 </div>
 
                 {isLoading ? (
@@ -105,18 +106,18 @@ const CartHistoryPage = () => {
                     </div>
                 ) : carts.length === 0 ? (
                     <div className="text-center py-16">
-                        <img src={mascot} alt="История пуста" className="w-20 h-20 mx-auto mb-4 object-contain opacity-40" />
-                        <p className="text-muted-foreground text-sm mb-1">История пуста</p>
+                        <img src={mascot} alt={t.cartHistory.empty} className="w-20 h-20 mx-auto mb-4 object-contain opacity-40" />
+                        <p className="text-muted-foreground text-sm mb-1">{t.cartHistory.empty}</p>
                         <p className="text-xs text-muted-foreground mb-4">
-                            Архивированные корзины будут отображаться здесь.
-                            <br />
-                            Нажмите «Сохранить создать новую» в корзине, чтобы сохранить текущую.
+                            {t.cartHistory.emptyHint.split("\n").map((line, i) => (
+                                <span key={i}>{line}{i === 0 && <br />}</span>
+                            ))}
                         </p>
                         <Link
                             to="/cart"
                             className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground bg-secondary rounded-lg px-4 py-2 hover:bg-secondary/80 transition-colors"
                         >
-                            К текущей корзине
+                            {t.cartHistory.backToCart}
                         </Link>
                     </div>
                 ) : (
@@ -126,12 +127,12 @@ const CartHistoryPage = () => {
                                 <div>
                                     <h3 className="font-medium text-foreground flex items-center gap-2 flex-wrap">
                                         {cart.name}
-                                        {cart.is_active && <span className="text-[10px] uppercase font-bold tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Активная</span>}
-                                        {!cart.is_owner && <span className="text-[10px] uppercase font-bold tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-0.5 rounded-full">С вами поделились</span>}
+                                        {cart.is_active && <span className="text-[10px] uppercase font-bold tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">{t.cartHistory.active}</span>}
+                                        {!cart.is_owner && <span className="text-[10px] uppercase font-bold tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-0.5 rounded-full">{t.cartHistory.sharedWithYou}</span>}
                                     </h3>
                                     <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3">
-                                        <span>{cart.item_count} товаров</span>
-                                        <span>Обновлено: {new Date(cart.updated_at).toLocaleDateString('ru-RU')}</span>
+                                        <span>{t.cartHistory.itemCount(cart.item_count)}</span>
+                                        <span>{t.cartHistory.updated(new Date(cart.updated_at).toLocaleDateString('ru-RU'))}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 self-start sm:self-auto">
@@ -139,39 +140,39 @@ const CartHistoryPage = () => {
                                         to={`/cart/${cart.uuid}`}
                                         className="text-xs font-medium px-3 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 transition-colors"
                                     >
-                                        Посмотреть
+                                        {t.cartHistory.view}
                                     </Link>
                                     {!cart.is_active && (
                                         <button
                                             onClick={() => handleSetActive(cart.uuid)}
                                             className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                                         >
-                                            Сделать активной
+                                            {t.cartHistory.makeActive}
                                         </button>
                                     )}
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <button
                                                 className="text-muted-foreground hover:text-destructive transition-colors p-1.5"
-                                                title="Удалить"
+                                                title={t.cartHistory.delete}
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
-                                                <AlertDialogTitle>Удалить корзину «{cart.name}»?</AlertDialogTitle>
+                                                <AlertDialogTitle>{t.cartHistory.deleteConfirmTitle(cart.name)}</AlertDialogTitle>
                                                 <AlertDialogDescription>
-                                                    Это действие необратимо. Корзина и все её товары будут удалены навсегда.
+                                                    {t.cartHistory.deleteConfirmDesc}
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
-                                                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                                                <AlertDialogCancel>{t.cartHistory.cancel}</AlertDialogCancel>
                                                 <AlertDialogAction
                                                     onClick={() => handleDelete(cart.uuid)}
                                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                                 >
-                                                    Удалить
+                                                    {t.cartHistory.delete}
                                                 </AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>

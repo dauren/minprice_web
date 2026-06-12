@@ -6,6 +6,7 @@ import PageMeta from "@/components/PageMeta";
 import ProductCard from "@/components/ProductCard";
 import { useChains, useInfiniteProducts } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
+import { t } from "@/lib/i18n";
 
 const StorePage = () => {
   const { chainSlug, citySlug } = useParams<{ chainSlug: string; citySlug?: string }>();
@@ -26,13 +27,13 @@ const StorePage = () => {
     );
   }, [productsPages, chain]);
 
-  const title = `${chain?.name || "Магазин"}${citySlug ? ` в ${citySlug}` : ""}: цены на продукты`;
+  const title = t.store.titleSuffix(chain?.name || "", citySlug);
 
   return (
     <div className="min-h-screen bg-background pb-32 sm:pb-16">
       <PageMeta
         title={title}
-        description={`${title}. Актуальные предложения, наличие и цены на arzan.kz.`}
+        description={`${title}${t.store.metaDescSuffix}`}
         url={citySlug ? `/city/${citySlug}/stores/${chainSlug}` : `/stores/${chainSlug}`}
       />
       <Header />
@@ -40,14 +41,14 @@ const StorePage = () => {
       <main className="mx-auto max-w-6xl px-3 py-5 sm:px-6 sm:py-8">
         <Link to="/" className="az-min-link mb-4 inline-flex items-center gap-1.5">
           <ArrowLeft className="w-3.5 h-3.5" />
-          Главная
+          {t.store.backHome}
         </Link>
 
         <section className="az-sheet mb-5 p-4 sm:p-5">
-          <span className="az-kicker mb-2">store board</span>
+          <span className="az-kicker mb-2">{t.store.kicker}</span>
           <h1 className="text-2xl font-black leading-tight text-foreground sm:text-4xl">{title}</h1>
           <p className="mt-2 max-w-2xl text-sm font-semibold text-muted-foreground">
-            Товары с актуальными предложениями источника. Канонические страницы товаров содержат цены, наличие и время обновления.
+            {t.store.storeDesc}
           </p>
         </section>
 
@@ -65,7 +66,7 @@ const StorePage = () => {
           </div>
         ) : (
           <div className="az-empty text-sm text-muted-foreground">
-            Пока нет доступных товаров для этого магазина.
+            {t.store.noProducts}
           </div>
         )}
       </main>

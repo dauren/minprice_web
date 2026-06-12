@@ -5,6 +5,7 @@ import { useCart } from "@/context/CartContext";
 import StoreLogo from "@/components/StoreLogo";
 import { useState, useLayoutEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/lib/i18n";
 
 const MAX_STORES_DISPLAY = 3; // ensure consistent height
 
@@ -103,7 +104,7 @@ const ProductCard = ({ product }: { product: Product }) => {
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 600);
     toast({
-      title: "Добавлено в корзину",
+      title: import.meta.env.VITE_SITE_LANG === "kk" ? "Себетке қосылды" : "Добавлено в корзину",
       description: product.name,
     });
     import('@/lib/algoliaInsights').then(({ sendProductAddToCartEvent }) => {
@@ -211,7 +212,9 @@ const ProductCard = ({ product }: { product: Product }) => {
               }`}
           >
             <Plus className="w-3.5 h-3.5" />
-            {justAdded ? "Добавлено" : "В корзину"}
+            {justAdded
+              ? (import.meta.env.VITE_SITE_LANG === "kk" ? "Қосылды" : "Добавлено")
+              : (import.meta.env.VITE_SITE_LANG === "kk" ? "Себетке" : "В корзину")}
           </button>
         ) : (
           <div className="flex h-9 animate-scale-in items-center justify-center gap-3 overflow-hidden bg-[#148a42]/10 text-[#148a42] transition-colors">

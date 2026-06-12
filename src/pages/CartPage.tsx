@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { toRuUnit } from "@/lib/utils";
 import { apiClient, API_ENDPOINTS } from "@/lib/api";
+import { t } from "@/lib/i18n";
 
 const TRANSFERABLE_CHAINS: Record<string, { name: string; emoji: string }> = {
   arbuz: { name: "Arbuz", emoji: "🍉" },
@@ -130,7 +131,7 @@ const CartPage = () => {
       if (navigator.share) {
         try {
           await navigator.share({
-            title: cartName || "Моя корзина arzan.kz",
+            title: t.cart.shareTitle(cartName),
             url: url
           });
           return;
@@ -141,12 +142,12 @@ const CartPage = () => {
       try {
         await navigator.clipboard.writeText(url);
         toast({
-          title: "Ссылка скопирована!",
-          description: "Отправьте её друзьям, чтобы поделиться корзиной.",
+          title: t.cart.linkCopied,
+          description: t.cart.linkCopiedDesc,
         });
       } catch (err) {
         console.error("Failed to copy", err);
-        alert(`Не удалось скопировать. Вот ваша ссылка: ${url}`);
+        alert(t.cart.linkCopyFailed(url));
       }
     }
   };
@@ -161,15 +162,15 @@ const CartPage = () => {
   const handleArchive = async () => {
     await archiveCart();
     toast({
-      title: "Корзина сохранена",
-      description: "Создана новая корзина. Старая доступна в истории.",
+      title: t.cart.savedToast,
+      description: t.cart.savedToastDesc,
     });
   };
 
   const handleDelete = async () => {
     if (!cartUuid) return;
     await deleteCart(cartUuid);
-    toast({ title: "Корзина удалена" });
+    toast({ title: t.cart.deletedToast });
   };
 
   const handleRemoveItem = (item: CartItem) => {
@@ -187,13 +188,13 @@ const CartPage = () => {
 
       // Show undo toast
       toast({
-        title: "Товар удалён",
+        title: t.cart.itemRemoved,
         description: item.product.title,
         action: (
-          <ToastAction altText="Отменить" onClick={() => {
+          <ToastAction altText={t.cart.undo} onClick={() => {
             addItem(item.product.uuid, item.quantity);
           }}>
-            Отменить
+            {t.cart.undo}
           </ToastAction>
         ),
       });
@@ -229,7 +230,7 @@ const CartPage = () => {
         cart_url: null,
         fallback_urls: [],
         items_count: 0,
-        error: "Не удалось перенести товары. Попробуйте позже.",
+        error: t.cart.transferFailed,
       });
     } finally {
       setTransferLoading(false);
@@ -254,7 +255,7 @@ const CartPage = () => {
     setIsApplying(true);
     try {
       await updateStorePreferences(localSelectedIds);
-      toast({ title: "Предпочтения сохранены" });
+      toast({ title: t.cart.prefsToast });
     } finally {
       setIsApplying(false);
     }
@@ -266,7 +267,7 @@ const CartPage = () => {
       const chainId = chainGroups[chainName]?.chainId;
       if (!chainId) return;
       await updateStorePreferences([chainId]);
-      toast({ title: `Показываю только ${chainName}` });
+      toast({ title: t.cart.showingOnly(chainName) });
     } finally {
       setIsApplying(false);
     }
@@ -285,13 +286,13 @@ const CartPage = () => {
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Продолжить покупки
+            {t.cart.continueShopping}
           </Link>
 
           <div className="flex items-center gap-2">
             <Link to="/cart-history" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
               <History className="w-3.5 h-3.5" />
-              История
+              {t.cart.history}
             </Link>
           </div>
         </div>
@@ -307,29 +308,29 @@ const CartPage = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Переименовать корзину</DialogTitle>
+                      <DialogTitle>{t.cart.rename}</DialogTitle>
                     </DialogHeader>
                     <Input
                       value={newCartName}
                       onChange={(e) => setNewCartName(e.target.value)}
-                      placeholder="Название корзины"
+                      placeholder={import.meta.env.VITE_SITE_LANG === "kk" ? "Себет атауы" : "Название корзины"}
                     />
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsRenameOpen(false)}>Отмена</Button>
-                      <Button onClick={handleRename}>Сохранить</Button>
+                      <Button variant="outline" onClick={() => setIsRenameOpen(false)}>{t.cart.cancel}</Button>
+                      <Button onClick={handleRename}>{t.cart.save}</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               )}
             </h1>
-            {!isOwner && <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">С вами поделились этой корзиной</span>}
+            {!isOwner && <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">{t.cart.sharedWithYou}</span>}
           </div>
 
           <div className="flex items-center gap-3">
             {cartUuid && (
               <button onClick={handleShare} className="text-xs text-blue-500 hover:text-blue-600 flex items-center gap-1 transition-colors">
                 <Share className="w-3.5 h-3.5" />
-                Поделиться
+                {t.cart.share}
               </button>
             )}
             {isOwner && items.length > 0 && (
@@ -338,7 +339,7 @@ const CartPage = () => {
                   onClick={handleArchive}
                   className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
                 >
-                  Сохранить создать новую
+                  {t.cart.saveCreateNew}
                 </button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -350,15 +351,15 @@ const CartPage = () => {
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Удалить корзину?</AlertDialogTitle>
+                      <AlertDialogTitle>{t.cart.deleteCart}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Это действие необратимо. Все товары в корзине будут удалены.
+                        {t.cart.deleteCartConfirm}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Отмена</AlertDialogCancel>
+                      <AlertDialogCancel>{t.cart.cancel}</AlertDialogCancel>
                       <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Удалить
+                        {t.cart.delete}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -373,15 +374,15 @@ const CartPage = () => {
           <div className="mb-4 space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               <Store className="w-3.5 h-3.5" />
-              Предпочтительные магазины
+              {t.cart.storePreferences}
             </div>
 
             <div className="border border-border rounded-xl p-3 bg-card space-y-3">
               <p className="text-[11px] text-muted-foreground">
-                Выберите магазины, в которых вы хотите покупать. Оптимальный микс будет рассчитан только по выбранным.
+                {t.cart.storePreferencesHint}
               </p>
               {Object.keys(chainGroups).length === 0 ? (
-                <p className="text-xs text-muted-foreground">Загрузка...</p>
+                <p className="text-xs text-muted-foreground">{t.cart.loading}</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(chainGroups).map(([chainName, { chainId, logo }]) => {
@@ -411,7 +412,7 @@ const CartPage = () => {
                   disabled={isApplying}
                 >
                   {isApplying && <Loader2 className="w-3 h-3 animate-spin mr-1" />}
-                  Применить
+                  {t.cart.apply}
                 </Button>
 
                 {localSelectedIds.length > 0 && (
@@ -419,7 +420,7 @@ const CartPage = () => {
                     onClick={() => setLocalSelectedIds([])}
                     className="text-[11px] text-primary hover:underline transition-colors font-medium"
                   >
-                    Выбрать все
+                    {t.cart.selectAll}
                   </button>
                 )}
               </div>
@@ -430,18 +431,18 @@ const CartPage = () => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-10 h-10 text-primary animate-spin opacity-20" />
-            <p className="text-xs text-muted-foreground animate-pulse">Загрузка корзины...</p>
+            <p className="text-xs text-muted-foreground animate-pulse">{t.cart.loadingCart}</p>
           </div>
         ) : !hasItems ? (
           <div className="text-center py-16">
-            <img src={mascot} alt="Корзина пуста" className="w-20 h-20 mx-auto mb-3 object-contain opacity-50" />
-            <p className="text-muted-foreground text-sm mb-1">Корзина пуста</p>
-            <p className="text-xs text-muted-foreground mb-4">Добавьте товары для сравнения цен</p>
+            <img src={mascot} alt={t.cart.empty} className="w-20 h-20 mx-auto mb-3 object-contain opacity-50" />
+            <p className="text-muted-foreground text-sm mb-1">{t.cart.empty}</p>
+            <p className="text-xs text-muted-foreground mb-4">{t.cart.emptyHint}</p>
             <Link
               to="/"
               className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground bg-secondary rounded-lg px-4 py-2 hover:bg-secondary/80 transition-colors"
             >
-              Перейти к покупкам
+              {t.cart.goShopping}
             </Link>
           </div>
         ) : (
@@ -458,7 +459,7 @@ const CartPage = () => {
                   }`}
                 >
                   <Zap className="w-3.5 h-3.5" />
-                  Оптимальный микс
+                  {t.cart.optimalMix}
                 </button>
                 <button
                   onClick={() => setViewMode('single')}
@@ -469,7 +470,7 @@ const CartPage = () => {
                   }`}
                 >
                   <Store className="w-3.5 h-3.5" />
-                  Один магазин
+                  {t.cart.singleStore}
                 </button>
               </div>
             )}
@@ -490,14 +491,14 @@ const CartPage = () => {
                 />
                 <div className="relative flex items-center gap-2">
                   <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-medium text-green-900 dark:text-green-300">Оптимальный микс: {totalPrice.toLocaleString()} ₸</span>
+                  <span className="text-sm font-medium text-green-900 dark:text-green-300">{t.cart.optimalMixTotal(totalPrice.toLocaleString())}</span>
                 </div>
-                <p className="relative text-xs text-green-700/80 dark:text-green-400/80 mt-1">Цены основаны на самом выгодном магазине для каждого товара с учетом ваших предпочтений.</p>
+                <p className="relative text-xs text-green-700/80 dark:text-green-400/80 mt-1">{t.cart.optimalMixHint}</p>
                 {savingsAmount > 0 && (
                   <div className="relative flex items-center gap-1.5 mt-2 pt-2 border-t border-green-200/50 dark:border-green-800/30">
                     <TrendingDown className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
                     <span className="text-xs font-semibold text-green-700 dark:text-green-300">
-                      Вы экономите {savingsAmount.toLocaleString()} ₸{worstStoreName ? ` по сравнению с ${worstStoreName}` : ""}
+                      {t.cart.savings(savingsAmount.toLocaleString(), worstStoreName)}
                     </span>
                   </div>
                 )}
@@ -520,7 +521,7 @@ const CartPage = () => {
                       <StoreLogo store={chainName} size="md" logoUrl={chainLogo || undefined} />
                       <span className="text-sm font-medium text-foreground">{store}</span>
                       <span className="text-[11px] text-muted-foreground">
-                        {storeItems.length} {storeItems.length === 1 ? "товар" : "товаров"}
+                        {t.cart.itemCount(storeItems.length)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -529,10 +530,10 @@ const CartPage = () => {
                           onClick={() => switchToChain(chainName)}
                           disabled={isApplying}
                           className="text-[10px] text-muted-foreground hover:text-primary transition-colors disabled:opacity-50 flex items-center gap-1"
-                          title="Показать корзину только из этого магазина"
+                          title={t.cart.onlyHere}
                         >
                           {isApplying && <Loader2 className="w-2 h-2 animate-spin" />}
-                          Только здесь
+                          {t.cart.onlyHere}
                         </button>
                       )}
                       <span className="text-xs font-medium text-foreground">
@@ -557,7 +558,7 @@ const CartPage = () => {
                         ) : (
                           <ShoppingCart className="w-3.5 h-3.5" />
                         )}
-                        {transferInfo.emoji} Скопировать в {transferInfo.name}
+                        {transferInfo.emoji} {t.cart.copyTo(transferInfo.name)}
                       </button>
                     </div>
                   )}
@@ -618,9 +619,9 @@ const CartPage = () => {
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-xs text-muted-foreground">{item.quantity} шт.</span>
+                              <span className="text-xs text-muted-foreground">{t.cart.pcs(item.quantity)}</span>
                             )}
-                            <span className="text-[11px] text-muted-foreground">{item.price.toLocaleString()} ₸ / шт</span>
+                            <span className="text-[11px] text-muted-foreground">{item.price.toLocaleString()} {t.sharedCart.perPcs}</span>
                           </div>
 
                           <div className="flex items-center gap-1.5 flex-wrap justify-end">
@@ -668,7 +669,7 @@ const CartPage = () => {
                 <div className="px-3 sm:px-4 py-2.5 bg-orange-50/80 dark:bg-orange-950/30 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-orange-500" />
                   <span className="text-sm font-medium text-orange-800 dark:text-orange-300">
-                    Недоступны ({unavailableProducts.length})
+                    {t.cart.unavailable(unavailableProducts.length)}
                   </span>
                 </div>
                 {unavailableProducts.map((item, idx) => (
@@ -685,9 +686,9 @@ const CartPage = () => {
                           {item.product.title}
                         </p>
                         <p className="text-[11px] text-orange-600 dark:text-orange-400 mt-0.5">
-                          Нет в выбранных магазинах
+                          {t.cart.notInSelectedStores}
                         </p>
-                        <p className="text-[11px] text-muted-foreground">{item.quantity} шт.</p>
+                        <p className="text-[11px] text-muted-foreground">{t.cart.pcs(item.quantity)}</p>
                       </div>
                       {isOwner && (
                         <button
@@ -713,10 +714,10 @@ const CartPage = () => {
                   <div className="relative border border-border rounded-xl px-4 py-3 bg-blue-50/50 dark:bg-blue-950/20 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <Store className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm font-medium text-blue-900 dark:text-blue-300">Сравнение по магазинам</span>
+                      <span className="text-sm font-medium text-blue-900 dark:text-blue-300">{t.cart.storeComparison}</span>
                     </div>
                     <p className="text-xs text-blue-700/80 dark:text-blue-400/80 mt-1">
-                      Стоимость всей корзины, если купить все товары в одном магазине.
+                      {t.cart.storeComparisonHint}
                     </p>
                   </div>
                 )}
@@ -739,15 +740,15 @@ const CartPage = () => {
                                 <span className="text-sm font-medium text-foreground">{store.store_name}</span>
                                 {isCheapest && hasAllItems && (
                                   <span className="text-[10px] font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">
-                                    Лучшая цена
+                                    {t.cart.bestPrice}
                                   </span>
                                 )}
                               </div>
                               <span className="text-[11px] text-muted-foreground">
-                                {store.available_count} из {store.total_count} {store.total_count === 1 ? 'товара' : store.total_count < 5 ? 'товаров' : 'товаров'}
+                                {store.available_count} / {store.total_count} {t.cart.itemCount(store.total_count)}
                                 {!hasAllItems && (
                                   <span className="text-orange-500 ml-1">
-                                    · {store.total_count - store.available_count} недоступно
+                                    · {t.cart.unavailable(store.total_count - store.available_count)}
                                   </span>
                                 )}
                               </span>
@@ -785,7 +786,7 @@ const CartPage = () => {
                               ) : (
                                 <ShoppingCart className="w-3 h-3" />
                               )}
-                              {transferInfo.emoji} Скопировать в {transferInfo.name}
+                              {transferInfo.emoji} {t.cart.copyTo(transferInfo.name)}
                             </button>
                           )}
                           <button
@@ -793,7 +794,7 @@ const CartPage = () => {
                             className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
                           >
                             {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                            {isExpanded ? 'Скрыть' : 'Товары'}
+                            {isExpanded ? t.cart.hide : t.cart.items}
                           </button>
                         </div>
                       </div>
@@ -833,7 +834,7 @@ const CartPage = () => {
             <div className="border border-border rounded-xl px-3 sm:px-4 py-3 bg-card">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  {totalItems} {totalItems === 1 ? "товар" : totalItems < 5 ? "товара" : "товаров"} · {storeEntries.length} {storeEntries.length === 1 ? "магазин" : "магазина"}
+                  {t.cart.itemCount(totalItems)} · {t.cart.storeCount(storeEntries.length)}
                 </span>
                 <span className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
                   {totalPrice.toLocaleString()} ₸
@@ -850,10 +851,10 @@ const CartPage = () => {
             <DialogHeader>
               <DialogTitle>
                 {transferLoading
-                  ? `Переносим товары в ${transferStoreName}...`
+                  ? t.cart.transferLoading(transferStoreName)
                   : transferResult?.success
-                    ? "Товары перенесены!"
-                    : "Не удалось перенести"}
+                    ? t.cart.transferSuccess
+                    : t.cart.transferFailed}
               </DialogTitle>
             </DialogHeader>
 
@@ -861,7 +862,7 @@ const CartPage = () => {
               <div className="flex flex-col items-center gap-3 py-6">
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
                 <p className="text-sm text-muted-foreground text-center">
-                  Добавляем товары в корзину {transferStoreName}...
+                  {t.cart.addingToCart(transferStoreName)}
                 </p>
               </div>
             )}
@@ -869,7 +870,7 @@ const CartPage = () => {
             {!transferLoading && transferResult?.success && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  {transferResult.items_count} {transferResult.items_count === 1 ? "товар добавлен" : "товаров добавлено"} в корзину {transferStoreName}.
+                  {t.cart.itemsAdded(transferResult.items_count)} {transferStoreName}.
                 </p>
                 {transferResult.cart_url && (
                   <a
@@ -879,11 +880,11 @@ const CartPage = () => {
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Открыть корзину {transferStoreName}
+                    {t.cart.openCart(transferStoreName)}
                   </a>
                 )}
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setTransferModalOpen(false)}>Закрыть</Button>
+                  <Button variant="outline" onClick={() => setTransferModalOpen(false)}>{t.cart.close}</Button>
                 </DialogFooter>
               </div>
             )}
@@ -896,7 +897,7 @@ const CartPage = () => {
                 {transferResult.fallback_urls.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">
-                      Добавьте товары вручную по ссылкам:
+                      {t.cart.addManually}
                     </p>
                     <div className="max-h-60 overflow-y-auto space-y-1.5">
                       {transferResult.fallback_urls.map((item, idx) => (
@@ -915,7 +916,7 @@ const CartPage = () => {
                   </div>
                 )}
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setTransferModalOpen(false)}>Закрыть</Button>
+                  <Button variant="outline" onClick={() => setTransferModalOpen(false)}>{t.cart.close}</Button>
                 </DialogFooter>
               </div>
             )}

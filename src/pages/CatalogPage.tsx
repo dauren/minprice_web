@@ -8,6 +8,7 @@ import ProductCard from "@/components/ProductCard";
 import { useInView } from "react-intersection-observer";
 import { useCategories, useInfiniteProducts } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
+import { t, getCategoryName } from "@/lib/i18n";
 
 /** Desktop/tablet view with category sidebar */
 const CatalogPage = () => {
@@ -117,7 +118,7 @@ const CatalogPage = () => {
     };
   }, [categoryIdNum, categoriesData]);
 
-  const categoryName = displayCategory?.name || "Весь каталог";
+  const categoryName = displayCategory ? getCategoryName(displayCategory) : t.catalog.allCategories;
   const categoryEmoji = displayCategory?.emoji || "📦";
   const isAllActive = !isSubcategory;
 
@@ -169,7 +170,7 @@ const CatalogPage = () => {
                     : "border-border bg-secondary text-muted-foreground hover:text-foreground"
                     }`}
                 >
-                  Все
+                  {t.catalog.all}
                 </button>
                 {subcategories.map((sub: any) => {
                   const isActive = activeCategoryId === sub.id;
@@ -179,7 +180,7 @@ const CatalogPage = () => {
                       onClick={() => navigate(`/catalog/${sub.id}`)}
                       className={`border px-3 py-1.5 text-xs font-black uppercase whitespace-nowrap transition-all ${isActive ? "bg-foreground text-background" : "border-border bg-secondary text-muted-foreground hover:text-foreground"}`}
                     >
-                      {sub.emoji} {sub.name}
+                      {sub.emoji} {getCategoryName(sub)}
                     </button>
                   );
                 })}
@@ -193,7 +194,7 @@ const CatalogPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder={`Искать в «${categoryName}»...`}
+                placeholder={t.catalog.searchInCategory(categoryName)}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-11 w-full border-2 border-foreground bg-card pl-9 pr-3 text-sm font-semibold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
@@ -226,7 +227,7 @@ const CatalogPage = () => {
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-2xl leading-none">{cat.emoji || '📦'}</span>
-                            <span className="text-sm font-black text-foreground">{cat.name}</span>
+                            <span className="text-sm font-black text-foreground">{getCategoryName(cat)}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             {/* Assuming we might not have exact count, omitted or you can add if api provides */}
@@ -249,7 +250,7 @@ const CatalogPage = () => {
                             onClick={() => navigate(`/catalog/${cat.id}`)}
                             className="flex w-full items-center justify-between gap-2 border border-border px-3 py-2.5 text-sm font-black text-primary transition-colors hover:bg-secondary"
                           >
-                            <span>Все в категории</span>
+                            <span>{t.catalog.allInCategory}</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </button>
                           {cat.children!.map((sub) => (
@@ -260,7 +261,7 @@ const CatalogPage = () => {
                             >
                               <div className="flex items-center gap-2">
                                 {sub.emoji && <span className="text-base">{sub.emoji}</span>}
-                                <span>{sub.name}</span>
+                                <span>{getCategoryName(sub)}</span>
                               </div>
                               <ChevronRight className="w-3.5 h-3.5 opacity-50" />
                             </button>
@@ -276,9 +277,9 @@ const CatalogPage = () => {
                 <div className="mb-4 flex h-16 w-16 items-center justify-center border-2 border-foreground bg-secondary">
                   <span className="text-3xl opacity-50 grayscale">🔍</span>
                 </div>
-                <h3 className="mb-2 text-lg font-black text-foreground">Выберите категорию</h3>
+                <h3 className="mb-2 text-lg font-black text-foreground">{t.catalog.selectCategory}</h3>
                 <p className="text-sm text-muted-foreground max-w-[250px]">
-                  Используйте меню слева, чтобы найти нужные вам товары
+                  {t.catalog.selectCategoryHint}
                 </p>
               </div>
             </>
@@ -310,14 +311,14 @@ const CatalogPage = () => {
               <span className="text-4xl mb-3 block">{categoryEmoji}</span>
               <p className="text-muted-foreground text-sm">
                 {searchQuery.trim()
-                  ? `Нет товаров по запросу «${searchQuery}»`
+                  ? t.catalog.noProductsForQuery(searchQuery)
                   : categoryIdNum
-                    ? `Пока нет товаров в категории «${categoryName}»`
-                    : 'Выберите категорию из списка слева'
+                    ? t.catalog.noProductsInCategory(categoryName)
+                    : t.catalog.selectFromLeft
                 }
               </p>
               {!searchQuery.trim() && categoryIdNum && (
-                <p className="text-xs text-muted-foreground mt-1">Скоро появятся!</p>
+                <p className="text-xs text-muted-foreground mt-1">{t.catalog.comingSoon}</p>
               )}
             </div>
           )}

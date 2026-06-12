@@ -11,6 +11,7 @@ import { useCity } from "@/context/CityContext";
 import { useProduct, usePriceHistory, useSimilarProducts } from "@/hooks/useApi";
 import { transformProduct, transformProducts } from "@/lib/transformers";
 import ProductCard from "@/components/ProductCard";
+import { t } from "@/lib/i18n";
 
 const LINE_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -138,8 +139,8 @@ const ProductPage = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-          <p className="text-muted-foreground">Товар не найден</p>
-          <Link to="/" className="mt-4 inline-block text-sm text-black underline">На главную</Link>
+          <p className="text-muted-foreground">{t.product.notFound}</p>
+          <Link to="/" className="mt-4 inline-block text-sm text-black underline">{t.product.backHome}</Link>
         </div>
       </div>
     );
@@ -195,11 +196,11 @@ const ProductPage = () => {
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Назад
+            {t.product.back}
           </button>
           <button onClick={handleShare} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
             <Share2 className="w-3.5 h-3.5" />
-            Поделиться
+            {t.product.share}
           </button>
         </div>
 
@@ -292,7 +293,7 @@ const ProductPage = () => {
                     )}
                   </>
                 ) : (
-                  <span className="text-sm text-muted-foreground">Нет в наличии</span>
+                  <span className="text-sm text-muted-foreground">{t.product.outOfStock}</span>
                 )}
               </div>
             </div>
@@ -303,13 +304,13 @@ const ProductPage = () => {
         {/* Store prices – expandable with ext_product title */}
         {!hasStores && (
           <div className="mb-3 overflow-hidden bg-white p-4 text-center">
-            <p className="text-sm text-muted-foreground">Этот товар сейчас недоступен ни в одном магазине</p>
+            <p className="text-sm text-muted-foreground">{t.product.unavailableInStores}</p>
           </div>
         )}
 
         {hasStores && <div className="mb-4 overflow-hidden bg-white">
           <div className="px-4 py-2.5">
-            <p className="text-xs font-medium text-black/45">Цены по магазинам</p>
+            <p className="text-xs font-medium text-black/45">{t.product.storesPrices}</p>
           </div>
 
           {product.stores.map((store, i) => {
@@ -337,7 +338,7 @@ const ProductPage = () => {
                         <span className="best-price-label text-[10px]">min</span>
                       )}
                       {store.inStock === false && (
-                        <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded uppercase font-medium">Нет в наличии</span>
+                        <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded uppercase font-medium">{t.product.outOfStock}</span>
                       )}
                     </div>
                   </div>
@@ -380,7 +381,7 @@ const ProductPage = () => {
                                 e.stopPropagation();
                                 copy(store.extProductTitle!, key);
                               }}
-                              title="Копировать название"
+                              title={import.meta.env.VITE_SITE_LANG === "kk" ? "Атауды көшіру" : "Копировать название"}
                               className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all ${copiedKey === key
                                 ? "bg-green-500/15 text-green-600"
                                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -403,7 +404,7 @@ const ProductPage = () => {
                         className="flex h-9 w-full items-center justify-center gap-1.5 text-xs font-medium text-black/45 transition-colors hover:text-black"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        Открыть в магазине
+                        {t.product.openInStore}
                       </a>
                     )}
                   </div>
@@ -420,7 +421,7 @@ const ProductPage = () => {
               onClick={() => addItem(product.id, 1)}
               className="flex h-11 w-full items-center justify-center gap-1.5 bg-[#148a42]/10 text-sm font-medium text-[#148a42] transition-colors hover:bg-[#148a42]/15 active:scale-[0.98]"
             >
-              <span>+ В корзину — {bestPrice} ₸</span>
+              <span>{t.product.addToCart(bestPrice)}</span>
             </button>
           ) : (
             <div className="flex h-11 items-center overflow-hidden bg-[#148a42]/10 text-[#148a42]">
@@ -430,7 +431,7 @@ const ProductPage = () => {
               >
                 <span className="text-lg font-light">−</span>
               </button>
-              <span className="flex-1 text-center text-sm font-semibold text-primary-foreground">{quantity} в корзине</span>
+              <span className="flex-1 text-center text-sm font-semibold text-primary-foreground">{t.product.inCart(quantity)}</span>
               <button
                 onClick={() => { if (cartItem) updateQuantity(cartItem.product.uuid, cartItem.quantity + 1); }}
                 className="h-full px-5 flex items-center justify-center text-primary-foreground hover:bg-primary-foreground/10 active:scale-90 transition-all"
@@ -449,7 +450,7 @@ const ProductPage = () => {
             <div className="flex items-start justify-between mb-4 relative z-10 w-full gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <h2 className="text-sm font-semibold text-foreground">Динамика цен</h2>
+                  <h2 className="text-sm font-semibold text-foreground">{t.product.priceChart}</h2>
                   <span className="text-[9px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded uppercase font-medium whitespace-nowrap hidden sm:inline-block">arzan.kz</span>
                 </div>
                 <p className="text-[11px] sm:text-xs text-muted-foreground break-words whitespace-normal leading-normal pb-0.5">
@@ -474,7 +475,7 @@ const ProductPage = () => {
                   onClick={handleExportChart}
                   data-html2canvas-ignore="true"
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-all border border-transparent hover:border-border shadow-sm active:scale-95"
-                  title="Скачать график (PNG)"
+                  title={t.product.downloadChart}
                 >
                   <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
@@ -512,7 +513,7 @@ const ProductPage = () => {
         {/* Similar products */}
         {similarProducts.length > 0 && (
           <div className="mt-4 overflow-hidden bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold text-foreground mb-3">Похожие товары</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">{t.product.similarProducts}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
               {similarProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />

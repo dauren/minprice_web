@@ -6,6 +6,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import logo from "@/assets/logo.png";
 import StoreLogo from "@/components/StoreLogo";
 import { useChains } from "@/hooks/useApi";
+import { t } from "@/lib/i18n";
 
 interface AboutModalProps {
   open: boolean;
@@ -19,13 +20,13 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="mx-auto flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden border-t border-black/10 bg-white p-0">
         <VisuallyHidden>
-          <DrawerTitle>О приложении arzan.kz</DrawerTitle>
+          <DrawerTitle>{t.about.drawerTitle}</DrawerTitle>
         </VisuallyHidden>
-        
+
         <div className="overflow-y-auto px-4 pb-5 pt-2 sm:px-6 custom-scrollbar">
           {/* Header Card */}
           <div className="relative mb-6 border border-black/10 bg-white p-5">
-            <button 
+            <button
               onClick={() => onOpenChange(false)}
               className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center bg-white text-black/45 transition-colors hover:text-black"
             >
@@ -49,51 +50,51 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
                 Arzan.kz
               </div>
               <div className="text-base text-muted-foreground font-medium mt-1">
-                Выгодные цены рядом.
+                {t.about.tagline}
               </div>
             </div>
           </div>
 
           {/* Features */}
           <div className="mb-6">
-            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">Что умеет</h3>
+            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">{t.about.featuresHeading}</h3>
             <div className="flex flex-col gap-2">
-              <FeatureCard 
+              <FeatureCard
                 icon={<Tag className="w-5 h-5 text-emerald-500" />}
                 iconBg="bg-emerald-100 dark:bg-emerald-500/20"
-                title="Сравнение цен"
-                desc="6 магазинов одним тапом"
+                title={t.about.feature1Title}
+                desc={t.about.feature1Desc}
               />
-              <FeatureCard 
+              <FeatureCard
                 icon={<ShoppingCart className="w-5 h-5 text-sky-500" />}
                 iconBg="bg-sky-100 dark:bg-sky-500/20"
-                title="Умная корзина"
-                desc="Считает экономию vs покупка в одном магазине"
+                title={t.about.feature2Title}
+                desc={t.about.feature2Desc}
               />
-              <FeatureCard 
+              <FeatureCard
                 icon={<ScanBarcode className="w-5 h-5 text-orange-500" />}
                 iconBg="bg-orange-100 dark:bg-orange-500/20"
-                title="Сканер штрих-кодов"
-                desc="Камера → товар в каталоге"
+                title={t.about.feature3Title}
+                desc={t.about.feature3Desc}
               />
-              <FeatureCard 
+              <FeatureCard
                 icon={<Bell className="w-5 h-5 text-rose-500" />}
                 iconBg="bg-rose-100 dark:bg-rose-500/20"
-                title="Алерты на снижение"
-                desc="Уведомим, когда товар подешевеет"
+                title={t.about.feature4Title}
+                desc={t.about.feature4Desc}
               />
             </div>
           </div>
 
           {/* Stores */}
           <div className="mb-6">
-            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">Сравниваем в:</h3>
+            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">{t.about.storesHeading}</h3>
             <div className="grid grid-cols-3 gap-2">
               {chainsData?.chains.map((chain) => (
-                <StoreCard 
-                  key={chain.id} 
-                  name={chain.name} 
-                  displayName={chain.name === "A-Store ADK" ? "A-Store" : chain.name === "Airba Fresh" ? "Airba" : chain.name} 
+                <StoreCard
+                  key={chain.id}
+                  name={chain.name}
+                  displayName={chain.name === "A-Store ADK" ? "A-Store" : chain.name === "Airba Fresh" ? "Airba" : chain.name}
                   logoUrl={chain.logo}
                 />
               ))}
@@ -102,33 +103,33 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
 
           {/* Documents */}
           <div className="mb-6">
-            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">Документы</h3>
+            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">{t.about.docsHeading}</h3>
             <div className="overflow-hidden border border-black/10 bg-white">
-              <DocLink href="/privacy" title="Политика конфиденциальности" />
+              <DocLink href="/privacy" title={t.about.privacy} />
               <div className="h-px bg-black/5 dark:bg-white/5 mx-4" />
-              <DocLink href="/public-offer" title="Публичная оферта" />
+              <DocLink href="/public-offer" title={t.about.publicOffer} />
             </div>
           </div>
 
           {/* Support */}
           <div className="mb-8">
-            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">Поддержка</h3>
+            <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 px-1">{t.about.supportHeading}</h3>
             <div className="overflow-hidden border border-black/10 bg-white">
               <SupportLink
                 href="mailto:support@arzan.kz"
-                title="Написать нам"
+                title={t.about.contactUs}
                 subtitle="support@arzan.kz"
               />
               <div className="h-px bg-black/5 dark:bg-white/5 mx-4" />
               <SupportLink
                 href="mailto:api@arzan.kz"
-                title="Получить доступ к API"
+                title={t.about.apiAccess}
                 subtitle="api@arzan.kz"
               />
               <div className="h-px bg-black/5 dark:bg-white/5 mx-4" />
               <SupportLink
                 href="https://wa.me/77066989960"
-                title="WhatsApp"
+                title={t.about.whatsapp}
                 subtitle="+7 (706) 698-99-60"
                 external
               />
@@ -138,15 +139,15 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
           {/* Footer Info */}
           <div className="px-1 flex items-center justify-center mb-4">
             <div className="text-center">
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Сделано в</div>
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">{t.about.madeIn}</div>
               <div className="text-sm font-bold text-foreground flex items-center justify-center gap-1.5">
-                Казахстане <span className="text-base">🇰🇿</span>
+                {t.about.madeInCountry} <span className="text-base">🇰🇿</span>
               </div>
             </div>
           </div>
-          
+
           <div className="text-[11px] text-muted-foreground text-center px-2 pb-6">
-            Цены отображаются по данным партнёрских магазинов и могут отличаться от итоговых на кассе.
+            {t.about.disclaimer}
           </div>
         </div>
       </DrawerContent>
@@ -185,8 +186,8 @@ function DocLink({ href, title }: { href: string, title: string }) {
   const props = isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
   return (
-    <LinkComponent 
-      to={isExternal ? undefined : href} 
+    <LinkComponent
+      to={isExternal ? undefined : href}
       href={isExternal ? href : undefined}
       {...props as any}
       className="flex items-center justify-between p-4 hover:bg-secondary/20 transition-colors"
@@ -202,8 +203,8 @@ function SupportLink({ href, title, subtitle, external }: { href: string, title:
   const props = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
   return (
-    <LinkComponent 
-      to={external || href.startsWith('mailto') ? undefined : href} 
+    <LinkComponent
+      to={external || href.startsWith('mailto') ? undefined : href}
       href={external || href.startsWith('mailto') ? href : undefined}
       {...props as any}
       className="flex items-center justify-between p-4 hover:bg-secondary/20 transition-colors"

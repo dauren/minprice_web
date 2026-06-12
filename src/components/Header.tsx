@@ -7,13 +7,14 @@ import IosAppBanner from "@/components/IosAppBanner";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { AboutModal } from "@/components/AboutModal";
 import AuthButton from "@/components/AuthButton";
+import { t } from "@/lib/i18n";
 
 const navItems = [
-  { to: "/", icon: Home, label: "Главная", matchExact: true },
-  { to: "/search", icon: Search, label: "Поиск" },
-  { to: "/catalog", icon: LayoutGrid, label: "Каталог" },
-  { to: "/discounts", icon: Tag, label: "Скидки" },
-  { to: "/cart", icon: ShoppingCart, label: "Корзина", hasBadge: true },
+  { to: "/", icon: Home, label: t.nav.home, matchExact: true },
+  { to: "/search", icon: Search, label: t.nav.search },
+  { to: "/catalog", icon: LayoutGrid, label: t.nav.catalog },
+  { to: "/discounts", icon: Tag, label: t.nav.discounts },
+  { to: "/cart", icon: ShoppingCart, label: t.nav.cart, hasBadge: true },
 ];
 
 const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
@@ -71,7 +72,7 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
               <button
                 className="flex h-9 w-9 items-center justify-center bg-white text-black/35 transition-colors hover:text-black"
                 onClick={() => setIsScannerOpen(true)}
-                title="Сканировать штрихкод"
+                title={t.nav.scanBarcode}
               >
                 <ScanBarcode className="h-5 w-5" />
               </button>
