@@ -1,5 +1,5 @@
 /**
- * arzan.kz — SSR Meta Proxy
+ * SSR Meta Proxy
  *
  * Для людей → отдаёт dist/index.html (обычный SPA)
  * Для ботов (TG, WA, FB, VK, crawler) → подтягивает данные с API
@@ -16,10 +16,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const API_BASE = process.env.API_BASE_URL || "https://backend.minprice.kz/api";
+const BACKEND_BASE = API_BASE.replace(/\/api\/?$/, "");
 
-const SITE_URL = "https://arzan.kz";
+const SITE_URL = process.env.SITE_URL || "https://arzan.kz";
+const SITE_NAME = process.env.SITE_NAME || "arzan.kz";
+const SITE_LANG = process.env.SITE_LANG || "kk";
+const ALTERNATE_SITE_URL = process.env.ALTERNATE_SITE_URL || "https://minprice.kz";
+const ALTERNATE_SITE_LANG = process.env.ALTERNATE_SITE_LANG || "ru";
+
 const DIST_DIR = path.join(__dirname, "dist");
-const SEO_DISCOVERY_RE = /^\/(?:robots\.txt|sitemap(?:-products(?:-\d+)?)?\.xml|sitemap-(?:categories|stores|static)\.xml)$/;
+const SEO_DISCOVERY_RE = /^\/(?:sitemap(?:-products(?:-\d+)?)?\.xml|sitemap-(?:categories|stores|static)\.xml)$/;
 
 // Читаем index.html один раз при старте
 const indexHtml = readFileSync(path.join(DIST_DIR, "index.html"), "utf-8");
@@ -100,19 +106,43 @@ function buildJsonLd(product, url, image, description) {
         .filter((offer, index) => stores[index]?.in_stock !== false)
         .map((offer) => offer.price);
 
+    const productNode = {
+        "@type": "Product",
+        "@id": `${url}#product`,
+        "name": product.title,
+        "description": product.description || description,
+        "url": url,
+        "image": image,
+        "brand": (product.brand_canonical || product.brand) ? {
+            "@type": "Brand",
+            "name": product.brand_canonical || product.brand,
+        } : undefined,
+        "category": product.canonical_categories?.join(" > ") || product.categories?.join(" > "),
+        "gtin13": product.barcodes?.[0],
+        "offers": offers.length ? {
+            "@type": "AggregateOffer",
+            "priceCurrency": "KZT",
+            "lowPrice": inStockPrices.length ? Math.min(...inStockPrices) : undefined,
+            "highPrice": inStockPrices.length ? Math.max(...inStockPrices) : undefined,
+            "offerCount": offers.length,
+            "offers": offers,
+        } : undefined,
+    };
+    if (product.title_kz) productNode["alternateHeadline"] = product.title_kz;
+
     return JSON.stringify({
         "@context": "https://schema.org",
         "@graph": [
             {
                 "@type": "Organization",
                 "@id": `${SITE_URL}/#organization`,
-                "name": "arzan.kz",
+                "name": SITE_NAME,
                 "url": SITE_URL,
             },
             {
                 "@type": "WebSite",
                 "@id": `${SITE_URL}/#website`,
-                "name": "arzan.kz",
+                "name": SITE_NAME,
                 "url": SITE_URL,
                 "publisher": { "@id": `${SITE_URL}/#organization` },
                 "potentialAction": {
@@ -121,34 +151,13 @@ function buildJsonLd(product, url, image, description) {
                     "query-input": "required name=search_term_string",
                 },
             },
-            {
-                "@type": "Product",
-                "@id": `${url}#product`,
-                "name": product.title,
-                "description": product.description || description,
-                "url": url,
-                "image": image,
-                "brand": (product.brand_canonical || product.brand) ? {
-                    "@type": "Brand",
-                    "name": product.brand_canonical || product.brand,
-                } : undefined,
-                "category": product.canonical_categories?.join(" > ") || product.categories?.join(" > "),
-                "gtin13": product.barcodes?.[0],
-                "offers": offers.length ? {
-                    "@type": "AggregateOffer",
-                    "priceCurrency": "KZT",
-                    "lowPrice": inStockPrices.length ? Math.min(...inStockPrices) : undefined,
-                    "highPrice": inStockPrices.length ? Math.max(...inStockPrices) : undefined,
-                    "offerCount": offers.length,
-                    "offers": offers,
-                } : undefined,
-            },
+            productNode,
             {
                 "@type": "BreadcrumbList",
                 "@id": `${url}#breadcrumb`,
                 "itemListElement": [
-                    { "@type": "ListItem", "position": 1, "name": "Главная", "item": `${SITE_URL}/` },
-                    { "@type": "ListItem", "position": 2, "name": "Товар", "item": url },
+                    { "@type": "ListItem", "position": 1, "name": SITE_LANG === "kk" ? "Басты бет" : "Главная", "item": `${SITE_URL}/` },
+                    { "@type": "ListItem", "position": 2, "name": SITE_LANG === "kk" ? "Тауар" : "Товар", "item": url },
                 ],
             },
         ],
@@ -165,17 +174,38 @@ function renderProductFacts(product, url, jsonLd) {
         .sort()
         .pop();
 
+    const isKk = SITE_LANG === "kk";
+    const labels = {
+        store:    isKk ? "Дүкен"          : "Магазин",
+        city:     isKk ? "Қала"           : "Город",
+        stock:    isKk ? "Қолжетімділік"  : "Наличие",
+        price:    isKk ? "Баға"           : "Цена",
+        prevPrice:isKk ? "Бұрынғы баға"   : "Предыдущая цена",
+        updated:  isKk ? "Жаңартылды"     : "Обновлено",
+        source:   isKk ? "Дереккөз"       : "Источник",
+        inStock:  isKk ? "Бар"            : "В наличии",
+        outStock: isKk ? "Жоқ"            : "Нет в наличии",
+        priceFrom:isKk ? "Бағасы бастап"  : "Цена от",
+        offers:   isKk ? "Ұсыныстар"      : "Предложений",
+        updated2: isKk ? "Бағалар жаңартылды" : "Цены обновлены",
+        pricesAt: isKk ? "Дүкендердегі бағалар" : "Цены в магазинах",
+        canonical:isKk ? "Канондық бет"   : "Каноническая страница",
+    };
+
     const rows = stores.map((store) => `
         <tr>
           <td>${escapeHtml(store.chain_name || store.store_name)}</td>
           <td>${escapeHtml(store.city_name || "Казахстан")}</td>
-          <td>${escapeHtml(store.in_stock === false ? "Нет в наличии" : "В наличии")}</td>
+          <td>${escapeHtml(store.in_stock === false ? labels.outStock : labels.inStock)}</td>
           <td>${escapeHtml(store.price ? `${Math.round(Number(store.price))} ${store.currency || "KZT"}` : "")}</td>
           <td>${escapeHtml(store.previous_price ? `${Math.round(Number(store.previous_price))} ${store.currency || "KZT"}` : "")}</td>
           <td><time datetime="${escapeHtml(store.updated_at || "")}">${escapeHtml(store.updated_at || "")}</time></td>
-          <td>${store.ext_product_url || store.url ? `<a href="${escapeHtml(store.ext_product_url || store.url)}" rel="nofollow noopener">Источник</a>` : ""}</td>
+          <td>${store.ext_product_url || store.url ? `<a href="${escapeHtml(store.ext_product_url || store.url)}" rel="nofollow noopener">${labels.source}</a>` : ""}</td>
         </tr>
     `).join("");
+
+    const primaryTitle = product.title_kz || product.title;
+    const secondaryTitle = product.title_kz ? product.title : null;
 
     return `
       <script type="application/ld+json">${jsonLd}</script>
@@ -193,29 +223,30 @@ function renderProductFacts(product, url, jsonLd) {
       </style>
       <main>
         <article class="card">
-          <p><a href="${SITE_URL}/">arzan.kz</a></p>
-          <h1>${escapeHtml(product.title)}</h1>
+          <p><a href="${SITE_URL}/">${SITE_NAME}</a></p>
+          <h1 lang="${SITE_LANG}">${escapeHtml(primaryTitle)}</h1>
+          ${secondaryTitle ? `<p lang="ru">${escapeHtml(secondaryTitle)}</p>` : ""}
           <p>${escapeHtml(product.brand_canonical || product.brand || "")}</p>
           <div class="facts">
-            ${minPrice ? `<span class="pill">Цена от ${Math.round(minPrice)} ₸</span>` : ""}
-            <span class="pill">Предложений: ${stores.length}</span>
-            ${lastUpdated ? `<span class="pill">Цены обновлены: <time datetime="${escapeHtml(lastUpdated)}">${escapeHtml(lastUpdated)}</time></span>` : ""}
+            ${minPrice ? `<span class="pill">${labels.priceFrom} ${Math.round(minPrice)} ₸</span>` : ""}
+            <span class="pill">${labels.offers}: ${stores.length}</span>
+            ${lastUpdated ? `<span class="pill">${labels.updated2}: <time datetime="${escapeHtml(lastUpdated)}">${escapeHtml(lastUpdated)}</time></span>` : ""}
           </div>
-          ${product.image_url ? `<p><img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.title)}" width="240"></p>` : ""}
-          <p>${escapeHtml(product.description || "Сравнение цен, наличие, магазины и время обновления на arzan.kz.")}</p>
-          <p>Каноническая страница: <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>
+          ${product.image_url ? `<p><img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(primaryTitle)}" width="240"></p>` : ""}
+          <p>${escapeHtml(product.description || "")}</p>
+          <p>${labels.canonical}: <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>
         </article>
         <section class="card">
-          <h2>Цены в магазинах</h2>
+          <h2>${labels.pricesAt}</h2>
           <table>
-            <thead><tr><th>Магазин</th><th>Город</th><th>Наличие</th><th>Цена</th><th>Предыдущая цена</th><th>Обновлено</th><th>Источник</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="7">Нет доступных предложений</td></tr>'}</tbody>
+            <thead><tr><th>${labels.store}</th><th>${labels.city}</th><th>${labels.stock}</th><th>${labels.price}</th><th>${labels.prevPrice}</th><th>${labels.updated}</th><th>${labels.source}</th></tr></thead>
+            <tbody>${rows || `<tr><td colspan="7">${isKk ? "Ұсыныстар жоқ" : "Нет доступных предложений"}</td></tr>`}</tbody>
           </table>
         </section>
       </main>`;
 }
 
-function injectMeta(html, { title, description, image, url, body = "", jsonLd = "" }) {
+function injectMeta(html, { title, description, image, url, body = "", lang = SITE_LANG }) {
     const escaped = (s) =>
         String(s ?? "")
             .replace(/&/g, "&amp;")
@@ -227,13 +258,19 @@ function injectMeta(html, { title, description, image, url, body = "", jsonLd = 
     const d = escaped(description);
     const img = escaped(image);
     const u = escaped(url);
+    const ogLocale = lang === "kk" ? "kk_KZ" : "ru_KZ";
+    const ogLocaleAlt = lang === "kk" ? "ru_KZ" : "kk_KZ";
+    const altUrl = escaped(url.replace(SITE_URL, ALTERNATE_SITE_URL));
 
     const meta = `
     <title>${t}</title>
     <meta name="description" content="${d}" />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="${u}" />
-    <meta property="og:site_name" content="arzan.kz" />
+    <link rel="alternate" hreflang="${SITE_LANG}" href="${u}" />
+    <link rel="alternate" hreflang="${ALTERNATE_SITE_LANG}" href="${altUrl}" />
+    <link rel="alternate" hreflang="x-default" href="${altUrl}" />
+    <meta property="og:site_name" content="${escaped(SITE_NAME)}" />
     <meta property="og:type" content="product" />
     <meta property="og:url" content="${u}" />
     <meta property="og:title" content="${t}" />
@@ -241,7 +278,8 @@ function injectMeta(html, { title, description, image, url, body = "", jsonLd = 
     <meta property="og:image" content="${img}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="ru_KZ" />
+    <meta property="og:locale" content="${ogLocale}" />
+    <meta property="og:locale:alternate" content="${ogLocaleAlt}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${t}" />
     <meta name="twitter:description" content="${d}" />
@@ -256,18 +294,25 @@ function injectMeta(html, { title, description, image, url, body = "", jsonLd = 
         .replace(/<link\s+rel="canonical"[^>]*>/gi, "")
         // Вставить динамические теги сразу после <head>
         .replace("<head>", `<head>${meta}`)
-        .replace('<div id="root"></div>', `<div id="root">${body || ""}</div>${jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : ""}`);
+        // Обновить lang атрибут у <html>
+        .replace(/(<html[^>]*)\slang="[^"]*"/, `$1 lang="${lang}"`)
+        .replace('<div id="root"></div>', `<div id="root">${body || ""}</div>`);
 }
 
 async function proxySeoDiscovery(req, res) {
     try {
-        const response = await fetch(`https://backend.minprice.kz${req.path}`, {
-            headers: { Accept: req.path.endsWith(".txt") ? "text/plain" : "application/xml", "X-Platform": "ssr", "X-SSR-Source": getSsrSource(req.headers["user-agent"]) },
+        const response = await fetch(`${BACKEND_BASE}${req.path}`, {
+            headers: { Accept: "application/xml", "X-Platform": "ssr", "X-SSR-Source": getSsrSource(req.headers["user-agent"]) },
             signal: AbortSignal.timeout(5000),
         });
-        const text = await response.text();
+        let text = await response.text();
         const contentType = response.headers.get("content-type");
         const cacheControl = response.headers.get("cache-control");
+
+        // Rewrite backend domain in sitemap URLs so Google indexes the correct site
+        if (SITE_URL !== "https://minprice.kz") {
+            text = text.replaceAll("https://minprice.kz/", `${SITE_URL}/`);
+        }
 
         if (cacheControl) {
             res.setHeader("Cache-Control", cacheControl);
@@ -275,21 +320,30 @@ async function proxySeoDiscovery(req, res) {
             res.setHeader("Cache-Control", "public, max-age=300");
         }
 
-        if (contentType) {
-            res.setHeader("Content-Type", contentType);
-        } else {
-            res.type(req.path.endsWith(".txt") ? "text/plain" : "application/xml");
-        }
-
+        res.setHeader("Content-Type", contentType || "application/xml");
         res.status(response.status).send(text);
     } catch (err) {
         console.error(`SEO discovery proxy error for ${req.path}:`, err.message);
-        res
-            .status(502)
-            .type(req.path.endsWith(".txt") ? "text/plain" : "text/plain")
-            .send("SEO discovery upstream unavailable");
+        res.status(502).type("application/xml").send("SEO discovery upstream unavailable");
     }
 }
+
+// ─── robots.txt — served directly so Sitemap URL reflects this deployment ──
+app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").send(
+        `User-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: Twitterbot\nAllow: /\n\nUser-agent: facebookexternalhit\nAllow: /\n\nUser-agent: *\nAllow: /\n\nDisallow: /api/public/\nDisallow: /api/agent/\n\nSitemap: ${SITE_URL}/sitemap.xml`
+    );
+});
+
+// ─── site.webmanifest — served dynamically so name reflects this deployment ─
+app.get("/site.webmanifest", (_req, res) => {
+    try {
+        const manifest = JSON.parse(readFileSync(path.join(DIST_DIR, "site.webmanifest"), "utf-8"));
+        res.type("application/manifest+json").json({ ...manifest, name: SITE_NAME, short_name: SITE_NAME });
+    } catch {
+        res.type("application/manifest+json").json({ name: SITE_NAME, short_name: SITE_NAME });
+    }
+});
 
 app.get(SEO_DISCOVERY_RE, proxySeoDiscovery);
 
@@ -330,21 +384,28 @@ app.get(["/product/:uuid", "/product/:uuid/:slug"], async (req, res) => {
 
         const product = await response.json();
 
-        const name = product.title || "Товар";
+        const nameRu = product.title || "Товар";
+        const nameKz = product.title_kz || nameRu;
+        const primaryName = SITE_LANG === "kk" ? nameKz : nameRu;
+
         const qty = product.measure_unit_qty ?? "";
         const unit = product.measure_unit_kind || product.measure_unit || "";
         const weight = qty ? `${qty}${unit}` : unit;
 
         // Минимальная цена
-        const stores =
-            product.price_range?.stores || product.stores || [];
+        const stores = product.price_range?.stores || product.stores || [];
         const prices = stores.map((s) => s.price).filter(Boolean);
         const minPrice = prices.length ? Math.min(...prices) : null;
 
-        const title = `${name}${weight ? ` ${weight}` : ""} — arzan.kz`;
+        const title = `${primaryName}${weight ? ` ${weight}` : ""} — ${SITE_NAME}`;
         const description = minPrice
-            ? `${name} — от ${minPrice} ₸. Сравните цены в магазинах Казахстана.`
-            : `${name} — сравнение цен в Казахстане на arzan.kz`;
+            ? SITE_LANG === "kk"
+                ? `${nameKz} — ${minPrice} ₸-дан. Қазақстандағы дүкендердегі бағаларды салыстырыңыз.`
+                : `${nameRu} — от ${minPrice} ₸. Сравните цены в магазинах Казахстана.`
+            : SITE_LANG === "kk"
+                ? `${nameKz} — Қазақстанда ${SITE_NAME} сайтында бағаларды салыстыру`
+                : `${nameRu} — сравнение цен в Казахстане на ${SITE_NAME}`;
+
         const image = product.image_url || `${SITE_URL}/og-image.png`;
         const url = productCanonicalUrl(product);
         const jsonLd = buildJsonLd(product, url, image, description);
@@ -355,12 +416,16 @@ app.get(["/product/:uuid", "/product/:uuid/:slug"], async (req, res) => {
         res.send(html);
     } catch (err) {
         console.error("Meta proxy error:", err.message);
+        const fallbackTitle = SITE_LANG === "kk" ? `Тауар — ${SITE_NAME}` : `Товар — ${SITE_NAME}`;
+        const fallbackDesc = SITE_LANG === "kk"
+            ? `${SITE_NAME} тауар беті. Бағалар мен дүкендер уақытша қолжетімсіз.`
+            : `Страница товара ${SITE_NAME}. Цены, магазины и наличие временно недоступны для предварительного просмотра.`;
         res.status(200).send(injectMeta(indexHtml, {
-            title: "Товар — arzan.kz",
-            description: "Страница товара arzan.kz. Цены, магазины и наличие временно недоступны для предварительного просмотра.",
+            title: fallbackTitle,
+            description: fallbackDesc,
             image: `${SITE_URL}/og-image.png`,
             url: `${SITE_URL}/product/${uuid}`,
-            body: `<main><h1>Товар arzan.kz</h1><p>Цены и наличие временно недоступны для предварительного просмотра.</p><p>Идентификатор товара: ${escapeHtml(uuid)}</p></main>`,
+            body: `<main><h1>${SITE_LANG === "kk" ? `${SITE_NAME} тауары` : `Товар ${SITE_NAME}`}</h1><p>${fallbackDesc}</p><p>${escapeHtml(uuid)}</p></main>`,
         }));
     }
 });
@@ -384,7 +449,7 @@ app.get([
     }
 
     try {
-        const response = await fetch(`https://backend.minprice.kz${req.path}`, {
+        const response = await fetch(`${BACKEND_BASE}${req.path}`, {
             headers: { Accept: "text/html", "X-Platform": "ssr", "X-SSR-Source": getSsrSource(ua) },
             signal: AbortSignal.timeout(5000),
         });
@@ -404,5 +469,5 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`arzan.kz server running on http://localhost:${PORT}`);
+    console.log(`${SITE_NAME} server running on http://localhost:${PORT}`);
 });

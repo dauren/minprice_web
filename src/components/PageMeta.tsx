@@ -1,10 +1,9 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE_NAME = "arzan.kz";
-const BASE_URL = "https://arzan.kz";
+const SITE_NAME = import.meta.env.VITE_SITE_NAME as string;
+const BASE_URL = import.meta.env.VITE_SITE_URL as string;
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
-const DEFAULT_DESCRIPTION =
-    "Сравнивайте цены на продукты питания в супермаркетах Казахстана. arzan.kz помогает быстро найти выгодную цену среди популярных магазинов.";
+const DEFAULT_DESCRIPTION = import.meta.env.VITE_SITE_DESCRIPTION as string;
 
 interface PageMetaProps {
     title?: string;
@@ -21,7 +20,7 @@ const PageMeta = ({
     url,
     type = "website",
 }: PageMetaProps) => {
-    const fullTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — выгодные цены на продукты`;
+    const fullTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — ${import.meta.env.VITE_SITE_TAGLINE}`;
     const fullUrl = url ? `${BASE_URL}${url}` : BASE_URL;
 
     return (
@@ -38,7 +37,8 @@ const PageMeta = ({
             <meta property="og:image" content={image} />
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
-            <meta property="og:locale" content="ru_KZ" />
+            <meta property="og:locale" content={import.meta.env.VITE_OG_LOCALE} />
+            <meta property="og:locale:alternate" content={import.meta.env.VITE_OG_LOCALE_ALT} />
 
             {/* Twitter Card */}
             <meta name="twitter:card" content="summary_large_image" />

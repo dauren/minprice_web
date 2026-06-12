@@ -92,6 +92,7 @@ export interface Product {
   id: number;
   uuid: string;
   title: string;
+  title_kz?: string | null;
   description?: string;
   brand?: string;
   brand_canonical?: string | null;

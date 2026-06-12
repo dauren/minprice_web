@@ -1,43 +1,41 @@
 <!doctype html>
-<html lang="ru">
+<html lang="%VITE_SITE_LANG%">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>arzan.kz — выгодные цены на продукты в Казахстане</title>
-  <meta name="description"
-    content="arzan.kz помогает сравнивать цены на продукты питания в Алматы, Астане, Шымкенте и Караганде и находить выгодные предложения среди популярных магазинов." />
-  <meta name="author" content="arzan.kz" />
+  <title>%VITE_SITE_NAME% — %VITE_SITE_TAGLINE%</title>
+  <meta name="description" content="%VITE_SITE_DESCRIPTION%" />
+  <meta name="author" content="%VITE_SITE_NAME%" />
   <meta name="keywords"
     content="сравнение цен, продукты, Казахстан, Алматы, Астана, Шымкент, Караганда, Magnum, Arbuz, Airba Fresh, Small, Toimart, Galmart, A-Store, минимальная цена" />
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <meta name="apple-mobile-web-app-title" content="arzan.kz" />
+  <meta name="apple-mobile-web-app-title" content="%VITE_SITE_NAME%" />
   <meta name="apple-itunes-app" content="app-id=6764677711" />
   <link rel="manifest" href="/site.webmanifest" />
 
   <!-- Open Graph / Facebook / WhatsApp / Telegram -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="arzan.kz" />
-  <meta property="og:url" content="https://arzan.kz/" />
-  <meta property="og:title" content="arzan.kz — выгодные цены на продукты в Казахстане" />
-  <meta property="og:description"
-    content="arzan.kz помогает сравнивать цены на продукты питания в Алматы, Астане, Шымкенте и Караганде и находить выгодные предложения среди популярных магазинов." />
-  <meta property="og:image" content="https://arzan.kz/og-image.png" />
+  <meta property="og:site_name" content="%VITE_SITE_NAME%" />
+  <meta property="og:url" content="%VITE_SITE_URL%/" />
+  <meta property="og:title" content="%VITE_SITE_NAME% — %VITE_SITE_TAGLINE%" />
+  <meta property="og:description" content="%VITE_SITE_DESCRIPTION%" />
+  <meta property="og:image" content="%VITE_SITE_URL%/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:locale" content="ru_KZ" />
+  <meta property="og:locale" content="%VITE_OG_LOCALE%" />
+  <meta property="og:locale:alternate" content="%VITE_OG_LOCALE_ALT%" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@arzankz" />
-  <meta name="twitter:title" content="arzan.kz — выгодные цены на продукты в Казахстане" />
-  <meta name="twitter:description"
-    content="arzan.kz помогает сравнивать цены на продукты питания в Алматы, Астане, Шымкенте и Караганде и находить выгодные предложения среди популярных магазинов." />
-  <meta name="twitter:image" content="https://arzan.kz/og-image.png" />
+  <meta name="twitter:site" content="%VITE_TWITTER_HANDLE%" />
+  <meta name="twitter:title" content="%VITE_SITE_NAME% — %VITE_SITE_TAGLINE%" />
+  <meta name="twitter:description" content="%VITE_SITE_DESCRIPTION%" />
+  <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.png" />
 
   <script>
     try {
