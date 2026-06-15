@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { Plus, Minus, ImageOff } from "lucide-react";
+import { Plus, Minus, ImageOff, Heart } from "lucide-react";
 import { Product } from "@/data/mockProducts";
 import { useCart } from "@/context/CartContext";
+import { useFavorites } from "@/context/FavoritesContext";
 import StoreLogo from "@/components/StoreLogo";
 import { useState, useLayoutEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -74,9 +75,17 @@ const SmartTitle = ({ title }: { title: string }) => {
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { items, addItem, updateQuantity, removeItem } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { toast } = useToast();
   const [justAdded, setJustAdded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const favorited = isFavorite(product.id);
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(product.id);
+  };
 
   if (!product.stores || product.stores.length === 0) return null;
 
@@ -148,6 +157,14 @@ const ProductCard = ({ product }: { product: Product }) => {
             <span className="bg-[#148a42] px-1.5 py-1 text-[11px] font-medium leading-none text-white">-{product.discountPercent}%</span>
           )}
         </div>
+        <button
+          onClick={handleToggleFavorite}
+          className="absolute top-1.5 right-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full text-black/35 transition-colors hover:text-[#148a42]"
+          aria-label={favorited ? "Убрать из избранного" : "В избранное"}
+          aria-pressed={favorited}
+        >
+          <Heart className={`h-5 w-5 transition-colors ${favorited ? "fill-[#148a42] text-[#148a42]" : ""}`} />
+        </button>
         <div className="flex aspect-square items-center justify-center overflow-hidden bg-white p-3">
           <img
             src={product.image}

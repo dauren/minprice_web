@@ -125,6 +125,25 @@ const coreFetch = async (
   return response;
 };
 
+// Error that carries the HTTP status + parsed body so callers can branch on them
+// (e.g. favorites cap → 403 with { require_auth: true }).
+export class ApiError extends Error {
+  status: number;
+  data: any;
+  constructor(status: number, data: any, statusText: string) {
+    super(`API Error ${status}: ${statusText}`);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
+const throwApiError = async (response: Response): Promise<never> => {
+  let data: any = null;
+  try { data = await response.json(); } catch { /* no/invalid body */ }
+  throw new ApiError(response.status, data, response.statusText);
+};
+
 export const apiClient = {
   get: async <T>(endpoint: string): Promise<T> => {
     // If the endpoint IS the session init, bypass the wrapper to avoid infinite loops
@@ -134,9 +153,7 @@ export const apiClient = {
     }
 
     const response = await coreFetch(endpoint, { method: 'GET' });
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
+    if (!response.ok) return throwApiError(response);
     return response.json();
   },
   post: async <T>(endpoint: string, data?: any): Promise<T> => {
@@ -145,9 +162,7 @@ export const apiClient = {
       headers: { 'Content-Type': 'application/json' },
       body: data ? JSON.stringify(data) : undefined,
     });
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
+    if (!response.ok) return throwApiError(response);
     return response.json();
   },
   patch: async <T>(endpoint: string, data?: any): Promise<T> => {
@@ -156,16 +171,12 @@ export const apiClient = {
       headers: { 'Content-Type': 'application/json' },
       body: data ? JSON.stringify(data) : undefined,
     });
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
+    if (!response.ok) return throwApiError(response);
     return response.json();
   },
   delete: async (endpoint: string): Promise<void> => {
     const response = await coreFetch(endpoint, { method: 'DELETE' });
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
+    if (!response.ok) return throwApiError(response);
   }
 };
 
@@ -249,6 +260,10 @@ export const API_ENDPOINTS = {
   quickAdd: () => '/cart/add/',
   storePreferences: () => '/store-preferences/',
   cartTransfer: () => '/cart/transfer/',
+  // Favorites
+  favorites: (cityId?: number) => `/favorites/${cityId ? `?city_id=${cityId}` : ''}`,
+  favoriteIds: () => '/favorites/ids/',
+  favoriteRemove: (productUuid: string) => `/favorites/${productUuid}/`,
   sessionInit: () => '/session/init/',
   // Auth
   authTelegram: () => '/auth/telegram/',

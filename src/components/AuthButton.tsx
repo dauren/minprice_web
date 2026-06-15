@@ -9,9 +9,14 @@ import { TelegramLoginButton } from "@/components/TelegramLoginButton";
  * logout menu when logged in.
  */
 const AuthButton = () => {
-  const { user, isAuthenticated, logout, loading } = useAuth();
+  const { user, isAuthenticated, logout, loading, loginPromptNonce } = useAuth();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Open the login panel when a feature (e.g. favorites cap) requests it.
+  useEffect(() => {
+    if (loginPromptNonce > 0 && !isAuthenticated) setOpen(true);
+  }, [loginPromptNonce, isAuthenticated]);
 
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {

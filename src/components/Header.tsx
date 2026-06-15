@@ -1,7 +1,8 @@
-import { Search, ShoppingCart, Home, Tag, LayoutGrid, ScanBarcode, Info } from "lucide-react";
+import { Search, ShoppingCart, Home, Tag, LayoutGrid, ScanBarcode, Info, Heart } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
+import { useFavorites } from "@/context/FavoritesContext";
 import CitySelector from "@/components/CitySelector";
 import IosAppBanner from "@/components/IosAppBanner";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
@@ -19,6 +20,7 @@ const navItems = [
 
 const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
   const { totalItems } = useCart();
+  const { count: favoritesCount } = useFavorites();
   const location = useLocation();
   const navigate = useNavigate();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -76,6 +78,22 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
               >
                 <ScanBarcode className="h-5 w-5" />
               </button>
+
+              <Link
+                to="/favorites"
+                className={`relative flex h-9 w-9 items-center justify-center bg-white transition-colors hover:text-black ${
+                  location.pathname === "/favorites" ? "text-black" : "text-black/35"
+                }`}
+                title="Избранное"
+                aria-label="Избранное"
+              >
+                <Heart className="h-5 w-5" />
+                {favoritesCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center bg-white px-1 text-[10px] font-medium text-black">
+                    {favoritesCount}
+                  </span>
+                )}
+              </Link>
 
               <button
                 className="hidden h-9 w-9 items-center justify-center bg-white text-black/35 transition-colors hover:text-black sm:flex"

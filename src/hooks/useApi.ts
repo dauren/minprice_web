@@ -112,6 +112,15 @@ export const useDiscounts = (chainIds?: number[], page?: number) => {
   });
 };
 
+// Get the current user's/guest's favorite products (full cards)
+export const useFavoriteProducts = () => {
+  const { selectedCityId } = useCity();
+  return useQuery({
+    queryKey: ['favorites', selectedCityId],
+    queryFn: () => apiClient.get<{ results: any[] }>(API_ENDPOINTS.favorites(selectedCityId)),
+  });
+};
+
 // Get price drops
 export const usePriceDrops = () => {
   const { selectedCityId } = useCity();

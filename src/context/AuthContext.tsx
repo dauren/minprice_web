@@ -30,6 +30,9 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   loginWithTelegram: (data: TelegramAuthData) => Promise<void>;
   logout: () => void;
+  // Lets any feature (e.g. favorites cap) ask the header to open the login panel.
+  loginPromptNonce: number;
+  promptLogin: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -37,6 +40,8 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(!!getAccessToken());
+  const [loginPromptNonce, setLoginPromptNonce] = useState<number>(0);
+  const promptLogin = useCallback(() => setLoginPromptNonce((n) => n + 1), []);
 
   const fetchMe = useCallback(async () => {
     try {
@@ -77,7 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, isAuthenticated: !!user, loginWithTelegram, logout }}
+      value={{ user, loading, isAuthenticated: !!user, loginWithTelegram, logout, loginPromptNonce, promptLogin }}
     >
       {children}
     </AuthContext.Provider>

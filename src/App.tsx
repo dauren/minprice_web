@@ -7,6 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/context/CartContext";
 import { CityProvider } from "@/context/CityContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { FavoritesProvider } from "@/context/FavoritesContext";
 import { useLayoutEffect } from "react";
 import Index from "./pages/Index";
 import ProductPage from "./pages/ProductPage";
@@ -20,6 +21,7 @@ import ReturnPolicyPage from "./pages/ReturnPolicyPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import CartHistoryPage from "./pages/CartHistoryPage";
 import SharedCartPage from "./pages/SharedCartPage";
+import FavoritesPage from "./pages/FavoritesPage";
 import NotFound from "./pages/NotFound";
 import CityDetectionDialog from "./components/CityDetectionDialog";
 import { useEffect } from "react";
@@ -58,6 +60,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
+        <FavoritesProvider>
         <CityProvider>
           <CartProvider>
             <CityDetectionDialog />
@@ -83,12 +86,14 @@ const App = () => {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/cart-history" element={<CartHistoryPage />} />
                 <Route path="/cart/:uuid" element={<SharedCartPage />} />
+                <Route path="/favorites" element={<FavoritesPage />} />
                 <Route path="/:chainSlug" element={<Index />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
           </CartProvider>
         </CityProvider>
+        </FavoritesProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
