@@ -4,7 +4,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.minpr
 // Auth (/auth/*) may target a different backend than products/data — e.g. staging
 // for auth, prod for the catalog. Falls back to API_BASE_URL when not split.
 const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL || API_BASE_URL;
-const baseFor = (endpoint: string) => (endpoint.startsWith('/auth/') ? AUTH_BASE_URL : API_BASE_URL);
+// Auth + per-user endpoints live on the auth backend and need the Bearer token;
+// everything else (catalog) goes to the products backend.
+const baseFor = (endpoint: string) =>
+  (endpoint.startsWith('/auth/') || endpoint.startsWith('/cashback/') ? AUTH_BASE_URL : API_BASE_URL);
 const GUEST_UUID_KEY = 'minprice_guest_uuid';
 
 let sessionPromise: Promise<string> | null = null;
@@ -264,6 +267,8 @@ export const API_ENDPOINTS = {
   favorites: (cityId?: number) => `/favorites/${cityId ? `?city_id=${cityId}` : ''}`,
   favoriteIds: () => '/favorites/ids/',
   favoriteRemove: (productUuid: string) => `/favorites/${productUuid}/`,
+  // Cashback (per-user, logged-in only)
+  cashback: () => '/cashback/',
   sessionInit: () => '/session/init/',
   // Auth
   authTelegram: () => '/auth/telegram/',

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Minus, Plus, Trash2, ArrowLeft, Zap, ChevronDown, ChevronUp, Check, Settings, Share, History, Edit2, AlertTriangle, Store, TrendingDown, Loader2, ExternalLink, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
 import { useCart, CartItem, SingleStoreTotal } from "@/context/CartContext";
+import { useCashback } from "@/context/CashbackContext";
 import { useCity } from "@/context/CityContext";
 import StoreLogo from "@/components/StoreLogo";
 import mascot from "@/assets/logo.png";
@@ -38,6 +39,9 @@ const CartPage = () => {
     clearCart, totalPrice, totalItems, isOwner, isLoading, renameCart, archiveCart, deleteCart,
     addItem, selectedChainIds, updateStorePreferences, availableStores
   } = useCart();
+  // Cashback is shown here as a non-binding estimate only — it never alters cart
+  // totals or store ranking (those stay server-computed). See CashbackContext.
+  const { getPercent } = useCashback();
   const [viewMode, setViewMode] = useState<'mix' | 'single'>('mix');
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [newCartName, setNewCartName] = useState(cartName);
@@ -513,6 +517,10 @@ const CartPage = () => {
               const chainName = storeItems[0]?.chain_name || store;
               const chainSource = storeItems[0]?.chain_source;
               const transferInfo = chainSource ? TRANSFERABLE_CHAINS[chainSource] : null;
+              // Informational cashback estimate for this store group (no recompute of totals).
+              const chainId = chainGroups[chainName]?.chainId;
+              const cashbackPct = getPercent(chainId);
+              const cashbackAmount = cashbackPct > 0 ? Math.round(storeTotal * cashbackPct / 100) : 0;
 
               return (
                 <div key={store} className="border border-border rounded-xl overflow-hidden">
@@ -536,9 +544,16 @@ const CartPage = () => {
                           {t.cart.onlyHere}
                         </button>
                       )}
-                      <span className="text-xs font-medium text-foreground">
-                        {storeTotal.toLocaleString()} ₸
-                      </span>
+                      <div className="flex flex-col items-end leading-tight">
+                        <span className="text-xs font-medium text-foreground">
+                          {storeTotal.toLocaleString()} ₸
+                        </span>
+                        {cashbackPct > 0 && (
+                          <span className="text-[10px] font-medium text-primary">
+                            кэшбэк {cashbackPct}% · ≈ {cashbackAmount.toLocaleString()} ₸
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   {transferInfo && (

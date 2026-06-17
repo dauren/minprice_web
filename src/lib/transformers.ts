@@ -34,6 +34,7 @@ export const transformStorePrice = (apiStore: ApiStorePrice): MockStorePrice => 
     store: apiStore.chain_name,
     storeSlug: apiStore.chain_slug,
     storeSource: apiStore.store_source,
+    chainId: apiStore.chain_id,
     price: apiStore.price,
     oldPrice: apiStore.previous_price || undefined,
     color: getStoreColor(apiStore.chain_name),

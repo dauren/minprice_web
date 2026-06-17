@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { Link } from "react-router-dom";
+import { LogIn, LogOut, User as UserIcon, Settings } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { TelegramLoginButton } from "@/components/TelegramLoginButton";
 
@@ -69,6 +70,14 @@ const AuthButton = () => {
                 <UserIcon className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{displayName}</span>
               </div>
+              <Link
+                to="/profile"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 w-full px-1 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+              >
+                <Settings className="w-4 h-4" />
+                Профиль и кэшбэк
+              </Link>
               <button
                 onClick={() => {
                   logout();

@@ -3,6 +3,7 @@ import { Plus, Minus, ImageOff, Heart } from "lucide-react";
 import { Product } from "@/data/mockProducts";
 import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
+import { useCashback } from "@/context/CashbackContext";
 import StoreLogo from "@/components/StoreLogo";
 import { useState, useLayoutEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -76,6 +77,7 @@ const SmartTitle = ({ title }: { title: string }) => {
 const ProductCard = ({ product }: { product: Product }) => {
   const { items, addItem, updateQuantity, removeItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { applyEnabled, getPercent, effectivePrice } = useCashback();
   const { toast } = useToast();
   const [justAdded, setJustAdded] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -91,7 +93,12 @@ const ProductCard = ({ product }: { product: Product }) => {
 
   const inStockStores = product.stores.filter(s => s.inStock !== false);
   const candidateStores = inStockStores.length > 0 ? inStockStores : product.stores;
-  const bestStore = candidateStores.reduce((a, b) => (a.price < b.price ? a : b));
+  // When cashback display is on, rank the best store by effective (post-cashback) price.
+  const priceKey = (s: typeof candidateStores[number]) =>
+    applyEnabled ? effectivePrice(s.price, s.chainId) : s.price;
+  const bestStore = candidateStores.reduce((a, b) => (priceKey(a) < priceKey(b) ? a : b));
+  const bestPct = getPercent(bestStore.chainId);
+  const bestEff = Math.round(effectivePrice(bestStore.price, bestStore.chainId));
   // The 'worstPrice' (reference price) aligns with the robust robust calculation done in transformers.
   const worstPrice = bestStore.price + (product.savingsAmount || 0);
 
@@ -179,9 +186,16 @@ const ProductCard = ({ product }: { product: Product }) => {
 
       <div className="px-3 pb-2 pt-2">
         <div className="flex min-h-8 flex-wrap items-baseline gap-x-2 gap-y-1">
-          <span className="text-xl font-semibold leading-none tracking-normal text-[#148a42]">{bestStore.price} ₸</span>
-          {worstPrice > bestStore.price && (
+          <span className="text-xl font-semibold leading-none tracking-normal text-[#148a42]">
+            {applyEnabled && bestPct > 0 ? bestEff : bestStore.price} ₸
+          </span>
+          {applyEnabled && bestPct > 0 ? (
+            <span className="text-sm font-normal text-black/35 line-through">{bestStore.price} ₸</span>
+          ) : worstPrice > bestStore.price && (
             <span className="text-sm font-normal text-black/35 line-through">{worstPrice} ₸</span>
+          )}
+          {!applyEnabled && bestPct > 0 && (
+            <span className="text-xs font-medium text-[#148a42]">кэшбэк {bestPct}%</span>
           )}
         </div>
         <SmartTitle title={product.name} />
@@ -190,7 +204,9 @@ const ProductCard = ({ product }: { product: Product }) => {
       <div className="mx-3 mt-auto py-2 text-black">
         <div className="space-y-1">
           {displayStores.map((store, i) => {
-            const isBest = store.price === bestStore.price && store.inStock !== false;
+            // Compare on the same key used to pick bestStore, so ties still all
+            // highlight (as before) and the highlight follows any cashback ranking.
+            const isBest = store.inStock !== false && priceKey(store) === priceKey(bestStore);
             return (
               <div key={`${store.store}-${i}`} className={`flex h-[20px] items-center justify-between text-[11px] ${store.inStock === false ? "opacity-60 grayscale" : ""}`}>
                 <div className="flex items-center gap-1.5 min-w-0">

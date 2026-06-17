@@ -2,6 +2,7 @@ export interface StorePrice {
   store: string;
   storeSlug?: string;
   storeSource?: string;
+  chainId?: number;
   price: number;
   oldPrice?: number;
   color: string;

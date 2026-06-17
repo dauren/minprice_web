@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import { useCart } from "@/context/CartContext";
 import { useCity } from "@/context/CityContext";
+import { useCashback } from "@/context/CashbackContext";
 import { useProduct, usePriceHistory, useSimilarProducts } from "@/hooks/useApi";
 import { transformProduct, transformProducts } from "@/lib/transformers";
 import ProductCard from "@/components/ProductCard";
@@ -36,6 +37,7 @@ const ProductPage = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imgError, setImgError] = useState(false);
   const { copiedKey, copy } = useCopy();
+  const { applyEnabled, getPercent, effectivePrice } = useCashback();
   const chartRef = useRef<HTMLDivElement>(null);
 
   const { data: productData, isLoading, isError } = useProduct(id || "");
@@ -54,8 +56,13 @@ const ProductPage = () => {
 
   const inStockStores = product?.stores.filter(s => s.inStock !== false) || [];
   const candidateStores = inStockStores.length > 0 ? inStockStores : (product?.stores || []);
-  const bestStore = candidateStores.length > 0 ? candidateStores.reduce((a, b) => (a.price < b.price ? a : b)) : null;
+  // When cashback display is on, rank the best store by effective (post-cashback) price.
+  const priceKey = (s: typeof candidateStores[number]) =>
+    applyEnabled ? effectivePrice(s.price, s.chainId) : s.price;
+  const bestStore = candidateStores.length > 0 ? candidateStores.reduce((a, b) => (priceKey(a) < priceKey(b) ? a : b)) : null;
   const bestPrice = bestStore?.price ?? 0;
+  const bestPct = bestStore ? getPercent(bestStore.chainId) : 0;
+  const bestEff = bestStore ? Math.round(effectivePrice(bestStore.price, bestStore.chainId)) : 0;
   const worstPrice = product ? Math.max(...product.stores.map((s) => s.oldPrice || s.price)) : 0;
 
   const cartItem = items.find((i) => i.product.uuid === id);
@@ -287,9 +294,14 @@ const ProductPage = () => {
               <div className="mt-auto flex items-baseline gap-2">
                 {hasStores ? (
                   <>
-                    <span className="az-price-chip text-base">{bestPrice} ₸</span>
-                    {worstPrice > bestPrice && (
+                    <span className="az-price-chip text-base">{applyEnabled && bestPct > 0 ? bestEff : bestPrice} ₸</span>
+                    {applyEnabled && bestPct > 0 ? (
+                      <span className="price-old text-sm">{bestPrice} ₸</span>
+                    ) : worstPrice > bestPrice && (
                       <span className="price-old text-sm">{worstPrice} ₸</span>
+                    )}
+                    {!applyEnabled && bestPct > 0 && (
+                      <span className="text-xs font-medium text-primary">кэшбэк {bestPct}%</span>
                     )}
                   </>
                 ) : (
@@ -314,7 +326,9 @@ const ProductPage = () => {
           </div>
 
           {product.stores.map((store, i) => {
-            const isBest = store.price === bestPrice && store.inStock !== false;
+            // Compare on the same key used to pick bestStore: identical to the old
+            // price match when no cashback (ties still all show "min"), correct with it.
+            const isBest = !!bestStore && store.inStock !== false && priceKey(store) === priceKey(bestStore);
             const isExpanded = expandedStore === `${store.store}-${i}`;
             const key = `${store.store}-${i}`;
 

@@ -8,6 +8,7 @@ import { CartProvider } from "@/context/CartContext";
 import { CityProvider } from "@/context/CityContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
+import { CashbackProvider } from "@/context/CashbackContext";
 import { useLayoutEffect } from "react";
 import Index from "./pages/Index";
 import ProductPage from "./pages/ProductPage";
@@ -22,6 +23,7 @@ import PrivacyPage from "./pages/PrivacyPage";
 import CartHistoryPage from "./pages/CartHistoryPage";
 import SharedCartPage from "./pages/SharedCartPage";
 import FavoritesPage from "./pages/FavoritesPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import CityDetectionDialog from "./components/CityDetectionDialog";
 import { useEffect } from "react";
@@ -60,6 +62,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
+        <CashbackProvider>
         <FavoritesProvider>
         <CityProvider>
           <CartProvider>
@@ -87,6 +90,7 @@ const App = () => {
                 <Route path="/cart-history" element={<CartHistoryPage />} />
                 <Route path="/cart/:uuid" element={<SharedCartPage />} />
                 <Route path="/favorites" element={<FavoritesPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/:chainSlug" element={<Index />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -94,6 +98,7 @@ const App = () => {
           </CartProvider>
         </CityProvider>
         </FavoritesProvider>
+        </CashbackProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
