@@ -147,6 +147,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   const emptySlots = MAX_STORES_DISPLAY - displayStores.length;
 
   return (
+    <>
     <Link
       to={`/product/${product.id}`}
       onClick={handleProductClick}
@@ -265,6 +266,7 @@ const ProductCard = ({ product }: { product: Product }) => {
       onClose={() => setShowAgeModal(false)}
       onConfirm={() => { confirmAdult(); setShowAgeModal(false); }}
     />
+    </>
   );
 };
 
