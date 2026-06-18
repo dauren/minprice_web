@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { Plus, Minus, Scale, ImageOff } from "lucide-react";
 import { Product } from "@/data/mockProducts";
 import { useCart } from "@/context/CartContext";
+import { useAgeVerification } from "@/context/AgeVerificationContext";
+import { AgeVerificationModal } from "@/components/AgeVerificationModal";
 import StoreLogo from "@/components/StoreLogo";
 import { useState, useLayoutEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -73,9 +75,13 @@ const SmartTitle = ({ title }: { title: string }) => {
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { items, addItem, updateQuantity, removeItem } = useCart();
+  const { isAdultConfirmed, confirmAdult } = useAgeVerification();
   const { toast } = useToast();
   const [justAdded, setJustAdded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [showAgeModal, setShowAgeModal] = useState(false);
+
+  const isRestricted = product.isAgeRestricted && !isAdultConfirmed;
 
   if (!product.stores || product.stores.length === 0) return null;
 
@@ -88,7 +94,12 @@ const ProductCard = ({ product }: { product: Product }) => {
   const cartItem = items.find((i) => i.product.uuid === product.id);
   const quantity = cartItem?.quantity || 0;
 
-  const handleProductClick = () => {
+  const handleProductClick = (e: React.MouseEvent) => {
+    if (isRestricted) {
+      e.preventDefault();
+      setShowAgeModal(true);
+      return;
+    }
     import('@/lib/algoliaInsights').then(({ sendProductClickEvent }) => {
       if (product.queryID && product.__position !== undefined) {
         sendProductClickEvent('Product Clicked', product.queryID, [product.id], [product.__position]);
@@ -144,6 +155,9 @@ const ProductCard = ({ product }: { product: Product }) => {
       {/* Image */}
       <div className="relative p-3 pb-0">
         <div className="absolute top-2 left-2 z-10 flex gap-1">
+          {product.isAgeRestricted && (
+            <span className="discount-badge bg-red-600 text-white">21+</span>
+          )}
           {product.discountPercent > 0 && (
             <span className="discount-badge">-{product.discountPercent}%</span>
           )}
@@ -155,7 +169,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           <img
             src={product.image}
             alt={product.name}
-            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${imgError ? 'hidden' : ''}`}
+            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${imgError ? 'hidden' : ''} ${isRestricted ? 'blur-md' : ''}`}
             loading="lazy"
             onError={() => setImgError(true)}
           />
@@ -246,6 +260,11 @@ const ProductCard = ({ product }: { product: Product }) => {
         )}
       </div>
     </Link>
+    <AgeVerificationModal
+      open={showAgeModal}
+      onClose={() => setShowAgeModal(false)}
+      onConfirm={() => { confirmAdult(); setShowAgeModal(false); }}
+    />
   );
 };
 

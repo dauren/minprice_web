@@ -104,6 +104,7 @@ export interface Product {
   measure_unit_qty?: string;
   pack_count?: number;
   categories: string[];
+  is_age_restricted?: boolean;
   is_active: boolean;
   linked_stores_count?: number;
   min_price?: number;

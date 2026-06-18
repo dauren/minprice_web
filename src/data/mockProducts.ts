@@ -35,6 +35,7 @@ export interface Product {
   additionalImages?: string[];
   pricePerUnit?: number;       // calculated unit price
   pricePerUnitLabel?: string;  // unit label, e.g. "г", "мл", "шт"
+  isAgeRestricted?: boolean;
   queryID?: string;
   __position?: number;
 }

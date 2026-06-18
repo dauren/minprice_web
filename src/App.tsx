@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "re
 import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/context/CartContext";
 import { CityProvider } from "@/context/CityContext";
+import { AgeVerificationProvider } from "@/context/AgeVerificationContext";
 import { useLayoutEffect } from "react";
 import Index from "./pages/Index";
 import ProductPage from "./pages/ProductPage";
@@ -57,6 +58,7 @@ const App = () => {
       <TooltipProvider>
         <CityProvider>
           <CartProvider>
+            <AgeVerificationProvider>
             <CityDetectionDialog />
             <Toaster />
             <Sonner />
@@ -83,6 +85,7 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
+            </AgeVerificationProvider>
           </CartProvider>
         </CityProvider>
       </TooltipProvider>

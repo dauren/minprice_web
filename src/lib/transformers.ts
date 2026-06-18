@@ -151,6 +151,7 @@ export const transformProduct = (apiProduct: ApiProduct | Deal, queryID?: string
     additionalImages: 'additional_images' in apiProduct ? apiProduct.additional_images : undefined,
     pricePerUnit,
     pricePerUnitLabel,
+    isAgeRestricted: ('is_age_restricted' in apiProduct) ? (apiProduct.is_age_restricted ?? false) : false,
     __position: ('__position' in apiProduct) ? apiProduct.__position : undefined,
     queryID,
   };
