@@ -840,6 +840,9 @@ const CartPage = () => {
                 </span>
               </div>
             </div>
+            <p className="text-[11px] text-muted-foreground text-center mt-2">
+              Итоговая сумма рассчитана по данным на момент обновления. Фактическая цена может отличаться.
+            </p>
           </div>
         )}
         {/* Transfer Modal */}

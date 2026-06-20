@@ -310,6 +310,7 @@ const ProductPage = () => {
         {hasStores && <div className="bg-card rounded-2xl border border-border overflow-hidden mb-3">
           <div className="px-4 py-2.5 border-b border-border">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Цены по магазинам</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Цены информационные — уточняйте актуальную стоимость в магазине перед покупкой</p>
           </div>
 
           {product.stores.map((store, i) => {

@@ -133,9 +133,12 @@ const DiscountsPage = () => {
 
                 {/* Results Header */}
                 <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm text-muted-foreground">
-                        {!isLoading && `${total} товаров`}
-                    </p>
+                    <div>
+                        <p className="text-sm text-muted-foreground">
+                            {!isLoading && `${total} товаров`}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Цены могут отличаться от актуальных в магазине</p>
+                    </div>
 
                     {/* Sort Toggle */}
                     <div className="relative">
