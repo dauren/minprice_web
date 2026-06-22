@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface BarcodeScannerModalProps {
   open: boolean;
@@ -12,6 +14,7 @@ interface BarcodeScannerModalProps {
 export function BarcodeScannerModal({ open, onOpenChange, onScan }: BarcodeScannerModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [manualInput, setManualInput] = useState("");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   // Need to track this to prevent multiple init attempts
   const isInitializingRef = useRef(false);
@@ -43,7 +46,12 @@ export function BarcodeScannerModal({ open, onOpenChange, onScan }: BarcodeScann
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: 250, height: 150 },
+          // Wider box suits EAN-13's horizontal aspect ratio
+          qrbox: { width: 300, height: 120 },
+          experimentalFeatures: {
+            // Use native BarcodeDetector API on Chrome 83+ for much better detection
+            useBarCodeDetectorIfSupported: true,
+          },
           formatsToSupport: [
             Html5QrcodeSupportedFormats.EAN_13,
             Html5QrcodeSupportedFormats.EAN_8,
@@ -90,6 +98,7 @@ export function BarcodeScannerModal({ open, onOpenChange, onScan }: BarcodeScann
       if (!val && scannerRef.current?.isScanning) {
         scannerRef.current.stop().catch(console.error);
       }
+      if (!val) setManualInput("");
       onOpenChange(val);
     }}>
       <DialogContent className="sm:max-w-md overflow-hidden bg-card/95 backdrop-blur-xl border-border/50 p-4 sm:p-6">
@@ -111,12 +120,45 @@ export function BarcodeScannerModal({ open, onOpenChange, onScan }: BarcodeScann
           )}
           <div id="reader" className="w-full h-full [&>video]:object-cover [&>video]:w-full [&>video]:h-full" />
         </div>
-        
-        <div className="mt-4 text-center">
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Поместите штрихкод в центр экрана. Сканирование произойдет автоматически.
-          </p>
+
+        {/* Manual barcode input — always visible as fallback */}
+        <div className="mt-4 flex gap-2">
+          <Input
+            type="text"
+            inputMode="numeric"
+            placeholder="Введите штрихкод вручную"
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value.replace(/\D/g, ""))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && manualInput.length >= 8) {
+                onOpenChange(false);
+                onScan(manualInput);
+                setManualInput("");
+              }
+            }}
+            maxLength={13}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            disabled={manualInput.length < 8}
+            onClick={() => {
+              onOpenChange(false);
+              onScan(manualInput);
+              setManualInput("");
+            }}
+          >
+            Найти
+          </Button>
         </div>
+
+        {!error && (
+          <div className="mt-3 text-center">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Поместите штрихкод в центр экрана. Сканирование произойдет автоматически.
+            </p>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

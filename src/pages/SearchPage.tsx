@@ -32,6 +32,7 @@ const SearchPage = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>(getSearchHistory);
+  const [barcodeRedirectSource, setBarcodeRedirectSource] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
 
@@ -72,6 +73,25 @@ const SearchPage = () => {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Barcode directory fallback: when backend returns suggested_query for an
+  // unrecognised barcode, auto-redirect to a text search with that name.
+  useEffect(() => {
+    if (!searchData?.pages) return;
+    const firstPage = searchData.pages[0];
+    if (
+      firstPage?.suggested_query &&
+      firstPage.nbHits === 0 &&
+      /^\d{8}$|^\d{12}$|^\d{13}$/.test(query)  // only trigger for barcode-like queries
+    ) {
+      const suggested = firstPage.suggested_query;
+      setBarcodeRedirectSource(query);
+      setInputValue(suggested);
+      addSearchHistory(suggested);
+      setSearchHistory(getSearchHistory());
+      setSearchParams({ q: suggested });
+    }
+  }, [searchData, query]);
   const { data: chainsData } = useChains();
   const { data: suggestionsData } = useSearchSuggestions(inputValue);
   const suggestions = suggestionsData?.suggestions || [];
@@ -126,6 +146,7 @@ const SearchPage = () => {
   const clearSearch = () => {
     setInputValue("");
     setSearchParams({});
+    setBarcodeRedirectSource(null);
     inputRef.current?.focus();
   };
 
@@ -328,6 +349,13 @@ const SearchPage = () => {
             )}
           </div>
         </div>
+
+        {/* Barcode redirect banner */}
+        {barcodeRedirectSource && (
+          <div className="mb-3 px-3 py-2 rounded-xl bg-primary/10 text-sm text-primary font-medium">
+            Штрихкод {barcodeRedirectSource} — показываем результаты по названию товара
+          </div>
+        )}
 
         {/* Products Grid */}
         {!query ? (

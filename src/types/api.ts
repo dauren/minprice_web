@@ -177,6 +177,8 @@ export interface SearchResponse {
   hitsPerPage: number;
   query: string;
   queryID?: string;
+  suggested_query?: string;
+  fallback?: string;
 }
 
 export interface AlgoliaConfigResponse {
