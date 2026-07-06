@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, ChevronLeft, ChevronRight, ImageOff, Gift } from "lucide-react";
 import html2canvas from "html2canvas";
 import StoreLogo from "@/components/StoreLogo";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
@@ -13,6 +13,9 @@ import { transformProduct, transformProducts } from "@/lib/transformers";
 import ProductCard from "@/components/ProductCard";
 
 const LINE_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+
+// Arbuz referral promo — shown on the product page when Arbuz has the lowest price
+const ARBUZ_PROMO_CODE = "LOEIQYF6";
 
 // Small hook to copy text and show a flash confirmation
 const useCopy = () => {
@@ -56,6 +59,9 @@ const ProductPage = () => {
   const bestStore = candidateStores.length > 0 ? candidateStores.reduce((a, b) => (a.price < b.price ? a : b)) : null;
   const bestPrice = bestStore?.price ?? 0;
   const worstPrice = product ? Math.max(...product.stores.map((s) => s.oldPrice || s.price)) : 0;
+
+  // Show the Arbuz referral promo only when Arbuz has the cheapest price for this product
+  const isArbuzCheapest = bestStore?.storeSource === "arbuz" || bestStore?.store === "Arbuz";
 
   const cartItem = items.find((i) => i.product.uuid === id);
   const quantity = cartItem?.quantity || 0;
@@ -299,6 +305,39 @@ const ProductPage = () => {
           </div>
         </div>
 
+
+        {/* Arbuz referral promo — only when Arbuz is the cheapest store */}
+        {isArbuzCheapest && (
+          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-rose-500/10 p-4 mb-3">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                <Gift className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">Промокод Arbuz — 4 000 ₸ на первый заказ</p>
+            </div>
+
+            {/* Copyable promo code */}
+            <button
+              onClick={() => copy(ARBUZ_PROMO_CODE, "arbuz-promo")}
+              className="w-full flex items-center justify-between gap-2 h-11 rounded-xl border border-dashed border-emerald-500/40 bg-background px-3 hover:border-emerald-500/70 transition-colors"
+            >
+              <span className="font-mono text-base font-bold tracking-widest text-emerald-600 dark:text-emerald-400">
+                {ARBUZ_PROMO_CODE}
+              </span>
+              <span className={`shrink-0 inline-flex items-center gap-1.5 text-xs font-medium ${copiedKey === "arbuz-promo" ? "text-green-600" : "text-muted-foreground"}`}>
+                {copiedKey === "arbuz-promo" ? (
+                  <><Check className="w-3.5 h-3.5" /> Скопировано</>
+                ) : (
+                  <><Copy className="w-3.5 h-3.5" /> Копировать</>
+                )}
+              </span>
+            </button>
+
+            <p className="mt-2 text-[10px] text-muted-foreground/80 leading-relaxed">
+              Действует только на первый заказ при сумме заказа от 10 000 ₸.
+            </p>
+          </div>
+        )}
 
         {/* Store prices – expandable with ext_product title */}
         {!hasStores && (
