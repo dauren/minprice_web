@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, ChevronLeft, ChevronRight, ImageOff, Gift } from "lucide-react";
+import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, ChevronLeft, ChevronRight, ImageOff, Gift, X } from "lucide-react";
 import html2canvas from "html2canvas";
 import StoreLogo from "@/components/StoreLogo";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
@@ -16,6 +16,18 @@ const LINE_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
 // Arbuz referral promo — shown on the product page when Arbuz has the lowest price
 const ARBUZ_PROMO_CODE = "LOEIQYF6";
+const FREEDOM_SUPERAPP_URL = "https://freedombank.onelink.me/WNLd/9i3xt1xw";
+const ARBUZ_PROMO_DISMISS_KEY = "minprice_arbuz_promo_dismissed";
+
+// Persist the promo dismissal in a cookie so it stays hidden across visits
+const isArbuzPromoDismissed = (): boolean =>
+  typeof document !== "undefined" && document.cookie.includes(`${ARBUZ_PROMO_DISMISS_KEY}=1`);
+
+const dismissArbuzPromo = () => {
+  const date = new Date();
+  date.setTime(date.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 year
+  document.cookie = `${ARBUZ_PROMO_DISMISS_KEY}=1;expires=${date.toUTCString()};path=/;samesite=lax`;
+};
 
 // Small hook to copy text and show a flash confirmation
 const useCopy = () => {
@@ -37,6 +49,7 @@ const ProductPage = () => {
   const [expandedStore, setExpandedStore] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imgError, setImgError] = useState(false);
+  const [promoDismissed, setPromoDismissed] = useState(isArbuzPromoDismissed);
   const { copiedKey, copy } = useCopy();
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -307,9 +320,16 @@ const ProductPage = () => {
 
 
         {/* Arbuz referral promo — only when Arbuz is the cheapest store */}
-        {isArbuzCheapest && (
-          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-rose-500/10 p-4 mb-3">
-            <div className="flex items-center gap-2 mb-3">
+        {isArbuzCheapest && !promoDismissed && (
+          <div className="relative rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-rose-500/10 p-4 mb-3">
+            <button
+              onClick={() => { dismissArbuzPromo(); setPromoDismissed(true); }}
+              title="Больше не показывать"
+              className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-background/60 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+            <div className="flex items-center gap-2 mb-3 pr-6">
               <div className="w-7 h-7 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
                 <Gift className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
@@ -332,6 +352,17 @@ const ProductPage = () => {
                 )}
               </span>
             </button>
+
+            {/* Download Freedom SuperApp */}
+            <a
+              href={FREEDOM_SUPERAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 w-full flex items-center justify-center gap-1.5 h-10 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 active:scale-[0.98] transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Скачать Freedom SuperApp
+            </a>
 
             <p className="mt-2 text-[10px] text-muted-foreground/80 leading-relaxed">
               Действует только на первый заказ при сумме заказа от 10 000 ₸.
