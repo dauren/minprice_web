@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 import NotFound from "./NotFound";
 import { useQueryClient } from "@tanstack/react-query";
@@ -338,37 +338,9 @@ const Index = () => {
           </>
         )}
       </section>
-
-      <Footer />
     </div>
   );
 };
-
-const Footer = () => (
-  <footer className="border-t border-border py-8 mt-auto">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-base font-bold text-foreground">minprice.kz</span>
-          <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-            Сравнение цен на продукты среди магазинов Казахстана
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground font-medium">
-          <Link to="/search" className="hover:text-foreground transition-colors">Поиск</Link>
-          <Link to="/catalog" className="hover:text-foreground transition-colors">Каталог</Link>
-          <Link to="/discounts" className="hover:text-foreground transition-colors">Скидки</Link>
-          <Link to="/cart" className="hover:text-foreground transition-colors">Корзина</Link>
-          <Link to="/public-offer" className="hover:text-foreground transition-colors">Оферта</Link>
-          <a href="mailto:support@minprice.kz" className="hover:text-foreground transition-colors">Поддержка</a>
-        </div>
-      </div>
-      <div className="mt-6 pt-4 border-t border-border text-center text-xs text-muted-foreground">
-        © 2026 minprice.kz — Цены носят информационный характер и могут отличаться от актуальных в магазине
-      </div>
-    </div>
-  </footer>
-);
 
 export default Index;
 

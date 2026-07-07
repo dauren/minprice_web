@@ -20,6 +20,7 @@ import ReturnPolicyPage from "./pages/ReturnPolicyPage";
 import CartHistoryPage from "./pages/CartHistoryPage";
 import SharedCartPage from "./pages/SharedCartPage";
 import NotFound from "./pages/NotFound";
+import Footer from "./components/Footer";
 import CityDetectionDialog from "./components/CityDetectionDialog";
 import { useEffect } from "react";
 import { initAlgoliaInsights } from "./lib/algoliaInsights";
@@ -84,6 +85,7 @@ const App = () => {
                 <Route path="/:chainSlug" element={<Index />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <Footer />
             </BrowserRouter>
             </AgeVerificationProvider>
           </CartProvider>

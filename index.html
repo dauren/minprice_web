@@ -64,6 +64,20 @@
 <body>
   <noscript>
     <div><img src="https://mc.yandex.ru/watch/107056981" style="position:absolute; left:-9999px;" alt="" /></div>
+    <!-- Crawlable fallback footer for non-JS crawlers. JS users see the React <Footer> instead. -->
+    <footer>
+      <nav>
+        <a href="/">Главная</a> ·
+        <a href="/catalog">Каталог</a> ·
+        <a href="/discounts">Скидки</a> ·
+        <a href="/search">Поиск</a>
+      </nav>
+      <p>
+        <strong>Новый проект:</strong>
+        <a href="https://arzan.kz" rel="noopener">Arzan.kz — поиск самых низких цен</a>.
+        Сравнение цен супермаркетов Казахстана и эволюция minprice.kz.
+      </p>
+    </footer>
   </noscript>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
