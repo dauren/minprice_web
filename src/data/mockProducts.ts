@@ -26,6 +26,7 @@ export interface Product {
   weight: string;
   discountPercent: number;
   savingsAmount: number;
+  oldPrice?: number;
   stores: StorePrice[];
   category?: string;
   brand?: string;

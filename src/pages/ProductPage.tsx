@@ -71,7 +71,9 @@ const ProductPage = () => {
   const candidateStores = inStockStores.length > 0 ? inStockStores : (product?.stores || []);
   const bestStore = candidateStores.length > 0 ? candidateStores.reduce((a, b) => (a.price < b.price ? a : b)) : null;
   const bestPrice = bestStore?.price ?? 0;
-  const worstPrice = product ? Math.max(...product.stores.map((s) => s.oldPrice || s.price)) : 0;
+  // Use the backend's reference price (same one savings/discount % are computed
+  // against) so the strikethrough price agrees with the displayed discount.
+  const worstPrice = product?.oldPrice ?? bestPrice;
 
   // Show the Arbuz referral promo only when Arbuz has the cheapest price for this product
   const isArbuzCheapest = bestStore?.storeSource === "arbuz" || bestStore?.store === "Arbuz";

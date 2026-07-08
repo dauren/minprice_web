@@ -73,6 +73,7 @@ export interface PriceRange {
   min: number;
   max: number;
   avg: number;
+  old?: number;
   savings: number;
   savings_percent: number;
   stores: StorePrice[];
@@ -109,6 +110,7 @@ export interface Product {
   linked_stores_count?: number;
   min_price?: number;
   max_price?: number;
+  old_price?: number;
   savings?: number;
   savings_percent?: number;
   stores?: StorePrice[];
@@ -139,6 +141,7 @@ export interface Deal {
   linked_stores_count: number;
   min_price: number;
   max_price: number;
+  old_price?: number;
   savings: number;
   savings_percent: number;
   stores: StorePrice[];

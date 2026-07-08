@@ -73,6 +73,10 @@ export const transformProduct = (apiProduct: ApiProduct | Deal, queryID?: string
   const priceRange = 'price_range' in apiProduct ? apiProduct.price_range : undefined;
   const savings = priceRange?.savings ?? apiProduct.savings ?? 0;
   const savingsPercent = priceRange?.savings_percent ?? apiProduct.savings_percent ?? 0;
+  // Reference/strikethrough price the savings above are computed against —
+  // must be shown as the main-card old price so the discount % makes sense.
+  const oldPriceRaw = priceRange?.old ?? apiProduct.old_price;
+  const oldPrice = oldPriceRaw && oldPriceRaw > minPrice ? oldPriceRaw : undefined;
 
   const discountPercent = Math.round(savingsPercent);
   const savingsAmount = Math.round(savings);
@@ -143,6 +147,7 @@ export const transformProduct = (apiProduct: ApiProduct | Deal, queryID?: string
     weight,
     discountPercent,
     savingsAmount,
+    oldPrice,
     stores,
     category: apiProduct.categories?.[0],
     brand: 'brand' in apiProduct ? apiProduct.brand || undefined : undefined,
