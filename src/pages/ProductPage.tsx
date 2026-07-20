@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Share2, Tag, Globe, ExternalLink, Copy, Check, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Download, ChevronLeft, ChevronRight, ImageOff, Gift, X } from "lucide-react";
 import html2canvas from "html2canvas";
@@ -66,6 +66,14 @@ const ProductPage = () => {
     if (!productData) return null;
     return transformProduct(productData);
   }, [productData]);
+
+  useEffect(() => {
+    if (!product) return;
+    import('@/lib/algoliaInsights').then(({ sendProductViewedEvent }) => {
+      sendProductViewedEvent([product.id]);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id]);
 
   const inStockStores = product?.stores.filter(s => s.inStock !== false) || [];
   const candidateStores = inStockStores.length > 0 ? inStockStores : (product?.stores || []);

@@ -23,6 +23,13 @@ const setGuestUuid = (uuid: string) => {
   document.cookie = `${GUEST_UUID_KEY}=${uuid};expires=${date.toUTCString()};path=/;samesite=lax`;
 };
 
+// Exported so callers (e.g. Algolia Insights init) can obtain the same
+// persisted guest_uuid used as X-Guest-UUID on every other API call, instead
+// of minting/seeing a fresh, unpersisted uuid via a raw /session/init/ call.
+export const ensureGuestSession = async (): Promise<string> => {
+  return initSession();
+};
+
 const initSession = async (): Promise<string> => {
   const existing = getGuestUuid();
   if (existing) return existing;

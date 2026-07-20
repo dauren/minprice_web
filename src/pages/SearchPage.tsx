@@ -182,6 +182,20 @@ const SearchPage = () => {
     });
   }, [query, searchData, sortBy]);
 
+  const viewedProductIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const newObjectIDs: string[] = [];
+    for (const product of sortedProducts) {
+      if (viewedProductIdsRef.current.has(product.id)) continue;
+      viewedProductIdsRef.current.add(product.id);
+      newObjectIDs.push(product.id);
+    }
+    if (newObjectIDs.length === 0) return;
+    import('@/lib/algoliaInsights').then(({ sendProductViewedEvent }) => {
+      sendProductViewedEvent(newObjectIDs);
+    });
+  }, [sortedProducts]);
+
   // Since backend gives us chunks of products, we don't need client-side slicing anymore.
   // We just render all sortedProducts, which grows as we fetchNextPage.
 

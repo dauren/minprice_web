@@ -24,7 +24,7 @@ import Footer from "./components/Footer";
 import CityDetectionDialog from "./components/CityDetectionDialog";
 import { useEffect } from "react";
 import { initAlgoliaInsights } from "./lib/algoliaInsights";
-import { apiClient } from "./lib/api";
+import { ensureGuestSession } from "./lib/api";
 
 const queryClient = new QueryClient();
 
@@ -45,11 +45,12 @@ function ScrollToTop() {
 
 const App = () => {
   useEffect(() => {
-    // Initialize session and then Algolia Insights
-    apiClient.get('/session/init/').then((res: any) => {
-      if (res?.guest_uuid) {
-        initAlgoliaInsights(res.guest_uuid);
-      }
+    // Initialize session and then Algolia Insights, using the same persisted
+    // guest_uuid sent as X-Guest-UUID on every other API call — otherwise
+    // Insights events get tagged with a different, unpersisted identity than
+    // the one driving personalized search.
+    ensureGuestSession().then((guestUuid) => {
+      initAlgoliaInsights(guestUuid);
     }).catch(console.error);
   }, []);
 

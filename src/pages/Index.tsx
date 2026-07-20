@@ -155,6 +155,20 @@ const Index = () => {
     return transformProducts(deals);
   }, [bestDealsData]);
 
+  const viewedProductIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const newObjectIDs: string[] = [];
+    for (const product of allDeals) {
+      if (viewedProductIdsRef.current.has(product.id)) continue;
+      viewedProductIdsRef.current.add(product.id);
+      newObjectIDs.push(product.id);
+    }
+    if (newObjectIDs.length === 0) return;
+    import('@/lib/algoliaInsights').then(({ sendProductViewedEvent }) => {
+      sendProductViewedEvent(newObjectIDs);
+    });
+  }, [allDeals]);
+
   const totalDealsCount = bestDealsData?.pages[0]?.total || allDeals.length;
 
   // Return 404 if slug in URL is unrecognized (placed below all hook calls to satisfy rules of hooks)
