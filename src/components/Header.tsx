@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import CitySelector from "@/components/CitySelector";
-import IosAppBanner from "@/components/IosAppBanner";
 import logo from "@/assets/logo.png";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem } from "@/lib/searchHistory";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
@@ -76,7 +75,6 @@ const Header = ({ forceDance = false }: { forceDance?: boolean }) => {
 
   return (
     <>
-      <IosAppBanner />
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
         <div className="max-w-6xl mx-auto px-3 sm:px-6">
           {/* Top row: logo + nav + actions */}
