@@ -44,7 +44,7 @@ export interface StorePrice {
   chain_id: number;
   chain_name: string;
   chain_slug?: string;
-  chain_logo: string;
+  chain_logo: string | null;
   city_id?: number;
   city_name?: string;
   city_slug?: string;
@@ -59,7 +59,7 @@ export interface StorePrice {
   ext_product_id: number;
   ext_product_title: string;
   ext_product_brand_canonical: string | null;
-  ext_product_image: string;
+  ext_product_image: string | null;
   ext_product_url?: string;
   ext_product_measure_unit: string;
   ext_product_measure_unit_kind: string;

@@ -13,22 +13,24 @@ const getStoreColor = (chainName: string): string => {
   return colorMap[chainName] || '#6b7280';
 };
 
+// Build an absolute media URL. Returns undefined for missing/blank values so
+// consumers (StoreLogo) can fall back to their local asset.
+const toAbsoluteMediaUrl = (url?: string | null): string | undefined => {
+  const trimmed = typeof url === 'string' ? url.trim() : '';
+  if (!trimmed) return undefined;
+  if (trimmed.startsWith('http')) return trimmed;
+
+  // Add /media/ prefix if not already present
+  const path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return path.startsWith('/media/')
+    ? `https://backend.minprice.kz${path}`
+    : `https://backend.minprice.kz/media${path}`;
+};
+
 // Transform API store price to mock format
 export const transformStorePrice = (apiStore: ApiStorePrice): MockStorePrice => {
-  // Construct full logo URL
-  let logoUrl = apiStore.chain_logo;
-  if (!logoUrl.startsWith('http')) {
-    // Add /media/ prefix if not already present
-    const path = logoUrl.startsWith('/') ? logoUrl : `/${logoUrl}`;
-    logoUrl = path.startsWith('/media/') ? `https://backend.minprice.kz${path}` : `https://backend.minprice.kz/media${path}`;
-  }
-
-  // Construct full ext_product image URL
-  let extProductImageUrl = apiStore.ext_product_image;
-  if (extProductImageUrl && !extProductImageUrl.startsWith('http')) {
-    const imgPath = extProductImageUrl.startsWith('/') ? extProductImageUrl : `/${extProductImageUrl}`;
-    extProductImageUrl = imgPath.startsWith('/media/') ? `https://backend.minprice.kz${imgPath}` : `https://backend.minprice.kz/media${imgPath}`;
-  }
+  const logoUrl = toAbsoluteMediaUrl(apiStore.chain_logo);
+  const extProductImageUrl = toAbsoluteMediaUrl(apiStore.ext_product_image);
 
   return {
     store: apiStore.chain_name,

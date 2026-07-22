@@ -10,14 +10,17 @@ export const storeLogos: Record<string, string> = {
   "MagnumGO": magnumLogo,
   "Airba Fresh": airbaFreshLogo,
   "A-Store ADK": astoreLogo,
+  // API sends the chain name with parentheses and has no logo for it
+  "A-Store (ADK)": astoreLogo,
+  "A-Store": astoreLogo,
   "Arbuz": arbuzLogo,
   "Small": smallLogo,
 };
 
-export function getStoreLogo(storeName: string): string | null {
-  return storeLogos[storeName] || null;
+export function getStoreLogo(storeName?: string | null): string | null {
+  return (storeName && storeLogos[storeName]) || null;
 }
 
-export function getStoreInitial(storeName: string): string {
-  return storeName.charAt(0).toUpperCase();
+export function getStoreInitial(storeName?: string | null): string {
+  return storeName ? storeName.charAt(0).toUpperCase() : "?";
 }
