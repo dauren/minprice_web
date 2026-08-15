@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import PageMeta from "@/components/PageMeta";
 import ProductCard from "@/components/ProductCard";
 import StoreLogo from "@/components/StoreLogo";
+import ArzanMigrationModal from "@/components/ArzanMigrationModal";
 import { useInfiniteBestDeals, useChains, useSearchSuggestions, useHomepageStats } from "@/hooks/useApi";
 import { transformProducts } from "@/lib/transformers";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
@@ -179,6 +180,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-40 sm:pb-24">
       <PageMeta />
+      <ArzanMigrationModal />
       <Header />
 
       <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 mb-8">
