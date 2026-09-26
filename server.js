@@ -18,7 +18,6 @@ const PORT = process.env.PORT || 3000;
 const API_BASE = process.env.API_BASE_URL || "https://backend.minprice.kz/api";
 
 const SITE_URL = "https://minprice.kz";
-const SITEMAP_CDN_BASE = "https://arzan-files.ams3.cdn.digitaloceanspaces.com/sitemaps/minprice";
 const DIST_DIR = path.join(__dirname, "dist");
 const SEO_DISCOVERY_RE = /^\/(?:robots\.txt|sitemap(?:-products(?:-\d+)?)?\.xml|sitemap-(?:categories|stores|static)\.xml)$/;
 
@@ -261,16 +260,18 @@ function injectMeta(html, { title, description, image, url, body = "", jsonLd = 
 }
 
 async function proxySeoDiscovery(req, res) {
-    if (req.path.startsWith("/sitemap")) {
-        res.setHeader("Cache-Control", "public, max-age=300");
-        return res.redirect(302, `${SITEMAP_CDN_BASE}${req.path}`);
-    }
-
     try {
         const response = await fetch(`https://backend.minprice.kz${req.path}`, {
             headers: { Accept: req.path.endsWith(".txt") ? "text/plain" : "application/xml", "X-Platform": "ssr", "X-SSR-Source": getSsrSource(req.headers["user-agent"]) },
+            redirect: "manual",
             signal: AbortSignal.timeout(5000),
         });
+        const location = response.headers.get("location");
+        if (location && response.status >= 300 && response.status < 400) {
+            res.setHeader("Cache-Control", "public, max-age=300");
+            res.setHeader("Location", location);
+            return res.status(response.status).end();
+        }
         const text = await response.text();
         const contentType = response.headers.get("content-type");
         const cacheControl = response.headers.get("cache-control");
