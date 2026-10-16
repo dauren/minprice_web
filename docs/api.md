@@ -388,6 +388,15 @@ Guest carts are identified by the `guest_uuid` cookie (set via `/api/session/ini
 ### List Carts
 `GET /api/carts/`
 
+List screens use `?compact=true` (add `is_active=true` for active-cart discovery).
+The compact response keeps pagination and returns only `uuid`, `name`,
+`is_active`, `items_count`, `created_at`, and `updated_at`. It contains no products
+or calculated prices; fetch `/carts/{uuid}/summary/?city_id=...` only for the
+selected cart. Deploy the backend supporting this option before these clients.
+Unfiltered legacy full responses remain supported, with per-owner concurrency
+protection (`429` when busy, `503` when the guard is unavailable, `Retry-After: 1`).
+
+
 ```json
 {
   "count": 2,

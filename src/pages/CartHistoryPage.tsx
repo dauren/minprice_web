@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, ShoppingCart, Trash2 } from "lucide-react";
 import Header from "@/components/Header";
 import { useCart } from "@/context/CartContext";
 import { API_ENDPOINTS, apiClient } from "@/lib/api";
+import { readCartList, invalidateCartReads } from "@/lib/cartReads";
 import mascot from "@/assets/logo.png";
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -30,19 +31,17 @@ const CartHistoryPage = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await apiClient.get<any>(API_ENDPOINTS.carts());
+            const data = await readCartList();
             if (data && data.results) {
-                const cartsWithOwnership = await Promise.all(
-                    data.results.map(async (cart: CartHistoryItem) => {
-                        try {
-                            const summary = await apiClient.get<any>(API_ENDPOINTS.cartSummary(cart.uuid));
-                            return { ...cart, is_owner: summary?.cart?.is_owner ?? true };
-                        } catch {
-                            return { ...cart, is_owner: true };
-                        }
-                    })
-                );
-                setCarts(cartsWithOwnership);
+                setCarts(data.results.map((cart) => ({
+                    ...cart,
+                    name: cart.name ?? "",
+                    is_active: cart.is_active ?? false,
+                    created_at: cart.created_at ?? "",
+                    updated_at: cart.updated_at ?? "",
+                    item_count: cart.items_count ?? cart.item_count ?? 0,
+                    is_owner: true,
+                })));
             }
         } catch (e: any) {
             console.error("Error fetching cart history:", e);
@@ -59,6 +58,7 @@ const CartHistoryPage = () => {
     const handleSetActive = async (uuid: string) => {
         try {
             await apiClient.post(API_ENDPOINTS.cartSetActive(uuid));
+            invalidateCartReads();
             await fetchCart();
             await loadHistory();
         } catch (e) {

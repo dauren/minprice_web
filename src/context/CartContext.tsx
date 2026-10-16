@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { apiClient, API_ENDPOINTS } from "@/lib/api";
+import { readCartList, readCartSummary, invalidateCartReads } from "@/lib/cartReads";
 import { useCity } from "@/context/CityContext";
 
 // ExtProduct properties mapped from backend API responses
@@ -120,7 +121,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchCartSummary = async (uuid: string) => {
     try {
-      const data = await apiClient.get<any>(API_ENDPOINTS.cartSummary(uuid, selectedCityId));
+      const data = await readCartSummary<any>(uuid, selectedCityId);
 
       setCartName(data.cart.name);
       setIsOwner(data.cart.is_owner !== false);
@@ -168,7 +169,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       await fetchPreferences();
-      const response = await apiClient.get<any>(`${API_ENDPOINTS.carts()}?is_active=true`);
+      const response = await readCartList(true);
       if (response && response.results && response.results.length > 0) {
         const activeCart = response.results[0];
         setCartUuid(activeCart.uuid);
@@ -205,12 +206,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           product_uuid: productId,
           quantity
         });
+        invalidateCartReads();
         await fetchCartSummary(cartUuid);
       } else {
         const res = await apiClient.post<any>(API_ENDPOINTS.quickAdd(), {
           product_uuid: productId,
           quantity
         });
+        invalidateCartReads();
         setCartUuid(res.cart_uuid);
         await fetchCartSummary(res.cart_uuid);
       }
@@ -228,6 +231,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       await apiClient.post(API_ENDPOINTS.cartRemoveItem(cartUuid), {
         product_uuid: productId
       });
+      invalidateCartReads();
       // Fetch fresh data to get updated totals
       await fetchCartSummary(cartUuid);
     } catch (error) {
@@ -254,6 +258,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         product_uuid: productId,
         quantity
       });
+      invalidateCartReads();
       await fetchCartSummary(cartUuid);
     } catch (error) {
       console.error("Failed to update quantity:", error);
@@ -271,6 +276,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!cartUuid) return;
     try {
       await apiClient.patch(API_ENDPOINTS.cartRename(cartUuid), { name: newName });
+      invalidateCartReads();
       setCartName(newName);
     } catch (error) {
       console.error("Failed to rename cart:", error);
@@ -281,6 +287,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!cartUuid) return;
     try {
       await apiClient.post(API_ENDPOINTS.cartArchive(cartUuid));
+      invalidateCartReads();
       await fetchCart();
     } catch (error) {
       console.error("Failed to archive cart:", error);
@@ -290,6 +297,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const deleteCart = async (uuid: string) => {
     try {
       await apiClient.delete(API_ENDPOINTS.cart(uuid));
+      invalidateCartReads();
       // If the deleted cart was the active one, refetch
       if (uuid === cartUuid) {
         await fetchCart();
@@ -302,6 +310,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const updateStorePreferences = async (chainIds: number[]) => {
     try {
       await apiClient.patch(API_ENDPOINTS.storePreferences(), { chain_ids: chainIds });
+      invalidateCartReads();
       setSelectedChainIds(chainIds);
       if (cartUuid) {
         await fetchCartSummary(cartUuid);

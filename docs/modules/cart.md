@@ -27,3 +27,15 @@
 ## Key API Endpoints
 
 See @docs/api.md § Cart section for full endpoint reference.
+
+## Metadata and concurrent reads
+
+Deploy the backend supporting `compact=true` first. Active-cart discovery uses
+`/carts/?is_active=true&compact=true`; the list uses `/carts/?compact=true`.
+Lists use `items_count` and contain no product graph. They do not request a price
+summary for every cart. Prices are fetched for the selected cart and city only;
+unknown list totals are left blank.
+
+`src/lib/cartReads.ts` shares unfinished reads by identity and endpoint, with no
+completed-result cache. Successful cart writes abort obsolete reads. Old identity
+responses are discarded; later attempts after failures issue a fresh request.

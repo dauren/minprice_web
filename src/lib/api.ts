@@ -3,7 +3,7 @@ const GUEST_UUID_KEY = 'minprice_guest_uuid';
 
 let sessionPromise: Promise<string> | null = null;
 
-const getGuestUuid = (): string | null => {
+export const getGuestUuid = (): string | null => {
   // Check localStorage first
   const stored = localStorage.getItem(GUEST_UUID_KEY);
   if (stored) return stored;
@@ -63,7 +63,7 @@ const initSession = async (): Promise<string> => {
 };
 
 export const apiClient = {
-  get: async <T>(endpoint: string): Promise<T> => {
+  get: async <T>(endpoint: string, signal?: AbortSignal): Promise<T> => {
     // If the endpoint IS the session init, bypass the wrapper to avoid infinite loops
     if (endpoint === '/session/init/') {
       const response = await fetch(`${API_BASE_URL}${endpoint}`);
@@ -74,6 +74,7 @@ export const apiClient = {
     const url = `${API_BASE_URL}${endpoint}`;
 
     const response = await fetch(url, {
+      signal,
       headers: {
         'X-Guest-UUID': uuid,
         'X-Platform': 'web',
